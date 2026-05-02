@@ -1,0 +1,8 @@
+{
+  "appId": "com.magicalpdf.app",
+  "appName": "Magical PDF",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

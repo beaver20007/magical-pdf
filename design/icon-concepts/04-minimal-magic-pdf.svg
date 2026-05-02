@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img">
+      <defs>
+        <linearGradient id="bg" x1="92" y1="92" x2="932" y2="932" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#10242c"/>
+          <stop offset="1" stop-color="#0f766e"/>
+        </linearGradient>
+      </defs>
+      <rect width="1024" height="1024" rx="210" fill="url(#bg)"/>
+      <circle cx="512" cy="512" r="322" fill="#f8fbfb"/>
+      <circle cx="512" cy="512" r="278" fill="#e33343"/>
+      <text x="512" y="566" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="176" font-weight="900" fill="#ffffff">PDF</text>
+      <path d="M292 668c132-68 301-80 460-8" fill="none" stroke="#fff7be" stroke-width="38" stroke-linecap="round"/>
+      <g transform="translate(628 178) rotate(38)">
+        <rect x="-24" y="0" width="48" height="434" rx="24" fill="#172026"/>
+        <rect x="-8" y="34" width="16" height="340" rx="8" fill="#ffd84d"/>
+        <circle cx="0" cy="0" r="38" fill="#fff"/>
+      </g>
+      <path d="M732 222l20 52 52 20-52 20-20 52-20-52-52-20 52-20z" fill="#ffd84d"/>
+      <path d="M286 260l13 34 34 13-34 13-13 34-13-34-34-13 34-13z" fill="#ffd84d"/>
+    </svg>

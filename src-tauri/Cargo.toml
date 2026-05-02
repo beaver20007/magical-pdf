@@ -1,0 +1,15 @@
+[package]
+name = "magical-pdf"
+version = "0.1.0"
+description = "Преобразование PDF в JPEG страницы и PDF, похожий на скан"
+authors = ["Magical PDF"]
+license = ""
+repository = ""
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+rfd = "0.15"

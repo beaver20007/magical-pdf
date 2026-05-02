@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Magical PDF</title>
+    <link rel="icon" href="./public/app-icon.png" type="image/png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="workspace">
+        <header class="topbar">
+          <div class="brand-lockup">
+            <img src="./public/app-icon.png" alt="" class="brand-mark" />
+            <div>
+              <h1>Magical PDF</h1>
+              <p>Превращает PDF в чистый скан без текстового слоя</p>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="./public/hero-listva.png" alt="" class="hero-image" />
+            <span class="hero-note">PDF → JPEG → PDF</span>
+          </div>
+        </header>
+
+        <label id="dropZone" class="drop-zone">
+          <input id="fileInput" type="file" accept="application/pdf,.pdf" />
+          <span id="dropTitle" class="drop-title">Выберите PDF или перетащите сюда</span>
+          <span id="dropHint" class="drop-hint">Файл будет обработан на вашем устройстве</span>
+          <span id="selectedFileInfo" class="selected-file" hidden></span>
+        </label>
+
+        <section class="controls" aria-label="Настройки преобразования">
+          <label>
+            Качество
+            <select id="qualityPresetSelect">
+              <option value="high" selected>Высокое</option>
+              <option value="medium">Среднее</option>
+              <option value="low">Низкое</option>
+            </select>
+          </label>
+          <div class="convert-actions">
+            <div class="action-row">
+              <button id="exportJpegsButton" class="create-button" disabled>Создать страницы JPEG</button>
+              <button id="downloadJpegsButton" class="download-button" disabled>↓ Скачать</button>
+            </div>
+            <div class="action-row">
+              <button id="convertPdfButton" class="create-button" disabled>Создать новый PDF</button>
+              <button id="downloadPdfButton" class="download-button" disabled>↓ Скачать</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="status-panel" aria-live="polite">
+          <div id="statusText">Выберите PDF, затем нажмите нужное действие</div>
+          <progress id="progressBar" value="0" max="100"></progress>
+        </section>
+
+        <section id="previewGrid" class="preview-grid" aria-label="Предпросмотр страниц"></section>
+      </section>
+    </main>
+
+    <script src="./vendor/pdf-lib.min.js"></script>
+    <script src="./vendor/jszip.min.js"></script>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img">
+      <defs>
+        <linearGradient id="bg" x1="80" y1="80" x2="944" y2="944" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#0f766e"/>
+          <stop offset="1" stop-color="#133f5f"/>
+        </linearGradient>
+        <linearGradient id="paper" x1="286" y1="142" x2="738" y2="850" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#ffffff"/>
+          <stop offset="1" stop-color="#eaf4f2"/>
+        </linearGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="26" stdDeviation="34" flood-color="#062a32" flood-opacity=".32"/>
+        </filter>
+      </defs>
+      <rect width="1024" height="1024" rx="210" fill="url(#bg)"/>
+      <path d="M316 130h276l130 132v610H316z" fill="url(#paper)" filter="url(#shadow)"/>
+      <path d="M592 130v132h130z" fill="#cfe8e4"/>
+      <rect x="364" y="408" width="300" height="44" rx="22" fill="#9ab0b9"/>
+      <rect x="364" y="490" width="250" height="44" rx="22" fill="#b4c4ca"/>
+      <rect x="364" y="572" width="284" height="44" rx="22" fill="#b4c4ca"/>
+      <rect x="366" y="692" width="260" height="106" rx="34" fill="#e33343"/>
+      <text x="496" y="766" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#fff">PDF</text>
+      <g transform="rotate(-35 612 356)">
+        <rect x="580" y="206" width="72" height="476" rx="36" fill="#171923"/>
+        <rect x="596" y="226" width="40" height="436" rx="20" fill="#fff7be"/>
+        <rect x="582" y="204" width="68" height="84" rx="34" fill="#fff"/>
+      </g>
+      <path d="M744 190l20 52 52 20-52 20-20 52-20-52-52-20 52-20z" fill="#ffd84d"/>
+      <path d="M238 284l14 36 36 14-36 14-14 36-14-36-36-14 36-14z" fill="#ffd84d"/>
+      <path d="M756 640l13 34 34 13-34 13-13 34-13-34-34-13 34-13z" fill="#ffd84d"/>
+    </svg>

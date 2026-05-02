@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Generated web build
+dist/
+
+# Rust/Tauri build output
+src-tauri/target/
+
+# Desktop and mobile generated packages
+*.app/
+*.dmg
+*.exe
+*.msi
+*.pkg
+*.deb
+*.rpm
+*.AppImage
+
+# Logs and local environment
+*.log
+.env
+.env.*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Local design scratch copies
+styles 2.css
+styles 3.css
+public/favicon 2.svg
+
+# Generated icon scratch files
+src-tauri/icons/icon.iconset/
+src-tauri/icons/* [0-9].png
+src-tauri/icons/* [0-9].icns
+
+# Temporary files
+tmp/
+.tmp/

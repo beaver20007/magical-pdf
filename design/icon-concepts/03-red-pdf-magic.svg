@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img">
+      <defs>
+        <linearGradient id="bg" x1="120" y1="80" x2="904" y2="944" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#f7fafc"/>
+          <stop offset="1" stop-color="#d7ebe7"/>
+        </linearGradient>
+        <linearGradient id="red" x1="284" y1="144" x2="760" y2="864" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#ff4b5c"/>
+          <stop offset="1" stop-color="#ba1f33"/>
+        </linearGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#10242c" flood-opacity=".28"/>
+        </filter>
+      </defs>
+      <rect width="1024" height="1024" rx="210" fill="url(#bg)"/>
+      <path d="M306 136h340l124 126v626H306z" fill="url(#red)" filter="url(#shadow)"/>
+      <path d="M646 136v126h124z" fill="#ff8791"/>
+      <text x="536" y="550" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="176" font-weight="900" fill="#fff">PDF</text>
+      <path d="M360 660h332" stroke="#ffffff" stroke-width="36" stroke-linecap="round" opacity=".72"/>
+      <path d="M408 734h236" stroke="#ffffff" stroke-width="32" stroke-linecap="round" opacity=".52"/>
+      <g transform="translate(696 230) rotate(42)">
+        <rect x="-26" y="12" width="52" height="402" rx="26" fill="#172026"/>
+        <rect x="-9" y="44" width="18" height="326" rx="9" fill="#ffd84d"/>
+        <circle cx="0" cy="0" r="42" fill="#0f766e"/>
+        <circle cx="0" cy="0" r="20" fill="#fff7be"/>
+      </g>
+      <path d="M224 250l24 62 62 24-62 24-24 62-24-62-62-24 62-24z" fill="#0f766e"/>
+      <path d="M790 694l18 48 48 18-48 18-18 48-18-48-48-18 48-18z" fill="#f2b84b"/>
+    </svg>

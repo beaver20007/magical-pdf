@@ -1,0 +1,30 @@
+{
+  "name": "magical-pdf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:dist": "node scripts/prepare-dist.mjs",
+    "prepare:icons": "node scripts/generate-tauri-icon.mjs",
+    "build:web": "node scripts/prepare-dist.mjs",
+    "dev:web": "node scripts/dev-server.mjs",
+    "dev:mac": "tauri dev",
+    "build:mac": "npm run prepare:icons && npm run prepare:dist && tauri build --bundles app,dmg",
+    "build:desktop": "npm run prepare:icons && npm run prepare:dist && tauri build",
+    "build:windows": "npm run prepare:icons && npm run prepare:dist && tauri build --bundles nsis",
+    "add:android": "npm run prepare:dist && cap add android",
+    "add:ios": "npm run prepare:dist && cap add ios",
+    "sync:mobile": "npm run prepare:dist && cap sync",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}
