@@ -35,6 +35,8 @@ npm run dev:web
 npm run build:web
 npm run build:mac
 npm run build:windows
+npm run prepare:ios
+npm run open:ios
 ```
 
 ## Файлы
@@ -47,12 +49,16 @@ npm run build:windows
 - `scripts/generate-tauri-icon.mjs` — генерация app icons.
 - `src-tauri/src/main.rs` — native save dialog и открытие Finder/Проводника после сохранения.
 - `src-tauri/tauri.conf.json` — Tauri config.
+- `ios/App` — Xcode workspace for iOS.
+- `IOS_SETUP.md` — iOS build and signing instructions.
 - `.github/workflows/deploy-pages.yml` — публикация web preview на GitHub Pages.
 - `.github/workflows/build-installers.yml` — CI для web/macOS/Windows artifacts.
 
 ## Важный контекст
 
 На Mac локально Windows `.exe` не собрался, потому что нет Windows target/toolchain/NSIS. Для `.exe` нужно собирать на Windows или через GitHub Actions `windows-latest`.
+
+iOS-проект создан через Capacitor в `ios/App`. Для финальной сборки нужны Xcode, CocoaPods и Apple Developer подпись. Сохранение результата на iOS идет через `@capacitor/filesystem` и `@capacitor/share`: после нажатия `↓ Скачать` открывается системное меню iOS, где можно выбрать `Сохранить в Файлы`.
 
 GitHub Actions уже настроен для Windows job:
 
@@ -74,5 +80,5 @@ npm run build:windows
 - Собрать и проверить Windows `.exe`.
 - Убедиться, что в Windows после сохранения открывается Проводник с выбранным файлом.
 - При необходимости поправить NSIS metadata/icon/name.
+- Собрать и проверить iOS-приложение на iPhone через Xcode.
 - Позже перенести web preview с GitHub Pages на официальный хостинг и домен.
-

@@ -7,6 +7,12 @@ dist/
 # Rust/Tauri build output
 src-tauri/target/
 
+# iOS generated dependencies/build output
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
+ios/App/**/*.xcuserdata/
+
 # Desktop and mobile generated packages
 *.app/
 *.dmg

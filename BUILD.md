@@ -47,9 +47,18 @@ iOS не собирается в DMG. Для iPhone/iPad нужен iOS-прое
 ```bash
 npm install
 npm run add:ios
-npm run sync:mobile
+npm run sync:ios
 npm run open:ios
 ```
+
+Если проект `ios/App` уже создан:
+
+```bash
+npm run prepare:ios
+npm run open:ios
+```
+
+Для финальной сборки нужны Xcode, CocoaPods и Apple Developer подпись. Подробности: `IOS_SETUP.md`.
 
 ## Android
 

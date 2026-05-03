@@ -38,7 +38,11 @@ select {
 
 .app {
   min-height: 100vh;
-  padding: 28px;
+  padding:
+    max(28px, env(safe-area-inset-top))
+    max(28px, env(safe-area-inset-right))
+    max(28px, env(safe-area-inset-bottom))
+    max(28px, env(safe-area-inset-left));
 }
 
 .workspace {
@@ -363,7 +367,11 @@ progress {
 
 @media (max-width: 860px) {
   .app {
-    padding: 16px;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
   }
 
   .topbar {

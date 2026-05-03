@@ -264,6 +264,18 @@ async function downloadBlob(blob, url, filename) {
     return;
   }
 
+  if (isCapacitorApp()) {
+    try {
+      await shareBlobFromMobileApp(blob, filename);
+      setStatus(`Файл готов: ${filename}. Выберите место сохранения в меню iOS.`, 100);
+      return;
+    } catch (error) {
+      console.warn("Не удалось открыть меню iOS для сохранения.", error);
+      setStatus("Не удалось сохранить файл через iOS. Попробуйте ещё раз.", 0);
+      return;
+    }
+  }
+
   if (isTauriApp()) {
     try {
       const bytes = Array.from(new Uint8Array(await blob.arrayBuffer()));
@@ -351,6 +363,44 @@ async function downloadBlob(blob, url, filename) {
   setStatus(`Скачивание запрошено: ${filename}, ${formatFileSize(blob.size)}.`, 100);
 }
 
+async function shareBlobFromMobileApp(blob, filename) {
+  const plugins = window.Capacitor?.Plugins;
+  const filesystem = plugins?.Filesystem;
+  const share = plugins?.Share;
+
+  if (!filesystem || !share) {
+    throw new Error("Capacitor Filesystem или Share недоступен");
+  }
+
+  const base64Data = await blobToBase64(blob);
+  const writeResult = await filesystem.writeFile({
+    path: filename,
+    data: base64Data,
+    directory: "DOCUMENTS",
+    recursive: true,
+  });
+
+  const fileUri = writeResult.uri || writeResult.path;
+  await share.share({
+    title: "Magical PDF",
+    text: "Готовый файл Magical PDF",
+    url: fileUri,
+    dialogTitle: "Сохранить или отправить файл",
+  });
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      resolve(result.includes(",") ? result.split(",")[1] : result);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
 function isLocalHttpApp() {
   return (
     window.location.protocol === "http:" &&
@@ -360,6 +410,10 @@ function isLocalHttpApp() {
 
 function isTauriApp() {
   return Boolean(window.__TAURI__?.core?.invoke);
+}
+
+function isCapacitorApp() {
+  return window.Capacitor?.isNativePlatform?.() === true;
 }
 
 function waitForStatusPaint() {
