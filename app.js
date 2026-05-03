@@ -32,20 +32,9 @@ fileInput.addEventListener("change", () => {
   }
 });
 
-dropZone.addEventListener("click", (event) => {
-  if (event.target === fileInput || event.target === chooseAnotherButton) return;
-  openFilePicker();
-});
-
 dropZone.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" && event.key !== " ") return;
   event.preventDefault();
-  openFilePicker();
-});
-
-chooseAnotherButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
   openFilePicker();
 });
 

@@ -213,10 +213,13 @@ p {
 }
 
 .change-files-button {
+  display: inline-grid;
+  place-items: center;
   min-height: 46px;
   margin-top: 6px;
   padding: 10px 18px;
-  border-color: rgba(40, 180, 107, 0.32);
+  border: 1px solid rgba(40, 180, 107, 0.32);
+  border-radius: 18px;
   background: #ffffff;
   color: var(--ink);
   font-size: 14px;
