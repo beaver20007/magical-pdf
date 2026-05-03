@@ -19,14 +19,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
   "./vendor/pdf.worker.min.mjs";
 
 let selectedFile = null;
+let selectedFiles = [];
 let outputPdfUrl = null;
 let outputJpegsUrl = null;
 let outputPdfBlob = null;
 let outputJpegsBlob = null;
 
 fileInput.addEventListener("change", () => {
-  if (fileInput.files?.[0]) {
-    selectFile(fileInput.files[0]);
+  if (fileInput.files?.length) {
+    selectFiles(Array.from(fileInput.files));
   }
 });
 
@@ -45,22 +46,22 @@ for (const eventName of ["dragleave", "drop"]) {
 }
 
 dropZone.addEventListener("drop", (event) => {
-  const file = event.dataTransfer?.files?.[0];
-  if (file) {
-    selectFile(file);
+  const files = Array.from(event.dataTransfer?.files || []);
+  if (files.length) {
+    selectFiles(files);
   }
 });
 
 convertPdfButton.addEventListener("click", async () => {
-  if (!selectedFile) return;
+  if (selectedFiles.length !== 1) return;
 
   setBusy(true);
   resetOutput();
   previewGrid.replaceChildren();
 
   try {
-    const pdfBytes = await selectedFile.arrayBuffer();
-    const jpegPages = await renderPdfToJpegs(pdfBytes);
+    const pdfBytes = await selectedFiles[0].arrayBuffer();
+    const jpegPages = await renderPdfToJpegs(pdfBytes, selectedFiles[0]);
     const outputBytes = await buildPdfFromJpegs(jpegPages);
     outputPdfBlob = new Blob([outputBytes], { type: "application/pdf" });
     outputPdfUrl = URL.createObjectURL(outputPdfBlob);
@@ -78,20 +79,19 @@ convertPdfButton.addEventListener("click", async () => {
 });
 
 exportJpegsButton.addEventListener("click", async () => {
-  if (!selectedFile) return;
+  if (!selectedFiles.length) return;
 
   setBusy(true);
   resetOutput();
   previewGrid.replaceChildren();
 
   try {
-    const pdfBytes = await selectedFile.arrayBuffer();
-    const jpegPages = await renderPdfToJpegs(pdfBytes);
+    const jpegPages = await renderFilesToJpegs(selectedFiles);
     outputJpegsBlob = await buildJpegArchive(jpegPages);
     outputJpegsUrl = URL.createObjectURL(outputJpegsBlob);
     downloadJpegsButton.disabled = false;
     setStatus(
-      `JPEG архив готов: ${jpegPages.length} стр., ${formatFileSize(outputJpegsBlob.size)}. Нажмите "↓ Скачать".`,
+      `JPEG архив готов: ${selectedFiles.length} PDF, ${jpegPages.length} стр., ${formatFileSize(outputJpegsBlob.size)}. Нажмите "↓ Скачать".`,
       100,
     );
   } catch (error) {
@@ -105,44 +105,111 @@ exportJpegsButton.addEventListener("click", async () => {
 downloadPdfButton.addEventListener("click", async () => {
   if (!outputPdfBlob || !outputPdfUrl) return;
 
-  const safeName = selectedFile.name.replace(/\.pdf$/i, "");
+  const safeName = selectedFiles[0].name.replace(/\.pdf$/i, "");
   await downloadBlob(outputPdfBlob, outputPdfUrl, `${safeName}-скан.pdf`);
 });
 
 downloadJpegsButton.addEventListener("click", async () => {
   if (!outputJpegsBlob || !outputJpegsUrl) return;
 
-  const safeName = selectedFile.name.replace(/\.pdf$/i, "");
+  const safeName = selectedFiles.length === 1
+    ? selectedFiles[0].name.replace(/\.pdf$/i, "")
+    : "magical-pdf";
   await downloadBlob(outputJpegsBlob, outputJpegsUrl, `${safeName}-страницы-jpeg.zip`);
 });
 
-function selectFile(file) {
-  if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-    setStatus("Выберите файл PDF.", 0);
+function selectFiles(files) {
+  const pdfFiles = files.filter(isPdfFile);
+
+  if (!pdfFiles.length) {
+    setStatus("Выберите один или несколько файлов PDF.", 0);
     return;
   }
 
-  selectedFile = file;
+  selectedFiles = pdfFiles;
+  selectedFile = pdfFiles[0];
   resetOutput();
   previewGrid.replaceChildren();
   dropZone.classList.add("has-file");
-  dropTitle.textContent = "PDF выбран";
-  dropHint.textContent = "Теперь выберите действие ниже";
+  dropTitle.textContent = pdfFiles.length === 1 ? "PDF выбран" : `Выбрано PDF: ${pdfFiles.length}`;
+  dropHint.textContent = pdfFiles.length === 1
+    ? "Теперь выберите действие ниже"
+    : "Можно создать JPEG-страницы для всех выбранных файлов";
   selectedFileInfo.hidden = false;
-  selectedFileInfo.textContent = `${file.name} (${formatFileSize(file.size)})`;
-  convertPdfButton.disabled = false;
+  selectedFileInfo.textContent = getSelectedFilesLabel(pdfFiles);
+  convertPdfButton.disabled = pdfFiles.length !== 1;
   exportJpegsButton.disabled = false;
-  setStatus(`Файл выбран: ${file.name}. Теперь нажмите "Создать страницы JPEG" или "Создать новый PDF".`, 0);
+
+  if (pdfFiles.length === 1) {
+    setStatus(`Файл выбран: ${pdfFiles[0].name}. Теперь нажмите "Создать страницы JPEG" или "Создать новый PDF".`, 0);
+  } else {
+    setStatus(`Выбрано PDF: ${pdfFiles.length}. Для нескольких файлов доступно пакетное создание JPEG-страниц.`, 0);
+  }
 }
 
-async function renderPdfToJpegs(pdfBytes) {
+function isPdfFile(file) {
+  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+}
+
+function getSelectedFilesLabel(files) {
+  if (files.length === 1) {
+    return `${files[0].name} (${formatFileSize(files[0].size)})`;
+  }
+
+  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  const previewNames = files.slice(0, 3).map((file) => file.name).join(", ");
+  const extraCount = files.length > 3 ? ` и ещё ${files.length - 3}` : "";
+  return `${files.length} PDF (${formatFileSize(totalSize)}): ${previewNames}${extraCount}`;
+}
+
+function getSafeBaseName(filename) {
+  return filename
+    .replace(/\.pdf$/i, "")
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, " ")
+    || "document";
+}
+
+function getRenderStatus(file, batch, pageNumber, pageCount) {
+  if (batch.fileCount === 1) {
+    return `Рендеринг JPEG: стр. ${pageNumber} из ${pageCount}`;
+  }
+
+  return `PDF ${batch.fileIndex + 1} из ${batch.fileCount}: ${file.name}, стр. ${pageNumber} из ${pageCount}`;
+}
+
+async function renderFilesToJpegs(files) {
+  const allPages = [];
+
+  for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
+    const file = files[fileIndex];
+    setStatus(`Открытие PDF ${fileIndex + 1} из ${files.length}: ${file.name}`, 0);
+    const pdfBytes = await file.arrayBuffer();
+    const pages = await renderPdfToJpegs(pdfBytes, file, {
+      fileIndex,
+      fileCount: files.length,
+    });
+    allPages.push(...pages);
+  }
+
+  return allPages;
+}
+
+async function renderPdfToJpegs(pdfBytes, file, batch = { fileIndex: 0, fileCount: 1 }) {
   const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
   const pages = [];
   const { dpi, jpegQuality } = getQualityPreset();
   const scale = dpi / 72;
+  const safeFileName = getSafeBaseName(file.name);
 
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    setStatus(`Рендеринг JPEG: стр. ${pageNumber} из ${pdf.numPages}`, pageNumber);
+    const progressBase = batch.fileCount === 1 ? 0 : (batch.fileIndex / batch.fileCount) * 70;
+    const progressStep = batch.fileCount === 1 ? 60 : 70 / batch.fileCount;
+    setStatus(
+      getRenderStatus(file, batch, pageNumber, pdf.numPages),
+      progressBase + (pageNumber / pdf.numPages) * progressStep,
+    );
 
     const page = await pdf.getPage(pageNumber);
     const viewport = page.getViewport({ scale });
@@ -164,11 +231,14 @@ async function renderPdfToJpegs(pdfBytes) {
       widthPt: viewport.width / scale,
       heightPt: viewport.height / scale,
       pageNumber,
+      fileName: file.name,
+      safeFileName,
+      fileIndex: batch.fileIndex,
     });
-    addPreview(dataUrl, pageNumber, canvas.width, canvas.height);
+    addPreview(dataUrl, pageNumber, canvas.width, canvas.height, file.name);
     setStatus(
-      `Рендеринг JPEG: стр. ${pageNumber} из ${pdf.numPages}`,
-      (pageNumber / pdf.numPages) * 60,
+      getRenderStatus(file, batch, pageNumber, pdf.numPages),
+      progressBase + (pageNumber / pdf.numPages) * progressStep,
     );
   }
 
@@ -177,12 +247,14 @@ async function renderPdfToJpegs(pdfBytes) {
 
 async function buildJpegArchive(jpegPages) {
   const zip = new JSZip();
-  const safeName = selectedFile.name.replace(/\.pdf$/i, "");
 
   for (let index = 0; index < jpegPages.length; index += 1) {
     const jpegPage = jpegPages[index];
     const pageName = String(jpegPage.pageNumber).padStart(3, "0");
-    zip.file(`${safeName}-page-${pageName}.jpg`, jpegPage.base64, { base64: true });
+    const filename = selectedFiles.length === 1
+      ? `${jpegPage.safeFileName}-page-${pageName}.jpg`
+      : `${String(jpegPage.fileIndex + 1).padStart(2, "0")}-${jpegPage.safeFileName}/${jpegPage.safeFileName}-page-${pageName}.jpg`;
+    zip.file(filename, jpegPage.base64, { base64: true });
     setStatus(
       `Упаковка JPEG: стр. ${index + 1} из ${jpegPages.length}`,
       75 + ((index + 1) / jpegPages.length) * 25,
@@ -217,7 +289,7 @@ async function buildPdfFromJpegs(jpegPages) {
   return outputPdf.save();
 }
 
-function addPreview(dataUrl, pageNumber, pixelWidth, pixelHeight) {
+function addPreview(dataUrl, pageNumber, pixelWidth, pixelHeight, fileName) {
   const figure = document.createElement("figure");
   figure.className = "page-card";
 
@@ -227,7 +299,9 @@ function addPreview(dataUrl, pageNumber, pixelWidth, pixelHeight) {
 
   const caption = document.createElement("figcaption");
   const title = document.createElement("strong");
-  title.textContent = `Страница ${pageNumber}`;
+  title.textContent = selectedFiles.length === 1
+    ? `Страница ${pageNumber}`
+    : `${fileName} — стр. ${pageNumber}`;
   const meta = document.createElement("span");
   meta.textContent = `${pixelWidth} x ${pixelHeight} px`;
 
@@ -237,8 +311,8 @@ function addPreview(dataUrl, pageNumber, pixelWidth, pixelHeight) {
 }
 
 function setBusy(isBusy) {
-  convertPdfButton.disabled = isBusy || !selectedFile;
-  exportJpegsButton.disabled = isBusy || !selectedFile;
+  convertPdfButton.disabled = isBusy || selectedFiles.length !== 1;
+  exportJpegsButton.disabled = isBusy || !selectedFiles.length;
   fileInput.disabled = isBusy;
   qualityPresetSelect.disabled = isBusy;
 }
