@@ -148,6 +148,7 @@ p {
 .drop-zone {
   display: grid;
   place-items: center;
+  gap: 8px;
   min-height: 170px;
   padding: 30px;
   border: 2px dashed rgba(40, 180, 107, 0.42);
@@ -208,6 +209,21 @@ p {
 }
 
 .selected-file[hidden] {
+  display: none;
+}
+
+.change-files-button {
+  min-height: 46px;
+  margin-top: 6px;
+  padding: 10px 18px;
+  border-color: rgba(40, 180, 107, 0.32);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.change-files-button[hidden] {
   display: none;
 }
 

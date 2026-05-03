@@ -5,6 +5,7 @@ const dropZone = document.querySelector("#dropZone");
 const dropTitle = document.querySelector("#dropTitle");
 const dropHint = document.querySelector("#dropHint");
 const selectedFileInfo = document.querySelector("#selectedFileInfo");
+const chooseAnotherButton = document.querySelector("#chooseAnotherButton");
 const qualityPresetSelect = document.querySelector("#qualityPresetSelect");
 const convertPdfButton = document.querySelector("#convertPdfButton");
 const exportJpegsButton = document.querySelector("#exportJpegsButton");
@@ -31,6 +32,23 @@ fileInput.addEventListener("change", () => {
   }
 });
 
+dropZone.addEventListener("click", (event) => {
+  if (event.target === fileInput || event.target === chooseAnotherButton) return;
+  openFilePicker();
+});
+
+dropZone.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  openFilePicker();
+});
+
+chooseAnotherButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  openFilePicker();
+});
+
 for (const eventName of ["dragenter", "dragover"]) {
   dropZone.addEventListener(eventName, (event) => {
     event.preventDefault();
@@ -51,6 +69,12 @@ dropZone.addEventListener("drop", (event) => {
     selectFiles(files);
   }
 });
+
+function openFilePicker() {
+  if (fileInput.disabled) return;
+  fileInput.value = "";
+  fileInput.click();
+}
 
 convertPdfButton.addEventListener("click", async () => {
   if (selectedFiles.length !== 1) return;
@@ -137,6 +161,7 @@ function selectFiles(files) {
     : "Можно создать JPEG-страницы для всех выбранных файлов";
   selectedFileInfo.hidden = false;
   selectedFileInfo.textContent = getSelectedFilesLabel(pdfFiles);
+  chooseAnotherButton.hidden = false;
   convertPdfButton.disabled = pdfFiles.length !== 1;
   exportJpegsButton.disabled = false;
 
@@ -314,6 +339,7 @@ function setBusy(isBusy) {
   convertPdfButton.disabled = isBusy || selectedFiles.length !== 1;
   exportJpegsButton.disabled = isBusy || !selectedFiles.length;
   fileInput.disabled = isBusy;
+  chooseAnotherButton.disabled = isBusy;
   qualityPresetSelect.disabled = isBusy;
 }
 
