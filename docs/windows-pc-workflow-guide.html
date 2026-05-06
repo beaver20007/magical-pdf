@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Magical PDF: инструкция для работы на Windows ПК</title>
+  <style>
+    @page { size: A4; margin: 18mm 16mm; }
+    body {
+      color: #1f2520;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.48;
+      margin: 0;
+    }
+    h1 {
+      color: #26381f;
+      font-size: 28px;
+      line-height: 1.1;
+      margin: 0 0 8px;
+    }
+    h2 {
+      border-top: 1px solid #d9dfd1;
+      color: #314229;
+      font-size: 18px;
+      margin: 22px 0 8px;
+      padding-top: 14px;
+    }
+    h3 {
+      color: #425337;
+      font-size: 14px;
+      margin: 14px 0 6px;
+    }
+    p { margin: 6px 0; }
+    ol, ul { margin: 6px 0 10px 22px; padding: 0; }
+    li { margin: 4px 0; }
+    code {
+      background: #eef2e8;
+      border-radius: 4px;
+      color: #1f3a22;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      padding: 1px 4px;
+    }
+    pre {
+      background: #f4f6f0;
+      border: 1px solid #d9dfd1;
+      border-radius: 7px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      margin: 8px 0 12px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+    }
+    .note {
+      background: #fbf8ea;
+      border-left: 4px solid #c8a94d;
+      border-radius: 6px;
+      margin: 10px 0;
+      padding: 9px 11px;
+    }
+    .ok {
+      background: #eef7ee;
+      border-left: 4px solid #5a9f5c;
+      border-radius: 6px;
+      margin: 10px 0;
+      padding: 9px 11px;
+    }
+    .small { color: #66705f; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <h1>Magical PDF: работа на Windows ПК</h1>
+  <p class="small">Главная идея: GitHub хранит общий проект, а каждый компьютер берёт последнюю версию оттуда и отправляет обратно законченные изменения.</p>
+
+  <h2>1. Что где хранится</h2>
+  <p>Общий репозиторий проекта:</p>
+  <pre>https://github.com/beaver20007/magical-pdf</pre>
+  <p>В репозитории хранятся исходники WEB, Windows, macOS и iOS версий. Готовые installer-файлы <code>.exe</code>, <code>.dmg</code> и временные папки сборки в Git не кладём.</p>
+
+  <h2>2. Один раз подготовить Windows ПК</h2>
+  <ol>
+    <li>Установите Git: <code>https://git-scm.com/download/win</code></li>
+    <li>Установите Node.js LTS: <code>https://nodejs.org/</code></li>
+    <li>Установите Rust: <code>https://www.rust-lang.org/tools/install</code></li>
+    <li>Установите Visual Studio Build Tools 2022.</li>
+    <li>В Visual Studio Build Tools выберите workload <code>Desktop development with C++</code>, MSVC v143 и Windows 10/11 SDK.</li>
+  </ol>
+  <div class="note">
+    Если PowerShell пишет, что <code>npm.ps1</code> заблокирован политикой выполнения сценариев, используйте <code>npm.cmd</code> вместо <code>npm</code>. Это нормальный Windows-обход без изменения системной политики.
+  </div>
+
+  <h2>3. Первый раз скачать проект</h2>
+  <p>Откройте PowerShell и выполните:</p>
+  <pre>cd $env:USERPROFILE\Documents
+git clone https://github.com/beaver20007/magical-pdf.git
+cd magical-pdf
+npm.cmd ci</pre>
+  <p>После этого папка проекта будет здесь:</p>
+  <pre>%USERPROFILE%\Documents\magical-pdf</pre>
+
+  <h2>4. Каждый раз перед началом работы</h2>
+  <p>Перед тем как что-то менять, подтяните свежую версию из GitHub:</p>
+  <pre>cd $env:USERPROFILE\Documents\magical-pdf
+git switch main
+git pull origin main
+npm.cmd ci</pre>
+  <div class="ok">
+    Если команда <code>git status</code> после этого ничего не показывает, значит локальная папка чистая и совпадает с GitHub.
+  </div>
+
+  <h2>5. Запустить WEB-версию для проверки</h2>
+  <pre>npm.cmd run dev:web</pre>
+  <p>Откройте в браузере:</p>
+  <pre>http://127.0.0.1:5173/</pre>
+
+  <h2>6. Собрать Windows installer</h2>
+  <pre>npm.cmd run build:windows</pre>
+  <p>Готовый installer появится здесь:</p>
+  <pre>src-tauri\target\release\bundle\nsis\</pre>
+  <p>Например:</p>
+  <pre>Magical PDF Listva_0.1.0_x64-setup.exe</pre>
+  <div class="note">
+    Этот <code>.exe</code> не нужно добавлять в Git. Его можно отправить отдельно, приложить к GitHub Release или хранить как artifact сборки.
+  </div>
+
+  <h2>7. Как сохранить свою работу в GitHub</h2>
+  <h3>Простой вариант для небольших изменений</h3>
+  <pre>git status
+git add .
+git commit -m "Короткое описание изменения"
+git push origin main</pre>
+
+  <h3>Аккуратный вариант для заметной задачи</h3>
+  <pre>git switch -c feature/short-task-name
+
+# внесите изменения и проверьте приложение
+
+git status
+git add .
+git commit -m "Describe the change"
+git push -u origin feature/short-task-name</pre>
+  <p>После push откройте Pull Request на GitHub и объедините его в <code>main</code>.</p>
+
+  <h2>8. Как продолжить с другого компьютера</h2>
+  <ol>
+    <li>На старом компьютере закончите работу: <code>git status</code>, <code>git add</code>, <code>git commit</code>, <code>git push</code>.</li>
+    <li>На новом компьютере откройте проект.</li>
+    <li>Выполните <code>git pull origin main</code>.</li>
+    <li>Продолжайте работу с того же состояния.</li>
+  </ol>
+
+  <h2>9. Быстрая диагностика</h2>
+  <pre>git status
+node --version
+npm.cmd --version
+rustc --version
+cargo --version</pre>
+  <p>Если <code>rustc</code> или <code>cargo</code> не находятся, закройте PowerShell и откройте заново. Если не помогло, проверьте установку Rust.</p>
+
+  <h2>10. Главное правило</h2>
+  <p>Перед работой: <code>git pull origin main</code>. После законченной работы: <code>git commit</code> и <code>git push</code>. Тогда проект всегда можно открыть на любом компьютере и продолжить с последнего общего состояния.</p>
+</body>
+</html>
