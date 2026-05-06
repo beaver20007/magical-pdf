@@ -2,37 +2,28 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Magical PDF: инструкция для работы на Windows ПК</title>
+  <title>Magical PDF: простая инструкция для Windows ПК</title>
   <style>
-    @page { size: A4; margin: 18mm 16mm; }
+    @page { size: A4; margin: 17mm 15mm; }
     body {
       color: #1f2520;
       font-family: "Segoe UI", Arial, sans-serif;
       font-size: 13px;
-      line-height: 1.48;
+      line-height: 1.5;
       margin: 0;
     }
-    h1 {
-      color: #26381f;
-      font-size: 28px;
-      line-height: 1.1;
-      margin: 0 0 8px;
-    }
+    h1 { color: #26381f; font-size: 27px; line-height: 1.1; margin: 0 0 8px; }
     h2 {
       border-top: 1px solid #d9dfd1;
       color: #314229;
       font-size: 18px;
-      margin: 22px 0 8px;
-      padding-top: 14px;
+      margin: 20px 0 8px;
+      padding-top: 12px;
     }
-    h3 {
-      color: #425337;
-      font-size: 14px;
-      margin: 14px 0 6px;
-    }
+    h3 { color: #425337; font-size: 14px; margin: 13px 0 6px; }
     p { margin: 6px 0; }
     ol, ul { margin: 6px 0 10px 22px; padding: 0; }
-    li { margin: 4px 0; }
+    li { margin: 5px 0; }
     code {
       background: #eef2e8;
       border-radius: 4px;
@@ -52,113 +43,121 @@
       padding: 10px 12px;
       white-space: pre-wrap;
     }
-    .note {
-      background: #fbf8ea;
-      border-left: 4px solid #c8a94d;
-      border-radius: 6px;
-      margin: 10px 0;
-      padding: 9px 11px;
-    }
-    .ok {
-      background: #eef7ee;
-      border-left: 4px solid #5a9f5c;
-      border-radius: 6px;
-      margin: 10px 0;
-      padding: 9px 11px;
-    }
+    .note { background: #fbf8ea; border-left: 4px solid #c8a94d; border-radius: 6px; margin: 10px 0; padding: 9px 11px; }
+    .ok { background: #eef7ee; border-left: 4px solid #5a9f5c; border-radius: 6px; margin: 10px 0; padding: 9px 11px; }
     .small { color: #66705f; font-size: 11px; }
   </style>
 </head>
 <body>
-  <h1>Magical PDF: работа на Windows ПК</h1>
-  <p class="small">Главная идея: GitHub хранит общий проект, а каждый компьютер берёт последнюю версию оттуда и отправляет обратно законченные изменения.</p>
+  <h1>Magical PDF: простая работа на Windows ПК</h1>
+  <p class="small">Эта инструкция написана для обычного сценария: открыть общий проект, обновить его, выбрать папку в Codex и продолжить работу.</p>
 
-  <h2>1. Что где хранится</h2>
-  <p>Общий репозиторий проекта:</p>
+  <h2>1. Главное, что нужно запомнить</h2>
+  <p>У проекта есть одно общее место хранения:</p>
   <pre>https://github.com/beaver20007/magical-pdf</pre>
-  <p>В репозитории хранятся исходники WEB, Windows, macOS и iOS версий. Готовые installer-файлы <code>.exe</code>, <code>.dmg</code> и временные папки сборки в Git не кладём.</p>
+  <p>На каждом компьютере лежит своя копия папки <code>magical-pdf</code>. Перед работой её нужно обновить из GitHub. После работы изменения нужно отправить обратно в GitHub.</p>
+  <div class="ok">Новый удобный способ: запускать файл <code>scripts\start-windows.cmd</code>. Он сам обновляет проект и готовит его для Codex.</div>
 
-  <h2>2. Один раз подготовить Windows ПК</h2>
+  <h2>2. Что один раз должно быть установлено на Windows</h2>
   <ol>
+    <li>Откройте браузер.</li>
     <li>Установите Git: <code>https://git-scm.com/download/win</code></li>
     <li>Установите Node.js LTS: <code>https://nodejs.org/</code></li>
-    <li>Установите Rust: <code>https://www.rust-lang.org/tools/install</code></li>
-    <li>Установите Visual Studio Build Tools 2022.</li>
-    <li>В Visual Studio Build Tools выберите workload <code>Desktop development with C++</code>, MSVC v143 и Windows 10/11 SDK.</li>
+    <li>Для сборки Windows-приложения установите Rust: <code>https://www.rust-lang.org/tools/install</code></li>
+    <li>Для сборки Windows-приложения установите Visual Studio Build Tools 2022.</li>
+    <li>В Visual Studio Build Tools выберите <code>Desktop development with C++</code>, MSVC v143 и Windows 10/11 SDK.</li>
   </ol>
-  <div class="note">
-    Если PowerShell пишет, что <code>npm.ps1</code> заблокирован политикой выполнения сценариев, используйте <code>npm.cmd</code> вместо <code>npm</code>. Это нормальный Windows-обход без изменения системной политики.
-  </div>
+  <div class="note">Если вы только работаете с Codex и не собираете installer, чаще всего достаточно Git и Node.js. Rust и Visual Studio Build Tools нужны именно для сборки <code>.exe</code>.</div>
 
-  <h2>3. Первый раз скачать проект</h2>
-  <p>Откройте PowerShell и выполните:</p>
-  <pre>cd $env:USERPROFILE\Documents
-git clone https://github.com/beaver20007/magical-pdf.git
+  <h2>3. Если проекта ещё нет на этом ПК</h2>
+  <ol>
+    <li>Откройте папку <code>Документы</code>.</li>
+    <li>Щёлкните правой кнопкой мыши по пустому месту.</li>
+    <li>Выберите <code>Открыть в Терминале</code> или <code>Открыть окно PowerShell здесь</code>.</li>
+    <li>Скопируйте и вставьте команды ниже.</li>
+  </ol>
+  <pre>git clone https://github.com/beaver20007/magical-pdf.git
 cd magical-pdf
-npm.cmd ci</pre>
-  <p>После этого папка проекта будет здесь:</p>
-  <pre>%USERPROFILE%\Documents\magical-pdf</pre>
+scripts\start-windows.cmd</pre>
+  <p>После этого проект будет лежать в папке:</p>
+  <pre>C:\Users\ВАШЕ_ИМЯ\Documents\magical-pdf</pre>
 
-  <h2>4. Каждый раз перед началом работы</h2>
-  <p>Перед тем как что-то менять, подтяните свежую версию из GitHub:</p>
-  <pre>cd $env:USERPROFILE\Documents\magical-pdf
-git switch main
-git pull origin main
-npm.cmd ci</pre>
-  <div class="ok">
-    Если команда <code>git status</code> после этого ничего не показывает, значит локальная папка чистая и совпадает с GitHub.
-  </div>
+  <h2>4. Обычный старт работы на этом ПК</h2>
+  <ol>
+    <li>Откройте <code>Проводник</code>.</li>
+    <li>Перейдите в <code>Документы</code>.</li>
+    <li>Откройте папку <code>magical-pdf</code>.</li>
+    <li>Откройте папку <code>scripts</code>.</li>
+    <li>Дважды щёлкните по файлу <code>start-windows.cmd</code>.</li>
+    <li>Дождитесь надписи <code>Ready</code>.</li>
+    <li>Не закрывайте окно сразу: в нём будет написан путь к папке проекта.</li>
+  </ol>
+  <p>Скрипт сам делает три важные вещи:</p>
+  <ul>
+    <li>переходит на основную ветку проекта <code>main</code>;</li>
+    <li>подтягивает последнюю версию из GitHub;</li>
+    <li>устанавливает зависимости через <code>npm ci</code>.</li>
+  </ul>
 
-  <h2>5. Запустить WEB-версию для проверки</h2>
+  <h2>5. Как открыть проект в Codex</h2>
+  <ol>
+    <li>Откройте Codex.</li>
+    <li>Нажмите кнопку выбора папки или проекта.</li>
+    <li>Выберите папку <code>Documents\magical-pdf</code>.</li>
+    <li>Если Codex спросит подтверждение, подтвердите открытие этой папки.</li>
+    <li>Напишите Codex такую фразу:</li>
+  </ol>
+  <pre>Продолжи работу над Magical PDF. Сначала проверь git status, затем помоги с задачей.</pre>
+  <div class="ok">Если перед этим вы запускали <code>start-windows.cmd</code>, Codex откроет уже свежую версию проекта.</div>
+
+  <h2>6. Как продолжить работу с другого компьютера</h2>
+  <ol>
+    <li>На первом компьютере попросите Codex сохранить работу в GitHub.</li>
+    <li>Убедитесь, что Codex написал, что push выполнен.</li>
+    <li>На другом компьютере откройте папку <code>magical-pdf</code>.</li>
+    <li>Запустите <code>scripts\start-windows.cmd</code>.</li>
+    <li>Откройте эту же папку в Codex.</li>
+    <li>Продолжайте работу.</li>
+  </ol>
+  <p>Готовая фраза для Codex после завершения задачи:</p>
+  <pre>Сохрани эти изменения в GitHub в общий проект Magical PDF.</pre>
+
+  <h2>7. Как запустить WEB-версию для проверки</h2>
+  <ol>
+    <li>Откройте папку <code>magical-pdf</code>.</li>
+    <li>Щёлкните правой кнопкой мыши по пустому месту.</li>
+    <li>Выберите <code>Открыть в Терминале</code>.</li>
+    <li>Выполните команду:</li>
+  </ol>
   <pre>npm.cmd run dev:web</pre>
   <p>Откройте в браузере:</p>
   <pre>http://127.0.0.1:5173/</pre>
 
-  <h2>6. Собрать Windows installer</h2>
+  <h2>8. Как собрать Windows installer</h2>
+  <ol>
+    <li>Откройте папку <code>magical-pdf</code>.</li>
+    <li>Откройте терминал в этой папке.</li>
+    <li>Выполните команду:</li>
+  </ol>
   <pre>npm.cmd run build:windows</pre>
   <p>Готовый installer появится здесь:</p>
   <pre>src-tauri\target\release\bundle\nsis\</pre>
-  <p>Например:</p>
-  <pre>Magical PDF Listva_0.1.0_x64-setup.exe</pre>
-  <div class="note">
-    Этот <code>.exe</code> не нужно добавлять в Git. Его можно отправить отдельно, приложить к GitHub Release или хранить как artifact сборки.
-  </div>
+  <div class="note">Файл <code>.exe</code> не добавляйте в Git. В Git хранятся исходники, а installer собирается отдельно.</div>
 
-  <h2>7. Как сохранить свою работу в GitHub</h2>
-  <h3>Простой вариант для небольших изменений</h3>
-  <pre>git status
-git add .
-git commit -m "Короткое описание изменения"
-git push origin main</pre>
+  <h2>9. Что делать, если что-то пошло не так</h2>
+  <ul>
+    <li>Если Codex видит старую версию проекта, запустите <code>scripts\start-windows.cmd</code> ещё раз.</li>
+    <li>Если Windows спрашивает разрешение на запуск скрипта, разрешите запуск.</li>
+    <li>Если <code>npm</code> не запускается, используйте <code>npm.cmd</code>.</li>
+    <li>Если сборка <code>.exe</code> не идёт, проверьте Rust и Visual Studio Build Tools.</li>
+  </ul>
 
-  <h3>Аккуратный вариант для заметной задачи</h3>
-  <pre>git switch -c feature/short-task-name
-
-# внесите изменения и проверьте приложение
-
-git status
-git add .
-git commit -m "Describe the change"
-git push -u origin feature/short-task-name</pre>
-  <p>После push откройте Pull Request на GitHub и объедините его в <code>main</code>.</p>
-
-  <h2>8. Как продолжить с другого компьютера</h2>
-  <ol>
-    <li>На старом компьютере закончите работу: <code>git status</code>, <code>git add</code>, <code>git commit</code>, <code>git push</code>.</li>
-    <li>На новом компьютере откройте проект.</li>
-    <li>Выполните <code>git pull origin main</code>.</li>
-    <li>Продолжайте работу с того же состояния.</li>
-  </ol>
-
-  <h2>9. Быстрая диагностика</h2>
-  <pre>git status
-node --version
-npm.cmd --version
-rustc --version
-cargo --version</pre>
-  <p>Если <code>rustc</code> или <code>cargo</code> не находятся, закройте PowerShell и откройте заново. Если не помогло, проверьте установку Rust.</p>
-
-  <h2>10. Главное правило</h2>
-  <p>Перед работой: <code>git pull origin main</code>. После законченной работы: <code>git commit</code> и <code>git push</code>. Тогда проект всегда можно открыть на любом компьютере и продолжить с последнего общего состояния.</p>
+  <h2>10. Самая короткая памятка</h2>
+  <pre>1. Открыть Documents\magical-pdf\scripts
+2. Запустить start-windows.cmd
+3. Открыть Codex
+4. Выбрать папку Documents\magical-pdf
+5. Написать Codex, что нужно сделать
+6. В конце попросить Codex сохранить изменения в GitHub</pre>
 </body>
 </html>

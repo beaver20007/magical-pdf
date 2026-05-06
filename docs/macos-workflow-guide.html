@@ -2,37 +2,28 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Magical PDF: инструкция для работы на macOS</title>
+  <title>Magical PDF: простая инструкция для macOS</title>
   <style>
-    @page { size: A4; margin: 18mm 16mm; }
+    @page { size: A4; margin: 17mm 15mm; }
     body {
       color: #1f2520;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       font-size: 13px;
-      line-height: 1.48;
+      line-height: 1.5;
       margin: 0;
     }
-    h1 {
-      color: #26381f;
-      font-size: 28px;
-      line-height: 1.1;
-      margin: 0 0 8px;
-    }
+    h1 { color: #26381f; font-size: 27px; line-height: 1.1; margin: 0 0 8px; }
     h2 {
       border-top: 1px solid #d9dfd1;
       color: #314229;
       font-size: 18px;
-      margin: 22px 0 8px;
-      padding-top: 14px;
+      margin: 20px 0 8px;
+      padding-top: 12px;
     }
-    h3 {
-      color: #425337;
-      font-size: 14px;
-      margin: 14px 0 6px;
-    }
+    h3 { color: #425337; font-size: 14px; margin: 13px 0 6px; }
     p { margin: 6px 0; }
     ol, ul { margin: 6px 0 10px 22px; padding: 0; }
-    li { margin: 4px 0; }
+    li { margin: 5px 0; }
     code {
       background: #eef2e8;
       border-radius: 4px;
@@ -52,121 +43,131 @@
       padding: 10px 12px;
       white-space: pre-wrap;
     }
-    .note {
-      background: #fbf8ea;
-      border-left: 4px solid #c8a94d;
-      border-radius: 6px;
-      margin: 10px 0;
-      padding: 9px 11px;
-    }
-    .ok {
-      background: #eef7ee;
-      border-left: 4px solid #5a9f5c;
-      border-radius: 6px;
-      margin: 10px 0;
-      padding: 9px 11px;
-    }
+    .note { background: #fbf8ea; border-left: 4px solid #c8a94d; border-radius: 6px; margin: 10px 0; padding: 9px 11px; }
+    .ok { background: #eef7ee; border-left: 4px solid #5a9f5c; border-radius: 6px; margin: 10px 0; padding: 9px 11px; }
     .small { color: #66705f; font-size: 11px; }
   </style>
 </head>
 <body>
-  <h1>Magical PDF: работа на macOS</h1>
-  <p class="small">Главная идея: GitHub хранит общий проект, а Mac берёт последнюю версию из GitHub и отправляет туда законченные изменения.</p>
+  <h1>Magical PDF: простая работа на macOS</h1>
+  <p class="small">Эта инструкция для сценария: открыть общий проект на Mac, обновить его, выбрать папку в Codex и продолжить работу.</p>
 
-  <h2>1. Что где хранится</h2>
-  <p>Общий репозиторий проекта:</p>
+  <h2>1. Главное, что нужно запомнить</h2>
+  <p>У проекта есть одно общее место хранения:</p>
   <pre>https://github.com/beaver20007/magical-pdf</pre>
-  <p>В одном репозитории лежат исходники WEB, macOS, iOS и Windows версий. Готовые сборки <code>.dmg</code>, <code>.app</code>, <code>.exe</code> и временные папки сборки в Git не кладём.</p>
+  <p>На каждом компьютере лежит своя копия папки <code>magical-pdf</code>. Перед работой её нужно обновить из GitHub. После работы изменения нужно отправить обратно в GitHub.</p>
+  <div class="ok">Новый удобный способ: запускать файл <code>scripts/start-macos.command</code>. Он сам обновляет проект и готовит его для Codex.</div>
 
-  <h2>2. Один раз подготовить Mac</h2>
+  <h2>2. Что один раз должно быть установлено на Mac</h2>
   <ol>
-    <li>Установите Xcode из App Store.</li>
-    <li>Откройте Xcode один раз, примите license и дайте ему установить компоненты.</li>
+    <li>Откройте App Store.</li>
+    <li>Установите Xcode.</li>
+    <li>Откройте Xcode один раз и примите условия.</li>
     <li>Установите Node.js LTS: <code>https://nodejs.org/</code></li>
-    <li>Установите Rust: <code>https://www.rust-lang.org/tools/install</code></li>
-    <li>Для iOS-сборки установите CocoaPods, если он ещё не установлен.</li>
+    <li>Для сборки macOS-приложения установите Rust: <code>https://www.rust-lang.org/tools/install</code></li>
+    <li>Для iOS-сборки установите CocoaPods.</li>
   </ol>
   <pre>sudo gem install cocoapods</pre>
-  <div class="note">
-    Для финальной iOS-сборки на iPhone понадобится Apple Developer account и корректная подпись в Xcode.
-  </div>
+  <div class="note">Для простой работы с Codex чаще всего достаточно Git, Node.js и открытой папки проекта. Xcode, Rust и CocoaPods нужны для сборок macOS/iOS.</div>
 
-  <h2>3. Первый раз скачать проект</h2>
-  <p>Откройте Terminal и выполните:</p>
+  <h2>3. Если проекта ещё нет на этом Mac</h2>
+  <ol>
+    <li>Откройте приложение <code>Terminal</code>.</li>
+    <li>Скопируйте и вставьте команды ниже.</li>
+    <li>Нажмите <code>Enter</code>.</li>
+  </ol>
   <pre>cd ~/Documents
 git clone https://github.com/beaver20007/magical-pdf.git
 cd magical-pdf
-npm ci</pre>
+chmod +x scripts/start-macos.command
+./scripts/start-macos.command</pre>
+  <p>После этого проект будет лежать в папке:</p>
+  <pre>~/Documents/magical-pdf</pre>
 
-  <h2>4. Каждый раз перед началом работы</h2>
-  <p>Перед изменениями всегда подтягивайте свежий <code>main</code>:</p>
-  <pre>cd ~/Documents/magical-pdf
-git switch main
-git pull origin main
-npm ci</pre>
-  <div class="ok">
-    Если <code>git status</code> ничего не показывает, локальный проект чистый и совпадает с GitHub.
-  </div>
+  <h2>4. Обычный старт работы на Mac</h2>
+  <ol>
+    <li>Откройте <code>Finder</code>.</li>
+    <li>Перейдите в <code>Documents</code>.</li>
+    <li>Откройте папку <code>magical-pdf</code>.</li>
+    <li>Откройте папку <code>scripts</code>.</li>
+    <li>Дважды щёлкните по файлу <code>start-macos.command</code>.</li>
+    <li>Если macOS спросит разрешение на запуск, разрешите.</li>
+    <li>Дождитесь надписи <code>Ready</code>.</li>
+  </ol>
+  <p>Скрипт сам делает три важные вещи:</p>
+  <ul>
+    <li>переходит на основную ветку проекта <code>main</code>;</li>
+    <li>подтягивает последнюю версию из GitHub;</li>
+    <li>устанавливает зависимости через <code>npm ci</code>.</li>
+  </ul>
 
-  <h2>5. Запустить WEB-версию</h2>
+  <h2>5. Как открыть проект в Codex</h2>
+  <ol>
+    <li>Откройте Codex.</li>
+    <li>Нажмите кнопку выбора папки или проекта.</li>
+    <li>Выберите папку <code>Documents/magical-pdf</code>.</li>
+    <li>Если Codex спросит подтверждение, подтвердите открытие этой папки.</li>
+    <li>Напишите Codex такую фразу:</li>
+  </ol>
+  <pre>Продолжи работу над Magical PDF. Сначала проверь git status, затем помоги с задачей.</pre>
+  <div class="ok">Если перед этим вы запускали <code>start-macos.command</code>, Codex откроет уже свежую версию проекта.</div>
+
+  <h2>6. Как продолжить работу с Windows ПК или другого Mac</h2>
+  <ol>
+    <li>На первом компьютере попросите Codex сохранить работу в GitHub.</li>
+    <li>Убедитесь, что Codex написал, что push выполнен.</li>
+    <li>На другом компьютере откройте папку <code>magical-pdf</code>.</li>
+    <li>Запустите стартовый скрипт для этого компьютера:
+      <code>start-macos.command</code> на Mac или <code>start-windows.cmd</code> на Windows.</li>
+    <li>Откройте эту же папку в Codex.</li>
+    <li>Продолжайте работу.</li>
+  </ol>
+  <p>Готовая фраза для Codex после завершения задачи:</p>
+  <pre>Сохрани эти изменения в GitHub в общий проект Magical PDF.</pre>
+
+  <h2>7. Как запустить WEB-версию для проверки</h2>
+  <ol>
+    <li>Откройте папку <code>magical-pdf</code>.</li>
+    <li>Откройте <code>Terminal</code> в этой папке.</li>
+    <li>Выполните команду:</li>
+  </ol>
   <pre>npm run dev:web</pre>
-  <p>Откройте:</p>
+  <p>Откройте в браузере:</p>
   <pre>http://127.0.0.1:5173/</pre>
 
-  <h2>6. Собрать WEB-версию</h2>
-  <pre>npm run build:web</pre>
-  <p>Результат появляется в папке <code>dist/</code>. Эта папка временная и в Git не добавляется.</p>
-
-  <h2>7. Собрать macOS-приложение</h2>
+  <h2>8. Как собрать macOS-приложение</h2>
+  <ol>
+    <li>Откройте <code>Terminal</code> в папке <code>magical-pdf</code>.</li>
+    <li>Выполните команду:</li>
+  </ol>
   <pre>npm run build:mac</pre>
-  <p>Готовые macOS-файлы появятся внутри:</p>
+  <p>Готовые файлы появятся здесь:</p>
   <pre>src-tauri/target/release/bundle/</pre>
-  <p>Обычно там будут <code>.app</code> и <code>.dmg</code>. Их не нужно коммитить в Git.</p>
+  <div class="note">Файлы <code>.app</code> и <code>.dmg</code> не добавляйте в Git. В Git хранятся исходники, а сборки создаются отдельно.</div>
 
-  <h2>8. Подготовить и открыть iOS-проект</h2>
+  <h2>9. Как открыть iOS-проект</h2>
+  <ol>
+    <li>Откройте <code>Terminal</code> в папке <code>magical-pdf</code>.</li>
+    <li>Выполните команды:</li>
+  </ol>
   <pre>npm run prepare:ios
 npm run open:ios</pre>
-  <p>После этого откроется Xcode workspace. В Xcode выберите Team, Bundle Signing и устройство или simulator.</p>
-  <div class="note">
-    Если менялась WEB-часть приложения, перед iOS-проверкой снова выполняйте <code>npm run prepare:ios</code>, чтобы обновить файлы внутри iOS-проекта.
-  </div>
+  <p>После этого откроется Xcode. В Xcode выберите подпись, устройство или simulator.</p>
 
-  <h2>9. Как сохранить свою работу в GitHub</h2>
-  <h3>Простой вариант для небольших изменений</h3>
-  <pre>git status
-git add .
-git commit -m "Короткое описание изменения"
-git push origin main</pre>
+  <h2>10. Что делать, если что-то пошло не так</h2>
+  <ul>
+    <li>Если Codex видит старую версию проекта, запустите <code>scripts/start-macos.command</code> ещё раз.</li>
+    <li>Если macOS запрещает запуск <code>.command</code>, откройте Terminal и выполните <code>chmod +x scripts/start-macos.command</code>.</li>
+    <li>Если <code>npm</code> не находится, установите Node.js LTS.</li>
+    <li>Если iOS-сборка не идёт, проверьте Xcode, CocoaPods и Apple Developer signing.</li>
+  </ul>
 
-  <h3>Аккуратный вариант для заметной задачи</h3>
-  <pre>git switch -c feature/short-task-name
-
-# внесите изменения и проверьте приложение
-
-git status
-git add .
-git commit -m "Describe the change"
-git push -u origin feature/short-task-name</pre>
-  <p>После push откройте Pull Request на GitHub и объедините его в <code>main</code>.</p>
-
-  <h2>10. Как продолжить с другого компьютера</h2>
-  <ol>
-    <li>На текущем Mac закончите работу: <code>git status</code>, <code>git add</code>, <code>git commit</code>, <code>git push</code>.</li>
-    <li>На другом компьютере откройте проект.</li>
-    <li>Выполните <code>git pull origin main</code>.</li>
-    <li>Продолжайте работу с последней общей версии.</li>
-  </ol>
-
-  <h2>11. Быстрая диагностика</h2>
-  <pre>git status
-node --version
-npm --version
-rustc --version
-cargo --version
-xcodebuild -version</pre>
-  <p>Если команда не находится, перезапустите Terminal и проверьте установку соответствующего инструмента.</p>
-
-  <h2>12. Главное правило</h2>
-  <p>Перед работой: <code>git pull origin main</code>. После законченной работы: <code>git commit</code> и <code>git push</code>. Тогда можно спокойно продолжать проект с Mac, Windows ПК или другого компьютера.</p>
+  <h2>11. Самая короткая памятка</h2>
+  <pre>1. Открыть Documents/magical-pdf/scripts
+2. Запустить start-macos.command
+3. Открыть Codex
+4. Выбрать папку Documents/magical-pdf
+5. Написать Codex, что нужно сделать
+6. В конце попросить Codex сохранить изменения в GitHub</pre>
 </body>
 </html>
