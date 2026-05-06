@@ -367,16 +367,19 @@ async function downloadBlob(blob, url, filename) {
 
   if (isTauriApp()) {
     try {
-      const bytes = Array.from(new Uint8Array(await blob.arrayBuffer()));
-      const savedPath = await window.__TAURI__.core.invoke("save_file", {
+      const savePath = await window.__TAURI__.core.invoke("pick_save_path", {
         filename,
+      });
+      const bytes = Array.from(new Uint8Array(await blob.arrayBuffer()));
+      const savedPath = await window.__TAURI__.core.invoke("write_file", {
+        path: savePath,
         data: bytes,
       });
       setStatus(`Файл сохранён: ${savedPath}`, 100);
       return;
     } catch (error) {
       const message = String(error);
-      if (message.includes("Сохранение отменено")) {
+      if (message.includes("Сохранение отменено") || message.includes("Save cancelled")) {
         setStatus("Сохранение отменено.", 100);
         return;
       }
