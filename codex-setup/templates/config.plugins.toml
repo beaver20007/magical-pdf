@@ -1,0 +1,20 @@
+[plugins."google-drive@openai-curated"]
+enabled = true
+
+[plugins."gmail@openai-curated"]
+enabled = true
+
+[plugins."google-calendar@openai-curated"]
+enabled = true
+
+[plugins."slack@openai-curated"]
+enabled = true
+
+[plugins."notion@openai-curated"]
+enabled = true
+
+[plugins."linear@openai-curated"]
+enabled = true
+
+[plugins."teams@openai-curated"]
+enabled = true

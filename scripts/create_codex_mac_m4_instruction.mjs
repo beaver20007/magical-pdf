@@ -1,0 +1,227 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const out = path.join(root, "docs", "codex-mac-mini-m4-setup.html");
+
+const html = `<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Codex на Mac Mini M4: установка настроек и коннекторов</title>
+  <style>
+    @page { size: A4; margin: 14mm; }
+    body {
+      color: #202522;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 12.5px;
+      line-height: 1.42;
+      margin: 0;
+    }
+    h1 { color: #18231f; font-size: 24px; line-height: 1.12; margin: 0 0 8px; }
+    h2 {
+      border-top: 1px solid #d7ded5;
+      color: #26362f;
+      font-size: 16px;
+      margin: 15px 0 6px;
+      padding-top: 10px;
+    }
+    h3 { color: #34463d; font-size: 13px; margin: 10px 0 4px; }
+    p { margin: 5px 0; }
+    ol, ul { margin: 5px 0 8px 19px; padding: 0; }
+    li { margin: 3px 0; }
+    table { border-collapse: collapse; margin: 7px 0 10px; width: 100%; }
+    th, td { border: 1px solid #d7ded5; padding: 5px 6px; vertical-align: top; }
+    th { background: #eef3ec; color: #26362f; text-align: left; }
+    code {
+      background: #eef3ec;
+      border-radius: 4px;
+      color: #16351f;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11.3px;
+      padding: 0 3px;
+    }
+    pre {
+      background: #f5f7f2;
+      border: 1px solid #d7ded5;
+      border-radius: 7px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.28;
+      margin: 6px 0 9px;
+      padding: 7px 9px;
+      white-space: pre-wrap;
+    }
+    .note { background: #fff8e6; border-left: 3px solid #caa747; border-radius: 5px; margin: 7px 0; padding: 7px 9px; }
+    .ok { background: #eef8ef; border-left: 3px solid #4f9b5b; border-radius: 5px; margin: 7px 0; padding: 7px 9px; }
+    .small { color: #687269; font-size: 10.5px; }
+  </style>
+</head>
+<body>
+  <h1>Codex на Mac Mini M4: установка настроек и коннекторов</h1>
+  <p class="small">Инструкция для нового Mac Mini M4: установить Codex, перенести глобальные настройки коннекторов и подготовить подключение оставшихся сервисов через API/MCP.</p>
+
+  <h2>1. Что получится в итоге</h2>
+  <ul>
+    <li>Codex будет установлен и открыт на Mac Mini M4.</li>
+    <li>В глобальном конфиге <code>~/.codex/config.toml</code> будут включены Google Drive, Gmail, Google Calendar, Slack, Notion, Linear и Teams.</li>
+    <li>Google/Slack/Notion/Linear будут проверены через безопасные read-only действия.</li>
+    <li>Для оставшихся сервисов будет понятный порядок: где взять API key, OAuth credentials или webhook URL.</li>
+  </ul>
+
+  <h2>2. Что подготовить заранее</h2>
+  <ol>
+    <li>Mac Mini M4 с доступом в интернет.</li>
+    <li>Логин и пароль от того же аккаунта Codex/OpenAI.</li>
+    <li>Доступ к Google-аккаунту <code>beaver20007@gmail.com</code>, если Codex попросит повторную авторизацию.</li>
+    <li>Доступ к Slack, Notion и Linear, если они попросят OAuth-подтверждение.</li>
+    <li>GitHub-репозиторий с папкой <code>codex-setup</code>. Сейчас она лежит в проекте <code>magical-pdf</code>.</li>
+  </ol>
+
+  <h2>3. Установить базовые инструменты на Mac</h2>
+  <ol>
+    <li>Установить Codex Desktop.</li>
+    <li>Войти в Codex под тем же аккаунтом Codex/OpenAI.</li>
+    <li>Открыть приложение <code>Terminal</code>.</li>
+    <li>Проверить Git:</li>
+  </ol>
+  <pre>git --version</pre>
+  <p>Если macOS предложит установить Command Line Tools, согласиться и дождаться окончания установки.</p>
+
+  <h2>4. Скачать репозиторий с настройками</h2>
+  <div class="note">Важно: файлы <code>codex-setup</code> и эта PDF/HTML-инструкция появятся на Mac Mini M4 только после того, как текущие изменения будут закоммичены и отправлены в GitHub с основного ПК.</div>
+  <p>Перед началом на Mac Mini M4 на основном ПК нужно попросить Codex:</p>
+  <pre>Закоммить и отправь в GitHub папку codex-setup и инструкции по настройке Codex-коннекторов.</pre>
+  <p>Пока <code>codex-setup</code> лежит внутри проекта <code>magical-pdf</code>, самый простой путь такой:</p>
+  <pre>cd ~/Documents
+git clone https://github.com/beaver20007/magical-pdf.git
+cd magical-pdf/codex-setup</pre>
+  <div class="note">Если позже папка <code>codex-setup</code> будет вынесена в отдельный GitHub-репозиторий, нужно будет клонировать уже его и перейти в его папку.</div>
+
+  <h2>5. Запустить настройку коннекторов</h2>
+  <p>В Terminal выполнить:</p>
+  <pre>chmod +x scripts/setup-codex-connectors-macos.sh
+chmod +x scripts/verify-codex-connectors-macos.sh
+./scripts/setup-codex-connectors-macos.sh</pre>
+  <p>Скрипт сделает резервную копию <code>~/.codex/config.toml</code> и добавит только недостающие секции плагинов.</p>
+  <p>Ожидаемые секции:</p>
+  <pre>[plugins."google-drive@openai-curated"]
+enabled = true
+
+[plugins."gmail@openai-curated"]
+enabled = true
+
+[plugins."google-calendar@openai-curated"]
+enabled = true
+
+[plugins."slack@openai-curated"]
+enabled = true
+
+[plugins."notion@openai-curated"]
+enabled = true
+
+[plugins."linear@openai-curated"]
+enabled = true
+
+[plugins."teams@openai-curated"]
+enabled = true</pre>
+
+  <h2>6. Перезапустить Codex и авторизовать сервисы</h2>
+  <ol>
+    <li>Полностью закрыть Codex.</li>
+    <li>Открыть Codex заново.</li>
+    <li>Открыть <code>Settings -> Connectors</code>.</li>
+    <li>Проверить Google Drive, Gmail, Google Calendar, Slack, Notion, Linear и Teams.</li>
+    <li>Если рядом с сервисом есть кнопка Connect/Auth, нажать ее и пройти OAuth-авторизацию.</li>
+  </ol>
+  <div class="ok">Пароли и токены не нужно отправлять Codex сообщением. OAuth нужно проходить только в официальном окне авторизации сервиса.</div>
+
+  <h2>7. Проверить конфиг на Mac</h2>
+  <p>В папке <code>codex-setup</code> выполнить:</p>
+  <pre>./scripts/verify-codex-connectors-macos.sh</pre>
+  <p>Если все хорошо, скрипт покажет <code>[enabled]</code> для каждого плагина.</p>
+
+  <h2>8. Команда для Codex на новом Mac</h2>
+  <p>После установки попросите Codex выполнить настройку самостоятельно:</p>
+  <pre>Прочитай файл codex-setup/CODEX_REMOTE_INSTRUCTIONS.md и настрой глобальные коннекторы Codex на этом Mac. 
+Запусти macOS-скрипты из codex-setup/scripts, проверь ~/.codex/config.toml, затем безопасно проверь доступность Google Drive, Gmail, Google Calendar, Slack, Notion и Linear. 
+Не отправляй письма, не создавай события и не меняй данные без моей явной просьбы.</pre>
+
+  <h2>9. Как Codex должен проверять подключенные коннекторы</h2>
+  <table>
+    <tr><th>Коннектор</th><th>Безопасная проверка</th></tr>
+    <tr><td>Google Drive</td><td>Проверить наличие Drive/Docs/Sheets/Slides tools, без создания файлов.</td></tr>
+    <tr><td>Gmail</td><td>Прочитать Gmail profile. Не отправлять письма.</td></tr>
+    <tr><td>Google Calendar</td><td>Прочитать Calendar profile или найти события в ограниченном диапазоне. Не создавать события.</td></tr>
+    <tr><td>Slack</td><td>Проверить доступность Slack tools. Не писать сообщения.</td></tr>
+    <tr><td>Notion</td><td>Проверить доступность Notion tools. Не менять страницы.</td></tr>
+    <tr><td>Linear</td><td>Проверить доступность Linear tools. Не менять задачи.</td></tr>
+    <tr><td>Teams</td><td>Проверить только после Microsoft-авторизации.</td></tr>
+  </table>
+
+  <h2>10. Microsoft-блок на Mac</h2>
+  <ol>
+    <li>Создать личный Microsoft-аккаунт на <code>https://signup.live.com/</code>.</li>
+    <li>Можно использовать существующий Gmail-адрес, новый Outlook-адрес не обязателен.</li>
+    <li>Один раз войти на <code>https://account.microsoft.com/</code>.</li>
+    <li>Один раз открыть <code>https://outlook.live.com/</code> для инициализации Outlook.</li>
+    <li>Один раз открыть <code>https://teams.microsoft.com/</code> для инициализации Teams.</li>
+    <li>В Codex открыть <code>Settings -> Connectors</code> и подключить Teams, Outlook Email и Outlook Calendar, если они доступны.</li>
+    <li>SharePoint может потребовать рабочий или учебный Microsoft 365-аккаунт.</li>
+  </ol>
+
+  <h2>11. Оставшиеся коннекторы: общий порядок</h2>
+  <ol>
+    <li>Войти в нужный сервис.</li>
+    <li>Создать API key, personal access token, OAuth app или webhook URL.</li>
+    <li>Выдать минимальные права: сначала read-only, потом расширять при необходимости.</li>
+    <li>Передать секрет Codex только через безопасный механизм секретов или менеджер паролей.</li>
+    <li>Попросить Codex добавить MCP/API-конфигурацию и выполнить один read-only тест.</li>
+  </ol>
+  <div class="note">Никогда не коммитить API keys, client secrets и webhook secrets в GitHub.</div>
+
+  <h2>12. Оставшиеся 13 сервисов</h2>
+  <table>
+    <tr><th>Сервис</th><th>Что нужно подготовить</th><th>Комментарий</th></tr>
+    <tr><td>HubSpot</td><td>Private app access token</td><td>Settings -> Integrations -> Private Apps. Минимальные CRM scopes.</td></tr>
+    <tr><td>Canva</td><td>Client ID, client secret, redirect URL, scopes</td><td>Canva Connect API через OAuth. Публичные интеграции могут требовать review.</td></tr>
+    <tr><td>Apollo.io</td><td>Apollo API key</td><td>Settings -> Integrations -> API. Доступ зависит от тарифа.</td></tr>
+    <tr><td>Clay</td><td>Webhook URL или Enterprise API access</td><td>Обычно проще начать с webhook и Make/Zapier/n8n.</td></tr>
+    <tr><td>Asana</td><td>Personal access token или OAuth app</td><td>Для личного использования достаточно PAT, для multi-user лучше OAuth.</td></tr>
+    <tr><td>n8n</td><td>Instance URL и API key или workflow webhooks</td><td>Public API может быть недоступен на free trial.</td></tr>
+    <tr><td>Zapier</td><td>Catch Hook URL или OAuth/client details</td><td>Для простых сценариев достаточно webhook.</td></tr>
+    <tr><td>Make</td><td>API token или scenario webhook URL</td><td>Profile -> API, минимальные scopes.</td></tr>
+    <tr><td>Stripe</td><td>Restricted test API key, webhook signing secret</td><td>Сначала только test mode и read-only scopes.</td></tr>
+    <tr><td>Intercom</td><td>Private app access token</td><td>Developer Hub -> app -> Configure -> Authentication.</td></tr>
+    <tr><td>Gamma</td><td>Gamma Generate API key</td><td>Нужен тариф Pro, Ultra, Team или Business.</td></tr>
+    <tr><td>Granola</td><td>Enterprise API key</td><td>Обычно доступно администраторам Enterprise workspace.</td></tr>
+    <tr><td>MailerLite</td><td>MailerLite API token</td><td>Integrations -> MailerLite API.</td></tr>
+  </table>
+
+  <h2>13. Рекомендуемый порядок добавления оставшихся сервисов</h2>
+  <ol>
+    <li>Сначала простые API-key сервисы: Asana, Apollo.io, MailerLite, Intercom, HubSpot.</li>
+    <li>Потом Stripe в test mode с restricted key.</li>
+    <li>Затем automation hubs: n8n, Make, Zapier.</li>
+    <li>После этого специальные или тарифно-зависимые сервисы: Canva, Gamma, Granola, Clay Enterprise.</li>
+  </ol>
+
+  <h2>14. Короткая памятка для Mac Mini M4</h2>
+  <pre>1. Установить Codex и войти в тот же аккаунт.
+2. Открыть Terminal.
+3. cd ~/Documents
+4. git clone https://github.com/beaver20007/magical-pdf.git
+5. cd magical-pdf/codex-setup
+6. chmod +x scripts/*-macos.sh
+7. ./scripts/setup-codex-connectors-macos.sh
+8. Перезапустить Codex.
+9. Открыть Settings -> Connectors и подтвердить OAuth.
+10. ./scripts/verify-codex-connectors-macos.sh
+11. Попросить Codex прочитать CODEX_REMOTE_INSTRUCTIONS.md и проверить коннекторы.</pre>
+</body>
+</html>`;
+
+fs.mkdirSync(path.dirname(out), { recursive: true });
+fs.writeFileSync(out, html, "utf8");
+console.log(out);
