@@ -39,6 +39,10 @@ npm run prepare:ios
 npm run open:ios
 ```
 
+## DOCRAFT
+
+Magical PDF — слой **Protect** (post-export flatten) в экосистеме DOCRAFT. Интеграция и режимы экспорта: [`docs/DOCRAFT_INTEGRATION.md`](docs/DOCRAFT_INTEGRATION.md). Meta-repo: [github.com/beaver20007/docraft](https://github.com/beaver20007/docraft).
+
 ## Файлы
 
 - `index.html` — основной UI.
@@ -53,6 +57,9 @@ npm run open:ios
 - `IOS_SETUP.md` — iOS build and signing instructions.
 - `.github/workflows/deploy-pages.yml` — публикация web preview на GitHub Pages.
 - `.github/workflows/build-installers.yml` — CI для web/macOS/Windows artifacts.
+- `docs/DOCRAFT_INTEGRATION.md` — когда использовать Magical после Docraft / Desktop Instructor.
+- `docs/EXPORT_MODES.md` — Docraft vs Docraft + Magical vs только Magical.
+- `docs/DOCRAFT_API_HOOK.md` — spec deep link / CLI (не реализовано в app.js).
 
 ## Важный контекст
 

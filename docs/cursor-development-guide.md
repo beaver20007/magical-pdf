@@ -77,6 +77,7 @@ git branch --show-current
 START_HERE.md
 CODEX_HANDOFF.md
 README.md
+docs/DOCRAFT_INTEGRATION.md
 docs/codex-connectors-setup.md
 ```
 

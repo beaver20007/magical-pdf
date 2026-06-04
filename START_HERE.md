@@ -56,6 +56,10 @@ chmod +x scripts/start-macos.command
 ./scripts/start-macos.command
 ```
 
+## DOCRAFT
+
+Если задача связана с Docraft / Desktop Instructor, сначала прочитайте [`docs/DOCRAFT_INTEGRATION.md`](docs/DOCRAFT_INTEGRATION.md) (слой Protect, офлайн vs облако).
+
 ## Главное правило
 
 Перед работой подтянуть свежий `main`.
