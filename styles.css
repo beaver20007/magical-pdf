@@ -295,6 +295,13 @@ button:disabled {
   background: #ffffff;
 }
 
+.preview-button {
+  width: 100%;
+  text-align: center;
+  background: #eef6ef;
+  border-color: rgba(21, 21, 21, 0.12);
+}
+
 .download-button,
 .primary {
   color: var(--ink);

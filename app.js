@@ -8,6 +8,7 @@ const selectedFileInfo = document.querySelector("#selectedFileInfo");
 const chooseAnotherButton = document.querySelector("#chooseAnotherButton");
 const qualityPresetSelect = document.querySelector("#qualityPresetSelect");
 const pageRangeInput = document.querySelector("#pageRangeInput");
+const previewPagesButton = document.querySelector("#previewPagesButton");
 const convertPdfButton = document.querySelector("#convertPdfButton");
 const exportJpegsButton = document.querySelector("#exportJpegsButton");
 const downloadPdfButton = document.querySelector("#downloadPdfButton");
@@ -74,12 +75,43 @@ function openFilePicker() {
   fileInput.click();
 }
 
+previewPagesButton.addEventListener("click", async () => {
+  if (!selectedFiles.length) return;
+
+  setBusy(true);
+  resetOutput();
+
+  try {
+    const jpegPages = await renderFilesToJpegs(selectedFiles);
+    if (!jpegPages.length) {
+      throw new Error("Не выбрано ни одной страницы.");
+    }
+
+    const pageLabel = `${jpegPages.length} стр.`;
+    if (selectedFiles.length === 1) {
+      setStatus(
+        `Предпросмотр готов: ${pageLabel}. Если результат подходит, нажмите «Создать новый PDF» или «Создать страницы JPEG».`,
+        100,
+      );
+    } else {
+      setStatus(
+        `Предпросмотр готов: ${pageLabel} из ${selectedFiles.length} PDF. Для скачивания нажмите «Создать страницы JPEG».`,
+        100,
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    setStatus(getOperationErrorMessage(error, "Не удалось показать предпросмотр. Проверьте файл и настройки страниц."), 0);
+  } finally {
+    setBusy(false);
+  }
+});
+
 convertPdfButton.addEventListener("click", async () => {
   if (selectedFiles.length !== 1) return;
 
   setBusy(true);
   resetOutput();
-  previewGrid.replaceChildren();
 
   try {
     const pdfBytes = await selectedFiles[0].arrayBuffer();
@@ -108,7 +140,6 @@ exportJpegsButton.addEventListener("click", async () => {
 
   setBusy(true);
   resetOutput();
-  previewGrid.replaceChildren();
 
   try {
     const jpegPages = await renderFilesToJpegs(selectedFiles);
@@ -168,10 +199,11 @@ function selectFiles(files) {
   chooseAnotherButton.hidden = false;
   convertPdfButton.disabled = pdfFiles.length !== 1;
   exportJpegsButton.disabled = false;
+  previewPagesButton.disabled = false;
 
   if (pdfFiles.length === 1) {
     setStatus(
-      `Файл выбран: ${pdfFiles[0].name}. Укажите страницы или оставьте поле пустым для всех, затем создайте JPEG или новый PDF.`,
+      `Файл выбран: ${pdfFiles[0].name}. Можно сначала «Предпросмотр страниц», затем создать JPEG или новый PDF.`,
       0,
     );
   } else {
@@ -389,6 +421,7 @@ function addPreview(dataUrl, pageNumber, pixelWidth, pixelHeight, fileName) {
 function setBusy(isBusy) {
   convertPdfButton.disabled = isBusy || selectedFiles.length !== 1;
   exportJpegsButton.disabled = isBusy || !selectedFiles.length;
+  previewPagesButton.disabled = isBusy || !selectedFiles.length;
   fileInput.disabled = isBusy;
   chooseAnotherButton.disabled = isBusy;
   qualityPresetSelect.disabled = isBusy;
