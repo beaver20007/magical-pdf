@@ -232,7 +232,7 @@ p {
 
 .controls {
   display: grid;
-  grid-template-columns: minmax(160px, 0.66fr) minmax(520px, auto);
+  grid-template-columns: minmax(150px, 0.5fr) minmax(220px, 0.7fr) minmax(520px, auto);
   gap: 18px;
   align-items: end;
   margin: 20px 0;
@@ -251,7 +251,8 @@ p {
   font-weight: 900;
 }
 
-.controls select {
+.controls select,
+.controls input {
   width: 100%;
   min-height: 56px;
   padding: 10px 16px;

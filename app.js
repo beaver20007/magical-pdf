@@ -7,6 +7,7 @@ const dropHint = document.querySelector("#dropHint");
 const selectedFileInfo = document.querySelector("#selectedFileInfo");
 const chooseAnotherButton = document.querySelector("#chooseAnotherButton");
 const qualityPresetSelect = document.querySelector("#qualityPresetSelect");
+const pageRangeInput = document.querySelector("#pageRangeInput");
 const convertPdfButton = document.querySelector("#convertPdfButton");
 const exportJpegsButton = document.querySelector("#exportJpegsButton");
 const downloadPdfButton = document.querySelector("#downloadPdfButton");
@@ -59,6 +60,14 @@ dropZone.addEventListener("drop", (event) => {
   }
 });
 
+pageRangeInput.addEventListener("input", () => {
+  resetOutput();
+});
+
+qualityPresetSelect.addEventListener("change", () => {
+  resetOutput();
+});
+
 function openFilePicker() {
   if (fileInput.disabled) return;
   fileInput.value = "";
@@ -75,6 +84,9 @@ convertPdfButton.addEventListener("click", async () => {
   try {
     const pdfBytes = await selectedFiles[0].arrayBuffer();
     const jpegPages = await renderPdfToJpegs(pdfBytes, selectedFiles[0]);
+    if (!jpegPages.length) {
+      throw new Error("Не выбрано ни одной страницы.");
+    }
     const outputBytes = await buildPdfFromJpegs(jpegPages);
     outputPdfBlob = new Blob([outputBytes], { type: "application/pdf" });
     outputPdfUrl = URL.createObjectURL(outputPdfBlob);
@@ -85,7 +97,7 @@ convertPdfButton.addEventListener("click", async () => {
     );
   } catch (error) {
     console.error(error);
-    setStatus("Не удалось преобразовать PDF. Проверьте файл и настройки.", 0);
+    setStatus(getOperationErrorMessage(error, "Не удалось преобразовать PDF. Проверьте файл и настройки."), 0);
   } finally {
     setBusy(false);
   }
@@ -100,6 +112,9 @@ exportJpegsButton.addEventListener("click", async () => {
 
   try {
     const jpegPages = await renderFilesToJpegs(selectedFiles);
+    if (!jpegPages.length) {
+      throw new Error("Не выбрано ни одной страницы.");
+    }
     outputJpegsBlob = await buildJpegArchive(jpegPages);
     outputJpegsUrl = URL.createObjectURL(outputJpegsBlob);
     downloadJpegsButton.disabled = false;
@@ -109,7 +124,7 @@ exportJpegsButton.addEventListener("click", async () => {
     );
   } catch (error) {
     console.error(error);
-    setStatus("Не удалось подготовить JPEG страницы. Проверьте файл и настройки.", 0);
+    setStatus(getOperationErrorMessage(error, "Не удалось подготовить JPEG страницы. Проверьте файл и настройки."), 0);
   } finally {
     setBusy(false);
   }
@@ -155,9 +170,15 @@ function selectFiles(files) {
   exportJpegsButton.disabled = false;
 
   if (pdfFiles.length === 1) {
-    setStatus(`Файл выбран: ${pdfFiles[0].name}. Теперь нажмите "Создать страницы JPEG" или "Создать новый PDF".`, 0);
+    setStatus(
+      `Файл выбран: ${pdfFiles[0].name}. Укажите страницы или оставьте поле пустым для всех, затем создайте JPEG или новый PDF.`,
+      0,
+    );
   } else {
-    setStatus(`Выбрано PDF: ${pdfFiles.length}. Для нескольких файлов доступно пакетное создание JPEG-страниц.`, 0);
+    setStatus(
+      `Выбрано PDF: ${pdfFiles.length}. Поле «Страницы» применится к каждому файлу. Доступно пакетное создание JPEG-страниц.`,
+      0,
+    );
   }
 }
 
@@ -183,6 +204,45 @@ function getSafeBaseName(filename) {
     .replace(/[\\/:*?"<>|]+/g, "-")
     .replace(/\s+/g, " ")
     || "document";
+}
+
+function getSelectedPageNumbers(pageCount) {
+  const value = pageRangeInput.value.trim();
+  if (!value) {
+    return Array.from({ length: pageCount }, (_, index) => index + 1);
+  }
+
+  const pages = new Set();
+  const parts = value.split(",").map((part) => part.trim()).filter(Boolean);
+  if (!parts.length) {
+    throw new Error("Укажите страницы в формате 1-3, 7, 10-12 или оставьте поле пустым.");
+  }
+
+  for (const part of parts) {
+    const match = part.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!match) {
+      throw new Error(`Неверный формат страниц: ${part}. Используйте пример 1-3, 7, 10-12.`);
+    }
+
+    const start = Number(match[1]);
+    const end = Number(match[2] ?? match[1]);
+
+    if (start < 1 || end < 1) {
+      throw new Error("Номера страниц должны быть больше 0.");
+    }
+    if (start > end) {
+      throw new Error(`Неверный диапазон страниц: ${part}.`);
+    }
+    if (end > pageCount) {
+      throw new Error(`В PDF только ${pageCount} стр., а выбран диапазон до ${end}.`);
+    }
+
+    for (let pageNumber = start; pageNumber <= end; pageNumber += 1) {
+      pages.add(pageNumber);
+    }
+  }
+
+  return Array.from(pages).sort((a, b) => a - b);
 }
 
 function getRenderStatus(file, batch, pageNumber, pageCount) {
@@ -216,13 +276,15 @@ async function renderPdfToJpegs(pdfBytes, file, batch = { fileIndex: 0, fileCoun
   const { dpi, jpegQuality } = getQualityPreset();
   const scale = dpi / 72;
   const safeFileName = getSafeBaseName(file.name);
+  const pageNumbers = getSelectedPageNumbers(pdf.numPages);
 
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+  for (let index = 0; index < pageNumbers.length; index += 1) {
+    const pageNumber = pageNumbers[index];
     const progressBase = batch.fileCount === 1 ? 0 : (batch.fileIndex / batch.fileCount) * 70;
     const progressStep = batch.fileCount === 1 ? 60 : 70 / batch.fileCount;
     setStatus(
       getRenderStatus(file, batch, pageNumber, pdf.numPages),
-      progressBase + (pageNumber / pdf.numPages) * progressStep,
+      progressBase + ((index + 1) / pageNumbers.length) * progressStep,
     );
 
     const page = await pdf.getPage(pageNumber);
@@ -252,7 +314,7 @@ async function renderPdfToJpegs(pdfBytes, file, batch = { fileIndex: 0, fileCoun
     addPreview(dataUrl, pageNumber, canvas.width, canvas.height, file.name);
     setStatus(
       getRenderStatus(file, batch, pageNumber, pdf.numPages),
-      progressBase + (pageNumber / pdf.numPages) * progressStep,
+      progressBase + ((index + 1) / pageNumbers.length) * progressStep,
     );
   }
 
@@ -330,6 +392,7 @@ function setBusy(isBusy) {
   fileInput.disabled = isBusy;
   chooseAnotherButton.disabled = isBusy;
   qualityPresetSelect.disabled = isBusy;
+  pageRangeInput.disabled = isBusy;
 }
 
 function resetOutput() {
@@ -345,6 +408,7 @@ function resetOutput() {
   outputJpegsBlob = null;
   downloadPdfButton.disabled = true;
   downloadJpegsButton.disabled = true;
+  previewGrid.replaceChildren();
 }
 
 async function downloadBlob(blob, url, filename) {
@@ -510,6 +574,10 @@ function isCapacitorApp() {
 
 function waitForStatusPaint() {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+function getOperationErrorMessage(error, fallback) {
+  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 function setStatus(message, progress) {
