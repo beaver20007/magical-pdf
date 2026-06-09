@@ -1,0 +1,182 @@
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #151515;
+  --green: #28b46b;
+  --line: #e3e8e4;
+  --muted: #62666b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fff 0%, #f5fff7 100%);
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  font-size: 14px;
+}
+
+.tab.active {
+  background: #ecfff1;
+  border-color: var(--green);
+  font-weight: 600;
+}
+
+.drop-zone {
+  display: block;
+  padding: 36px 20px;
+  border: 2px dashed var(--line);
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+  margin-bottom: 16px;
+}
+
+.drop-zone input {
+  display: none;
+}
+
+.drop-title {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.drop-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.controls {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.controls label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.controls input,
+.controls select {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.primary {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: var(--green);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.status {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.message {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+progress {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.download {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--green);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.download.secondary {
+  background: #fff;
+  color: inherit;
+  border: 1px solid var(--line);
+}
+
+.error {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  padding: 12px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+}
