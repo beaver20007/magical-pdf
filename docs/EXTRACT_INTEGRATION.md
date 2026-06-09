@@ -71,8 +71,8 @@ Tracked as **Phase 5** in [docraft/docs/INTEGRATION_PHASES.md](https://github.co
 | Sub | Deliverable |
 |-----|-------------|
 | 5.1 | `extract/` folder + `pip install -r extract/requirements.txt` works |
-| 5.2 | Tab UI + `?mode=extract` |
-| 5.3 | Jobs API wired from UI |
+| 5.2 | Tab UI + `?mode=extract` — **GitHub Pages** tabs + `/extract/` (Protect on Pages; Extract UI preview) |
+| 5.3 | Jobs API wired from UI — local `:8765` and `npm run dev:web` → `./extract/` |
 | 5.4 | Tauri `ensure_extract_server` (Windows first) |
 | 5.5 | Quality on Plan.pptx + Lukoil via UI |
 | 5.6 | Docraft deep link «Распознать» |

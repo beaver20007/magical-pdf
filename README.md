@@ -2,17 +2,32 @@
 
 Magical PDF превращает обычный PDF в визуально “сканированный” документ: каждая страница рендерится в JPEG, а затем из этих изображений собирается новый PDF без текстового слоя. Все операции выполняются локально на устройстве: PDF не отправляется на внешний сервер.
 
-Публичная web-версия:
+Публичная web-версия (GitHub Pages, авто-деплой с `main`):
 
 ```text
 https://beaver20007.github.io/magical-pdf/
 ```
 
+- **Защитить** — полностью в браузере, без сервера.
+- **Распознать** — на Pages только превью UI; OCR требует локальный `extract/run-api.ps1` (или десктоп позже).
+
 ## Part of DOCRAFT ecosystem
 
-Magical PDF — локальный слой **Protect** в [DOCRAFT](https://github.com/beaver20007/docraft): после экспорта PDF из **Docraft** или **Desktop Instructor** документ можно превратить в «защищённый скан» без выделяемого текста, полностью на устройстве пользователя. Подробности: [`docs/DOCRAFT_INTEGRATION.md`](docs/DOCRAFT_INTEGRATION.md), три режима экспорта — [`docs/EXPORT_MODES.md`](docs/EXPORT_MODES.md), будущий программный вызов — [`docs/DOCRAFT_API_HOOK.md`](docs/DOCRAFT_API_HOOK.md).
+Magical PDF — локальный **PDF-хаб** в [DOCRAFT](https://github.com/beaver20007/docraft): **Protect** (скан без текста) и **Extract** (скан → DOCX/PPTX, в разработке). Подробности: [`docs/DOCRAFT_INTEGRATION.md`](docs/DOCRAFT_INTEGRATION.md), Extract — [`docs/EXTRACT_INTEGRATION.md`](docs/EXTRACT_INTEGRATION.md), [`extract/README.md`](extract/README.md).
 
-## Что уже умеет
+## Extract API (Phase 5.1+)
+
+```powershell
+cd extract
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+.\run-api.ps1
+```
+
+Сервис: `http://127.0.0.1:8765` — тот же контракт jobs, что в ocr-docs.
+
+## Что уже умеет (Protect)
 
 - Создаёт новый PDF из JPEG-страниц исходного PDF.
 - Экспортирует страницы PDF в JPEG ZIP.

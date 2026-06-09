@@ -50,6 +50,31 @@ select {
   margin: 0 auto;
 }
 
+.mode-tabs {
+  position: absolute;
+  z-index: 4;
+  top: 22px;
+  right: 24px;
+  display: flex;
+  gap: 8px;
+}
+
+.mode-tab {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.mode-tab.active {
+  background: var(--soft-green);
+  border-color: var(--green-dark);
+}
+
 .topbar {
   position: relative;
   display: grid;

@@ -1,3 +1,5 @@
+import { extractApiBase, initModeTabs, isGitHubPages } from "./nav.js";
+
 const fileInput = document.getElementById("fileInput");
 const dropZone = document.getElementById("dropZone");
 const fileHint = document.getElementById("fileHint");
@@ -12,9 +14,26 @@ const docxLink = document.getElementById("docxLink");
 const pptxLink = document.getElementById("pptxLink");
 const manifestLink = document.getElementById("manifestLink");
 const errorBox = document.getElementById("errorBox");
+const pagesNotice = document.getElementById("pagesNotice");
 
+const apiBase = extractApiBase();
 let selectedFile = null;
 let pollTimer = null;
+
+initModeTabs({ active: "extract" });
+
+if (pagesNotice && isGitHubPages()) {
+  pagesNotice.hidden = false;
+  startBtn.disabled = true;
+  statusText.textContent = "Распознавание недоступно в публичной web-версии";
+}
+
+function apiUrl(path) {
+  if (apiBase === null) {
+    throw new Error("Extract API недоступен на GitHub Pages");
+  }
+  return `${apiBase}${path}`;
+}
 
 function setError(text) {
   if (!text) {
@@ -28,6 +47,7 @@ function setError(text) {
 
 function onFile(file) {
   if (!file || !file.name.toLowerCase().endsWith(".pdf")) return;
+  if (apiBase === null) return;
   selectedFile = file;
   fileHint.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(1)} МБ)`;
   startBtn.disabled = false;
@@ -54,7 +74,7 @@ dropZone.addEventListener("drop", (e) => {
 });
 
 async function pollJob(jobId) {
-  const res = await fetch(`/api/v1/jobs/${jobId}`);
+  const res = await fetch(apiUrl(`/api/v1/jobs/${jobId}`));
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -63,18 +83,18 @@ function showDownloads(jobId, outputs) {
   downloads.hidden = false;
   if (outputs.includes("docx")) {
     docxLink.hidden = false;
-    docxLink.href = `/api/v1/jobs/${jobId}/download.docx`;
+    docxLink.href = apiUrl(`/api/v1/jobs/${jobId}/download.docx`);
   }
   if (outputs.includes("pptx")) {
     pptxLink.hidden = false;
-    pptxLink.href = `/api/v1/jobs/${jobId}/download.pptx`;
+    pptxLink.href = apiUrl(`/api/v1/jobs/${jobId}/download.pptx`);
   }
   manifestLink.hidden = false;
-  manifestLink.href = `/api/v1/jobs/${jobId}/manifest.json`;
+  manifestLink.href = apiUrl(`/api/v1/jobs/${jobId}/manifest.json`);
 }
 
 startBtn.addEventListener("click", async () => {
-  if (!selectedFile) return;
+  if (!selectedFile || apiBase === null) return;
   startBtn.disabled = true;
   setError("");
   downloads.hidden = true;
@@ -90,7 +110,7 @@ startBtn.addEventListener("click", async () => {
   form.append("languages", languagesInput.value.trim() || "ru,en");
 
   try {
-    const createRes = await fetch("/api/v1/jobs", { method: "POST", body: form });
+    const createRes = await fetch(apiUrl("/api/v1/jobs"), { method: "POST", body: form });
     if (!createRes.ok) {
       const err = await createRes.json().catch(() => ({}));
       throw new Error(err.detail || createRes.statusText);

@@ -49,13 +49,13 @@ h1 {
   line-height: 1.45;
 }
 
-.tabs {
+.mode-tabs {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.tab {
+.mode-tab {
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -64,10 +64,25 @@ h1 {
   font-size: 14px;
 }
 
-.tab.active {
+.mode-tab.active {
   background: #ecfff1;
   border-color: var(--green);
   font-weight: 600;
+}
+
+.notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ffe8a3;
+  background: #fffbeb;
+  color: #5c4a12;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.notice a {
+  color: #1d5f3d;
 }
 
 .drop-zone {

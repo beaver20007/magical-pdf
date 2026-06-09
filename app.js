@@ -1,4 +1,7 @@
 import * as pdfjsLib from "./vendor/pdf.min.mjs";
+import { initModeTabs } from "./nav.js";
+
+initModeTabs({ active: "protect" });
 
 const fileInput = document.querySelector("#fileInput");
 const dropZone = document.querySelector("#dropZone");

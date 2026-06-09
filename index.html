@@ -11,6 +11,10 @@
     <main class="app">
       <section class="workspace">
         <header class="topbar">
+          <nav class="mode-tabs" aria-label="Режим">
+            <span id="tabProtect" class="mode-tab active">Защитить</span>
+            <a id="tabExtract" class="mode-tab" href="./extract/">Распознать</a>
+          </nav>
           <div class="brand-lockup">
             <img src="./public/app-icon.png" alt="" class="brand-mark" />
             <div>
@@ -69,6 +73,7 @@
 
     <script src="./vendor/pdf-lib.min.js"></script>
     <script src="./vendor/jszip.min.js"></script>
+    <script src="./nav.js" type="module"></script>
     <script src="./app.js" type="module"></script>
   </body>
 </html>
