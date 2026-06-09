@@ -67,7 +67,7 @@ Override via Railway variables.
 ## 2. Wire GitHub Pages to the API
 
 1. GitHub repo **Settings → Secrets and variables → Actions → Variables**.
-2. Add: `EXTRACT_API_URL` = `https://<your-app>.up.railway.app` (no trailing slash).
+2. Add: `EXTRACT_API_URL` = `https://<your-app>.up.railway.app` (**with `https://`**, no trailing slash).
 3. Re-run workflow **Deploy web** (or push to `main`).
 
 The build injects the URL into `api-config.js`. Extract tab becomes fully functional for external testers.

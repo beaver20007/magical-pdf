@@ -35,6 +35,17 @@ export function extractHref() {
   return new URL("extract/", siteRoot()).pathname;
 }
 
+function normalizeApiBase(value) {
+  const trimmed = (value || "").trim().replace(/\/$/, "");
+  if (!trimmed) {
+    return null;
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+}
+
 /**
  * Extract jobs API base URL, or null when no API is configured.
  * Override: ?api=http://127.0.0.1:8765
@@ -42,13 +53,13 @@ export function extractHref() {
 export function extractApiBase() {
   const custom = new URLSearchParams(location.search).get("api");
   if (custom) {
-    return custom.replace(/\/$/, "");
+    return normalizeApiBase(custom);
   }
   if (location.port === "8765") {
     return "";
   }
   if (isGitHubPages()) {
-    return PUBLIC_EXTRACT_API || null;
+    return normalizeApiBase(PUBLIC_EXTRACT_API);
   }
   return "http://127.0.0.1:8765";
 }
