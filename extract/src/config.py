@@ -29,3 +29,8 @@ SUPPLEMENT_OCR = _env_bool("OCR_DOCS_SUPPLEMENT_OCR", not PUBLIC_BETA)
 PAGE_BG_DPI = int(os.environ.get("OCR_DOCS_PAGE_BG_DPI", 120 if PUBLIC_BETA else 150))
 MAX_CONCURRENT_JOBS = int(os.environ.get("OCR_DOCS_MAX_CONCURRENT_JOBS", 1 if PUBLIC_BETA else 2))
 DEFAULT_LANGUAGES = os.environ.get("OCR_DOCS_LANGUAGES", "ru,en").split(",")
+
+# Spelling/grammar: off on public beta (privacy + rate limits). Local dev: on by default.
+SPELL_CORRECT = _env_bool("OCR_DOCS_SPELL_CORRECT", not PUBLIC_BETA)
+GRAMMAR_CORRECT = _env_bool("OCR_DOCS_GRAMMAR_CORRECT", not PUBLIC_BETA)
+SSL_VERIFY = _env_bool("OCR_DOCS_SSL_VERIFY", False)

@@ -32,3 +32,19 @@ Config: [`railway.toml`](railway.toml), [`Dockerfile`](Dockerfile).
 ## Layout mode
 
 Worker uses `layout` (single positioned DOCX). Landscape PDFs: request `pptx` in API (phase 5.5 auto-detect).
+
+## Text correction (OCR → spelling/grammar)
+
+After OCR, pipeline runs local fixes + optional Russian spell/grammar:
+
+| Variable | Default (local) | Beta cloud |
+|----------|-----------------|------------|
+| `OCR_DOCS_SPELL_CORRECT` | `1` (Yandex Speller) | `0` |
+| `OCR_DOCS_GRAMMAR_CORRECT` | `1` (LanguageTool API) | `0` |
+| `OCR_DOCS_SSL_VERIFY` | `0` | `0` |
+
+Trial:
+
+```powershell
+python scripts\trial_convert.py "C:\Users\tsvetkov\Desktop\План.pdf" --pptx output\plan.pptx
+```

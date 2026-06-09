@@ -23,6 +23,7 @@ from src.pipeline.layout_errors import LayoutValidationError
 from src.pipeline.gap_fill import repair_ir_layout
 from src.pipeline.page_render import render_pdf_pages
 from src.pipeline.supplement_ocr import ocr_image_labels, tag_figure_captions
+from src.pipeline.text_correct import correct_document_text
 from src.pipeline.text_dedup import normalize_text_blocks
 from src.pipeline.validate_layout import validate_layout
 
@@ -205,6 +206,10 @@ def convert_pdf(
         )
         tag_figure_captions(ir)
     normalize_text_blocks(ir)
+
+    if progress_callback:
+        progress_callback(0.89, "Spelling and grammar correction")
+    correct_document_text(ir, languages=languages or ir.source.languages)
 
     if progress_callback:
         progress_callback(0.90, "Repairing layout gaps")
