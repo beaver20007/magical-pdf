@@ -9,16 +9,17 @@ export function isGitHubPages() {
   return location.hostname === GITHUB_PAGES_HOST;
 }
 
-/** Site root, e.g. /magical-pdf/ on GitHub Pages or / locally. */
+/** Absolute site root URL, e.g. https://beaver20007.github.io/magical-pdf/ */
 export function siteRoot() {
   if (isGitHubPages()) {
     const match = location.pathname.match(new RegExp(`^(/${REPO_SLUG}/)`));
-    return match ? match[1] : `/${REPO_SLUG}/`;
+    const path = match ? match[1] : `/${REPO_SLUG}/`;
+    return new URL(path, location.origin).href;
   }
   if (location.pathname.includes("/extract")) {
-    return new URL("../", location.href).pathname;
+    return new URL("../", location.href).href;
   }
-  return new URL("./", location.href).pathname;
+  return new URL("./", location.href).href;
 }
 
 export function protectHref() {
@@ -32,7 +33,7 @@ export function extractHref() {
   if (location.port === "8765") {
     return "/";
   }
-  return new URL("extract/", siteRoot()).pathname;
+  return new URL("extract/", siteRoot()).href;
 }
 
 function normalizeApiBase(value) {
@@ -71,7 +72,7 @@ export function isPublicExtractBeta() {
     return false;
   }
   try {
-    const host = new URL(base, location.origin).hostname;
+    const host = new URL(base).hostname;
     return host !== "127.0.0.1" && host !== "localhost";
   } catch {
     return false;
