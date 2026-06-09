@@ -28,17 +28,9 @@ let pollTimer = null;
 
 initModeTabs({ active: "extract" });
 
-if (isGitHubPages() && !apiBase) {
-  if (pagesNoticeMissing) pagesNoticeMissing.hidden = false;
-  startBtn.disabled = true;
-  statusText.textContent = "Ожидается подключение сервера Extract";
-} else if (isPublicExtractBeta() && pagesNoticeBeta) {
-  pagesNoticeBeta.hidden = false;
-}
-
 function apiUrl(path) {
-  if (apiBase === null) {
-    throw new Error("Extract API недоступен на GitHub Pages");
+  if (!apiBase) {
+    throw new Error("Extract API не настроен");
   }
   return `${apiBase}${path}`;
 }
@@ -54,18 +46,34 @@ function setError(text) {
 }
 
 function onFile(file) {
-  if (!file || !file.name.toLowerCase().endsWith(".pdf")) return;
-  if (apiBase === null) return;
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
+    setError("Нужен файл PDF");
+    return;
+  }
   selectedFile = file;
   fileHint.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(1)} МБ)`;
-  startBtn.disabled = false;
-  statusText.textContent = "Готово к распознаванию";
+  dropZone.classList.add("has-file");
+  startBtn.disabled = !apiBase;
+  statusText.textContent = apiBase ? "Готово к распознаванию" : "API не подключён";
   setError("");
   downloads.hidden = true;
 }
 
 fileInput.addEventListener("change", () => {
   if (fileInput.files?.[0]) onFile(fileInput.files[0]);
+});
+
+dropZone.addEventListener("click", (event) => {
+  if (event.target === fileInput) return;
+  fileInput.click();
+});
+
+dropZone.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    fileInput.click();
+  }
 });
 
 dropZone.addEventListener("dragover", (e) => {
@@ -87,22 +95,45 @@ async function pollJob(jobId) {
   return res.json();
 }
 
+function wireDownloadLink(link, url, filename) {
+  link.hidden = false;
+  link.href = url;
+  link.onclick = async (event) => {
+    event.preventDefault();
+    try {
+      setError("");
+      statusText.textContent = `Скачивание ${filename}…`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(objectUrl);
+      statusText.textContent = "Готово";
+    } catch (err) {
+      setError(`Не удалось скачать: ${err.message}`);
+    }
+  };
+}
+
 function showDownloads(jobId, outputs) {
   downloads.hidden = false;
   if (outputs.includes("docx")) {
-    docxLink.hidden = false;
-    docxLink.href = apiUrl(`/api/v1/jobs/${jobId}/download.docx`);
+    wireDownloadLink(docxLink, apiUrl(`/api/v1/jobs/${jobId}/download.docx`), "output.docx");
   }
   if (outputs.includes("pptx")) {
-    pptxLink.hidden = false;
-    pptxLink.href = apiUrl(`/api/v1/jobs/${jobId}/download.pptx`);
+    wireDownloadLink(pptxLink, apiUrl(`/api/v1/jobs/${jobId}/download.pptx`), "output.pptx");
   }
   manifestLink.hidden = false;
   manifestLink.href = apiUrl(`/api/v1/jobs/${jobId}/manifest.json`);
+  manifestLink.onclick = null;
 }
 
 startBtn.addEventListener("click", async () => {
-  if (!selectedFile || apiBase === null) return;
+  if (!selectedFile || !apiBase) return;
   startBtn.disabled = true;
   setError("");
   downloads.hidden = true;
@@ -121,7 +152,10 @@ startBtn.addEventListener("click", async () => {
     const createRes = await fetch(apiUrl("/api/v1/jobs"), { method: "POST", body: form });
     if (!createRes.ok) {
       const err = await createRes.json().catch(() => ({}));
-      throw new Error(err.detail || createRes.statusText);
+      const detail = err.detail;
+      throw new Error(
+        typeof detail === "string" ? detail : Array.isArray(detail) ? detail.map((d) => d.msg).join(", ") : createRes.statusText,
+      );
     }
     const { id } = await createRes.json();
     statusText.textContent = "Распознавание…";
@@ -143,7 +177,7 @@ startBtn.addEventListener("click", async () => {
         if (meta.status === "done") {
           clearInterval(pollTimer);
           pollTimer = null;
-          statusText.textContent = "Готово";
+          statusText.textContent = "Готово — скачайте файл";
           progressBar.value = 100;
           showDownloads(id, meta.outputs || ["docx"]);
           startBtn.disabled = false;
@@ -163,8 +197,37 @@ startBtn.addEventListener("click", async () => {
     }, 2000);
   } catch (err) {
     setError(String(err));
-    statusText.textContent = "Ошибка";
+    statusText.textContent = "Ошибка загрузки";
     startBtn.disabled = false;
     progressBar.hidden = true;
   }
 });
+
+async function initApiStatus() {
+  if (isGitHubPages() && !apiBase) {
+    if (pagesNoticeMissing) pagesNoticeMissing.hidden = false;
+    startBtn.disabled = true;
+    statusText.textContent = "Сервер Extract не подключён";
+    return;
+  }
+
+  if (apiBase && (isPublicExtractBeta() || isGitHubPages()) && pagesNoticeBeta) {
+    pagesNoticeBeta.hidden = false;
+  }
+
+  if (!apiBase) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${apiBase}/health`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    statusText.textContent = "Выберите PDF";
+  } catch (err) {
+    setError(`API недоступен (${apiBase}): ${err.message}`);
+    statusText.textContent = "Нет связи с сервером";
+    startBtn.disabled = true;
+  }
+}
+
+initApiStatus();
