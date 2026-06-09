@@ -1,4 +1,9 @@
-import { extractApiBase, initModeTabs, isGitHubPages } from "./nav.js";
+import {
+  extractApiBase,
+  initModeTabs,
+  isGitHubPages,
+  isPublicExtractBeta,
+} from "./nav.js";
 
 const fileInput = document.getElementById("fileInput");
 const dropZone = document.getElementById("dropZone");
@@ -14,7 +19,8 @@ const docxLink = document.getElementById("docxLink");
 const pptxLink = document.getElementById("pptxLink");
 const manifestLink = document.getElementById("manifestLink");
 const errorBox = document.getElementById("errorBox");
-const pagesNotice = document.getElementById("pagesNotice");
+const pagesNoticeMissing = document.getElementById("pagesNoticeMissing");
+const pagesNoticeBeta = document.getElementById("pagesNoticeBeta");
 
 const apiBase = extractApiBase();
 let selectedFile = null;
@@ -22,10 +28,12 @@ let pollTimer = null;
 
 initModeTabs({ active: "extract" });
 
-if (pagesNotice && isGitHubPages()) {
-  pagesNotice.hidden = false;
+if (isGitHubPages() && !apiBase) {
+  if (pagesNoticeMissing) pagesNoticeMissing.hidden = false;
   startBtn.disabled = true;
-  statusText.textContent = "Распознавание недоступно в публичной web-версии";
+  statusText.textContent = "Ожидается подключение сервера Extract";
+} else if (isPublicExtractBeta() && pagesNoticeBeta) {
+  pagesNoticeBeta.hidden = false;
 }
 
 function apiUrl(path) {

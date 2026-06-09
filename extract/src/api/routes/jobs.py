@@ -15,6 +15,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 from src.config import DEFAULT_LANGUAGES, JOBS_DIR, MAX_BYTES, MAX_PAGES
+from src.job_cleanup import cleanup_old_jobs
 from src.worker import read_job_meta, run_job, write_job_meta
 
 router = APIRouter(prefix="/api/v1/jobs", tags=["jobs"])
@@ -78,6 +79,8 @@ async def create_job(
         raise HTTPException(400, "PDF has no pages")
     if page_count > MAX_PAGES:
         raise HTTPException(422, f"PDF exceeds {MAX_PAGES} pages")
+
+    cleanup_old_jobs()
 
     job_id = str(uuid.uuid4())
     job_dir = _job_dir(job_id)

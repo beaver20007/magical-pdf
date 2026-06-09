@@ -1,5 +1,8 @@
 """FastAPI application entry point — Extract API + web UI."""
 
+import logging
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -10,18 +13,32 @@ from fastapi.staticfiles import StaticFiles
 from src import __version__
 from src.api.routes import jobs
 from src.config import JOBS_DIR
+from src.job_cleanup import cleanup_old_jobs
+
+logger = logging.getLogger(__name__)
+
+
+def _cors_origins() -> list[str]:
+    raw = os.environ.get(
+        "EXTRACT_CORS_ORIGINS",
+        "http://127.0.0.1:5173,http://localhost:5173,https://beaver20007.github.io",
+    )
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    cleanup_old_jobs()
+    yield
+    cleanup_old_jobs()
 
 EXTRACT_ROOT = Path(__file__).resolve().parent.parent.parent
 STATIC_DIR = EXTRACT_ROOT / "static"
 
-app = FastAPI(title="magical-pdf-extract", version=__version__)
+app = FastAPI(title="magical-pdf-extract", version=__version__, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:5173",
-        "http://localhost:5173",
-        "https://beaver20007.github.io",
-    ],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,5 +61,10 @@ def extract_ui() -> FileResponse:
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "service": "magical-pdf-extract", "version": __version__}
+def health() -> dict[str, str | bool]:
+    return {
+        "status": "ok",
+        "service": "magical-pdf-extract",
+        "version": __version__,
+        "public_beta": os.environ.get("EXTRACT_PUBLIC_BETA", "").lower() in ("1", "true", "yes"),
+    }

@@ -31,6 +31,8 @@ jobs:
       - uses: actions/configure-pages@v5
       - run: npm ci
       - run: npm run build:web
+        env:
+          EXTRACT_API_URL: ${{ vars.EXTRACT_API_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

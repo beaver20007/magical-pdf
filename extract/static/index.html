@@ -1,66 +1,68 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Magical PDF — Распознать</title>
-    <link rel="stylesheet" href="/static/ui.css" />
-  </head>
-  <body>
-    <main class="app">
-      <header class="header">
-        <div>
-          <p class="eyebrow">Magical PDF · Extract</p>
-          <h1>Распознать скан</h1>
-          <p class="subtitle">PDF → редактируемый DOCX или PPTX. Обработка на вашем устройстве.</p>
-        </div>
-        <nav class="mode-tabs" aria-label="Режим">
-          <a id="tabProtect" class="mode-tab" href="#">Защитить</a>
-          <span id="tabExtract" class="mode-tab active">Распознать</span>
-        </nav>
-      </header>
-
-      <p id="pagesNotice" class="notice" hidden>
-        На GitHub Pages доступна только <strong>Защита PDF</strong> (в браузере). Распознавание требует
-        локальный сервер Extract — см. <a href="https://github.com/beaver20007/magical-pdf/tree/main/extract">инструкцию</a>.
-      </p>
-
-      <label class="drop-zone" id="dropZone">
-        <input id="fileInput" type="file" accept="application/pdf,.pdf" />
-        <span class="drop-title">Выберите PDF</span>
-        <span class="drop-hint" id="fileHint">или перетащите сюда</span>
-      </label>
-
-      <section class="controls">
-        <label>
-          Формат
-          <select id="outputSelect">
-            <option value="docx" selected>DOCX (договоры, текст)</option>
-            <option value="pptx">PPTX (слайды, альбом)</option>
-            <option value="docx,pptx">DOCX + PPTX</option>
-          </select>
-        </label>
-        <label>
-          Языки OCR
-          <input id="languagesInput" type="text" value="ru,en" />
-        </label>
-        <button id="startBtn" class="primary" disabled>Распознать</button>
-      </section>
-
-      <section class="status" aria-live="polite">
-        <div id="statusText">Выберите PDF</div>
-        <progress id="progressBar" value="0" max="100" hidden></progress>
-        <p id="messageText" class="message"></p>
-      </section>
-
-      <section id="downloads" class="downloads" hidden>
-        <a id="docxLink" class="download" href="#" download hidden>DOCX</a>
-        <a id="pptxLink" class="download" href="#" download hidden>PPTX</a>
-        <a id="manifestLink" class="download secondary" href="#" target="_blank" hidden>manifest.json</a>
-      </section>
-
-      <p id="errorBox" class="error" hidden></p>
-    </main>
-    <script src="/static/ui.js" type="module"></script>
-  </body>
-</html>
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Magical PDF — Распознать</title>
+    <link rel="stylesheet" href="/static/ui.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Magical PDF · Extract</p>
+          <h1>Распознать скан</h1>
+          <p class="subtitle">PDF → редактируемый DOCX или PPTX.</p>
+        </div>
+        <nav class="mode-tabs" aria-label="Режим">
+          <a id="tabProtect" class="mode-tab" href="#">Защитить</a>
+          <span id="tabExtract" class="mode-tab active">Распознать</span>
+        </nav>
+      </header>
+
+      <p id="pagesNoticeMissing" class="notice" hidden>
+        Сервер Extract не подключён к публичной версии.
+      </p>
+      <p id="pagesNoticeBeta" class="notice notice--beta" hidden>
+        <strong>Бета-тест.</strong> PDF загружается на сервер Extract. Не используйте конфиденциальные документы.
+      </p>
+
+      <label class="drop-zone" id="dropZone">
+        <input id="fileInput" type="file" accept="application/pdf,.pdf" />
+        <span class="drop-title">Выберите PDF</span>
+        <span class="drop-hint" id="fileHint">или перетащите сюда</span>
+      </label>
+
+      <section class="controls">
+        <label>
+          Формат
+          <select id="outputSelect">
+            <option value="docx" selected>DOCX (договоры, текст)</option>
+            <option value="pptx">PPTX (слайды, альбом)</option>
+            <option value="docx,pptx">DOCX + PPTX</option>
+          </select>
+        </label>
+        <label>
+          Языки OCR
+          <input id="languagesInput" type="text" value="ru,en" />
+        </label>
+        <button id="startBtn" class="primary" disabled>Распознать</button>
+      </section>
+
+      <section class="status" aria-live="polite">
+        <div id="statusText">Выберите PDF</div>
+        <progress id="progressBar" value="0" max="100" hidden></progress>
+        <p id="messageText" class="message"></p>
+      </section>
+
+      <section id="downloads" class="downloads" hidden>
+        <a id="docxLink" class="download" href="#" download hidden>DOCX</a>
+        <a id="pptxLink" class="download" href="#" download hidden>PPTX</a>
+        <a id="manifestLink" class="download secondary" href="#" target="_blank" hidden>manifest.json</a>
+      </section>
+
+      <p id="errorBox" class="error" hidden></p>
+    </main>
+    <script src="/static/ui.js" type="module"></script>
+  </body>
+</html>

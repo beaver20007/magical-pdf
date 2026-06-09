@@ -1,0 +1,31 @@
+# Render Blueprint — magical-pdf Extract API (beta).
+# Deploy: https://dashboard.render.com/select-repo?type=blueprint
+# After deploy, set GitHub repo variable EXTRACT_API_URL to the service URL.
+
+services:
+  - type: web
+    name: magical-pdf-extract
+    runtime: docker
+    dockerfilePath: ./extract/Dockerfile
+    dockerContext: ./extract
+    plan: standard
+    healthCheckPath: /health
+    disk:
+      name: extract-data
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: OCR_DOCS_DATA_DIR
+        value: /data
+      - key: OCR_DOCS_MAX_PAGES
+        value: "15"
+      - key: OCR_DOCS_MAX_BYTES
+        value: "20971520"
+      - key: OCR_DOCS_JOB_TTL_HOURS
+        value: "24"
+      - key: EXTRACT_CORS_ORIGINS
+        value: https://beaver20007.github.io,http://127.0.0.1:5173,http://localhost:5173
+      - key: EXTRACT_PUBLIC_BETA
+        value: "1"

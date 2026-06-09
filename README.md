@@ -9,7 +9,8 @@ https://beaver20007.github.io/magical-pdf/
 ```
 
 - **Защитить** — полностью в браузере, без сервера.
-- **Распознать** — на Pages только превью UI; OCR требует локальный `extract/run-api.ps1` (или десктоп позже).
+- **Распознать** — UI на Pages + облачный Extract API (бета). Настройка: [`docs/DEPLOY_EXTRACT.md`](docs/DEPLOY_EXTRACT.md).  
+  Deploy API: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://dashboard.render.com/select-repo?type=blueprint)
 
 ## Part of DOCRAFT ecosystem
 

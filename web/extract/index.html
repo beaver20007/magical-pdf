@@ -21,10 +21,14 @@
         </nav>
       </header>
 
-      <p id="pagesNotice" class="notice" hidden>
-        На GitHub Pages доступна только <strong>Защита PDF</strong> (в браузере). Распознавание требует
-        локальный сервер Extract — см. <a href="https://github.com/beaver20007/magical-pdf/tree/main/extract">инструкцию</a>
-        или десктопную сборку (скоро).
+      <p id="pagesNoticeMissing" class="notice" hidden>
+        Сервер Extract не подключён. Администратору: задеплоить API (см.
+        <a href="https://github.com/beaver20007/magical-pdf/blob/main/docs/DEPLOY_EXTRACT.md">DEPLOY_EXTRACT.md</a>)
+        и задать переменную <code>EXTRACT_API_URL</code> в GitHub.
+      </p>
+      <p id="pagesNoticeBeta" class="notice notice--beta" hidden>
+        <strong>Бета-тест.</strong> PDF загружается на сервер Extract для распознавания (до 15 стр., 20 МБ).
+        Не используйте конфиденциальные документы. Файлы удаляются автоматически через 24 часа.
       </p>
 
       <label class="drop-zone" id="dropZone">

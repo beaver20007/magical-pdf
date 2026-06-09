@@ -1,5 +1,7 @@
 /** Shared URLs for Protect / Extract across web, GitHub Pages, and local API. */
 
+import { PUBLIC_EXTRACT_API } from "./api-config.js";
+
 const GITHUB_PAGES_HOST = "beaver20007.github.io";
 const REPO_SLUG = "magical-pdf";
 
@@ -34,21 +36,35 @@ export function extractHref() {
 }
 
 /**
- * Extract jobs API base URL, or null when OCR is unavailable (GitHub Pages).
- * Override for dev: ?api=http://127.0.0.1:8765
+ * Extract jobs API base URL, or null when no API is configured.
+ * Override: ?api=http://127.0.0.1:8765
  */
 export function extractApiBase() {
   const custom = new URLSearchParams(location.search).get("api");
   if (custom) {
     return custom.replace(/\/$/, "");
   }
-  if (isGitHubPages()) {
-    return null;
-  }
   if (location.port === "8765") {
     return "";
   }
+  if (isGitHubPages()) {
+    return PUBLIC_EXTRACT_API || null;
+  }
   return "http://127.0.0.1:8765";
+}
+
+/** Remote beta API (GitHub Pages → cloud), not localhost. */
+export function isPublicExtractBeta() {
+  const base = extractApiBase();
+  if (!base) {
+    return false;
+  }
+  try {
+    const host = new URL(base, location.origin).hostname;
+    return host !== "127.0.0.1" && host !== "localhost";
+  } catch {
+    return false;
+  }
 }
 
 export function initModeTabs({ active }) {
