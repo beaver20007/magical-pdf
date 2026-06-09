@@ -1,6 +1,9 @@
 # Magical PDF в экосистеме DOCRAFT
 
-Magical PDF — **слой Protect** в DOCRAFT: постобработка после экспорта, которая «сплющивает» PDF в вид страниц-изображений без выделяемого текстового слоя.
+Magical PDF — **локальный PDF-хаб** в DOCRAFT. Сегодня: слой **Protect** (PDF → скан без текстового слоя). План: **Utilities** (merge, compress, …) и **Extract** (скан → DOCX/PPTX, слияние с [ocr-docs](https://github.com/beaver20007/docraft)).
+
+> Дорожная карта utilities: [`PDF_UTILITIES_ROADMAP.md`](./PDF_UTILITIES_ROADMAP.md).  
+> План слияния Extract: ocr-docs `docs/ECOSYSTEM_ROADMAP.md`.
 
 ## Карта экосистемы
 
@@ -8,8 +11,11 @@ Magical PDF — **слой Protect** в DOCRAFT: постобработка по
 |-----------|------|-----------|
 | **Docraft** | Создание и экспорт учебных/рабочих PDF с **текстовым слоём** | Облако или локально (по продукту Docraft) |
 | **Desktop Instructor** | Рабочее место автора: материалы, экспорт, сценарии обучения | Desktop / web-клиент DOCRAFT |
-| **Magical PDF (Protect)** | Локальное «закрытие» PDF: JPEG-страницы → новый PDF-скан | Этот репозиторий |
-| **DOCRAFT meta-repo** | Карта репозиториев, версии, процессы релиза | [github.com/beaver20007/docraft](https://github.com/beaver20007/docraft) *(планируемый umbrella-репозиторий)* |
+| **Magical PDF** | **Protect** + планируемые **Utilities** + **Extract** (единый UI) | Этот репозиторий |
+| **ocr-docs** | Песочница **Extract** до слияния с magical-pdf | `C:\Projects\ocr-docs` |
+| **DOCRAFT meta-repo** | Карта репозиториев, версии, процессы релиза | [github.com/beaver20007/docraft](https://github.com/beaver20007/docraft) |
+
+**Stirling-PDF** ([github.com/Stirling-Tools/Stirling-PDF](https://github.com/Stirling-Tools/Stirling-PDF)): референс для **utilities**, не движок Extract и не отдельная кнопка в Docraft. Полезные операции (merge, compress) планируются **здесь**, нативно или через лёгкий sidecar.
 
 Подробнее о трёх режимах экспорта: [`EXPORT_MODES.md`](./EXPORT_MODES.md).  
 Контракт будущей автоматизации: [`DOCRAFT_API_HOOK.md`](./DOCRAFT_API_HOOK.md).
@@ -60,4 +66,14 @@ Magical PDF (Protect)         →  «Создать новый PDF» или JPEG
 
 ## Статус интеграции
 
-На текущий момент связка **документирована и ручная**: пользователь скачивает PDF из Docraft/Desktop Instructor и обрабатывает его в Magical PDF. Программный вызов (CLI, deep link, batch) описан в `DOCRAFT_API_HOOK.md` как спецификация без обязательной реализации в `app.js`.
+| Lane | Статус |
+|------|--------|
+| **Protect** | Ручная + web/Tauri; hook v0.1 в `DOCRAFT_API_HOOK.md` |
+| **Utilities** | План: `PDF_UTILITIES_ROADMAP.md` (Stirling-class, в этом репо) |
+| **Extract** | Разработка в ocr-docs; слияние после quality gates |
+
+Docraft UI (будущее): одна точка входа «PDF» → deep link в magical-pdf (`mode=protect|tools|extract`), без встраивания Stirling в облако Create.
+
+## Статус интеграции (Protect, сегодня)
+
+На текущий момент связка **Protect документирована и ручная**: пользователь скачивает PDF из Docraft/Desktop Instructor и обрабатывает его в Magical PDF. Программный вызов (CLI, deep link, batch) описан в `DOCRAFT_API_HOOK.md` как спецификация без обязательной реализации в `app.js`.
