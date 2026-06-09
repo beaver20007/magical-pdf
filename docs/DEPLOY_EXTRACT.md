@@ -51,7 +51,7 @@ Add a service → **GitHub Repo** → same repo, **Root Directory** = `extract`,
 | Limit | Value |
 |-------|--------|
 | Max PDF size | 20 MB |
-| Max pages | 15 |
+| Max pages | 10 |
 | Job retention | 24 h |
 
 Override via Railway variables.
@@ -99,7 +99,8 @@ Public beta sends PDFs to the cloud server. Do not use for confidential contract
 |---------|-----|
 | «Сервер Extract не подключён» on Pages | Set `EXTRACT_API_URL`, redeploy Pages workflow |
 | CORS error | Add origin to `EXTRACT_CORS_ORIGINS` on Railway |
-| Build fails / OOM | Raise RAM to 4–8 GB on Railway |
+| **Ran out of memory** (Railway email) | Redeploy latest code; keep **8 GB RAM**; beta uses 2-page batches; max **10 pages** per PDF |
+| Build fails / OOM | Raise RAM to 8 GB; set `OCR_DOCS_BATCH_PAGES=2`, `OCR_DOCS_MAX_PAGES=10` |
 | First job very slow | Model download; check volume on `/data` |
 | `failed` layout error | Try PPTX for landscape; open `manifest.json` |
 | 502 on long job | Normal for big PDFs — client polls until `done` |

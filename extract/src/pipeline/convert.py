@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
@@ -9,6 +10,7 @@ from typing import Literal
 
 import fitz
 
+from src.config import DEFAULT_BATCH_PAGES, PAGE_BG_DPI, PUBLIC_BETA, SUPPLEMENT_OCR
 from src.pipeline.analyze import analyze_pdf
 from src.pipeline.emit_docx import emit_docx
 from src.pipeline.emit_docx_editable import emit_docx_editable
@@ -25,6 +27,19 @@ from src.pipeline.text_dedup import normalize_text_blocks
 from src.pipeline.validate_layout import validate_layout
 
 LayoutMode = Literal["flow", "visual", "both", "layout"]
+
+_LOW_MEM_PICTURES = not PUBLIC_BETA
+
+
+def _batch_threshold() -> int:
+    return 2 if PUBLIC_BETA else 8
+
+
+def _resolve_batch_pages(page_count: int, batch_pages: int | None) -> int:
+    size = batch_pages if batch_pages is not None else DEFAULT_BATCH_PAGES
+    if size <= 0:
+        return 0
+    return size if page_count > _batch_threshold() else 0
 
 
 def _extract_pdf_chunk(src: Path, start_page: int, end_page: int, dest: Path) -> None:
@@ -85,14 +100,15 @@ def analyze_pdf_batched(
     progress_callback: Callable[[float, str], None] | None = None,
 ) -> DocumentIR:
     if pdf.page_count <= batch_pages:
-        scale = 2.0 if pdf.page_count <= 8 else 1.5
+        scale = 1.0 if PUBLIC_BETA else (2.0 if pdf.page_count <= 8 else 1.5)
         return analyze_pdf(
             pdf,
             assets_dir=assets_dir,
             languages=languages,
             images_scale=scale,
-            layout_batch_size=2,
+            layout_batch_size=1 if PUBLIC_BETA else 2,
             ocr_batch_size=1,
+            generate_picture_images=_LOW_MEM_PICTURES,
         )
 
     parts: list[DocumentIR] = []
@@ -119,9 +135,11 @@ def analyze_pdf_batched(
                 images_scale=1.0,
                 layout_batch_size=1,
                 ocr_batch_size=1,
+                generate_picture_images=_LOW_MEM_PICTURES,
             )
             _offset_ir_pages(ir, start)
             parts.append(ir)
+            gc.collect()
         finally:
             chunk_path.unlink(missing_ok=True)
 
@@ -155,7 +173,7 @@ def convert_pdf(
     pdf = load_pdf(input_path)
     work_assets = assets_dir or input_path.parent / "assets"
 
-    use_batch = batch_pages or (4 if pdf.page_count > 8 else 0)
+    use_batch = _resolve_batch_pages(pdf.page_count, batch_pages)
     if use_batch and pdf.page_count > use_batch:
         ir = analyze_pdf_batched(
             pdf,
@@ -167,16 +185,25 @@ def convert_pdf(
     else:
         if progress_callback:
             progress_callback(0.2, "Analyzing document")
-        ir = analyze_pdf(pdf, assets_dir=work_assets, languages=languages)
+        ir = analyze_pdf(
+            pdf,
+            assets_dir=work_assets,
+            languages=languages,
+            images_scale=1.0 if PUBLIC_BETA else 2.0,
+            layout_batch_size=1 if PUBLIC_BETA else 4,
+            ocr_batch_size=1 if PUBLIC_BETA else 2,
+            generate_picture_images=_LOW_MEM_PICTURES,
+        )
 
-    if progress_callback:
-        progress_callback(0.88, "OCR labels inside figures")
-    ocr_image_labels(
-        ir,
-        input_path,
-        languages=languages or ir.source.languages,
-    )
-    tag_figure_captions(ir)
+    if SUPPLEMENT_OCR:
+        if progress_callback:
+            progress_callback(0.88, "OCR labels inside figures")
+        ocr_image_labels(
+            ir,
+            input_path,
+            languages=languages or ir.source.languages,
+        )
+        tag_figure_captions(ir)
     normalize_text_blocks(ir)
 
     if progress_callback:
@@ -193,7 +220,7 @@ def convert_pdf(
     if layout_mode in ("visual", "both", "layout"):
         if progress_callback:
             progress_callback(0.92, "Rendering page backgrounds")
-        bg_paths = render_pdf_pages(input_path, page_bg_dir, dpi=150)
+        bg_paths = render_pdf_pages(input_path, page_bg_dir, dpi=PAGE_BG_DPI)
         for i, p in enumerate(ir.pages):
             if i < len(bg_paths):
                 p.background_image = str(bg_paths[i])

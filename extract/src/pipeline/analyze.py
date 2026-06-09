@@ -208,12 +208,13 @@ def analyze_pdf(
     images_scale: float = 2.0,
     layout_batch_size: int = 4,
     ocr_batch_size: int = 2,
+    generate_picture_images: bool = True,
 ) -> DocumentIR:
     lang = languages or ["ru", "en"]
     pipeline_options = PdfPipelineOptions(
         do_ocr=True,
         do_table_structure=True,
-        generate_picture_images=True,
+        generate_picture_images=generate_picture_images,
         images_scale=images_scale,
         layout_batch_size=layout_batch_size,
         ocr_batch_size=ocr_batch_size,

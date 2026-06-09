@@ -10,11 +10,22 @@ PROJECT_ROOT = EXTRACT_ROOT
 DATA_DIR = Path(os.environ.get("OCR_DOCS_DATA_DIR", EXTRACT_ROOT / "data"))
 JOBS_DIR = DATA_DIR / "jobs"
 
-_PUBLIC_BETA = os.environ.get("EXTRACT_PUBLIC_BETA", "").lower() in ("1", "true", "yes")
-_DEFAULT_MAX_BYTES = 20_971_520 if _PUBLIC_BETA else 52_428_800  # 20 MB beta / 50 MB local
-_DEFAULT_MAX_PAGES = 15 if _PUBLIC_BETA else 100
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.lower() in ("1", "true", "yes")
+
+
+PUBLIC_BETA = _env_bool("EXTRACT_PUBLIC_BETA", False)
+_DEFAULT_MAX_BYTES = 20_971_520 if PUBLIC_BETA else 52_428_800  # 20 MB beta / 50 MB local
+_DEFAULT_MAX_PAGES = 10 if PUBLIC_BETA else 100
 
 MAX_BYTES = int(os.environ.get("OCR_DOCS_MAX_BYTES", _DEFAULT_MAX_BYTES))
 MAX_PAGES = int(os.environ.get("OCR_DOCS_MAX_PAGES", _DEFAULT_MAX_PAGES))
-JOB_TIMEOUT = int(os.environ.get("OCR_DOCS_JOB_TIMEOUT", 300))
+JOB_TIMEOUT = int(os.environ.get("OCR_DOCS_JOB_TIMEOUT", 900 if PUBLIC_BETA else 300))
+DEFAULT_BATCH_PAGES = int(os.environ.get("OCR_DOCS_BATCH_PAGES", 2 if PUBLIC_BETA else 4))
+SUPPLEMENT_OCR = _env_bool("OCR_DOCS_SUPPLEMENT_OCR", not PUBLIC_BETA)
+PAGE_BG_DPI = int(os.environ.get("OCR_DOCS_PAGE_BG_DPI", 120 if PUBLIC_BETA else 150))
+MAX_CONCURRENT_JOBS = int(os.environ.get("OCR_DOCS_MAX_CONCURRENT_JOBS", 1 if PUBLIC_BETA else 2))
 DEFAULT_LANGUAGES = os.environ.get("OCR_DOCS_LANGUAGES", "ru,en").split(",")

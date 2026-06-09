@@ -14,7 +14,14 @@ import fitz
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
-from src.config import DEFAULT_LANGUAGES, JOBS_DIR, MAX_BYTES, MAX_PAGES
+from src.config import (
+    DEFAULT_LANGUAGES,
+    JOBS_DIR,
+    MAX_BYTES,
+    MAX_CONCURRENT_JOBS,
+    MAX_PAGES,
+    PUBLIC_BETA,
+)
 from src.job_cleanup import cleanup_old_jobs
 from src.worker import read_job_meta, run_job, write_job_meta
 
@@ -78,7 +85,13 @@ async def create_job(
     if page_count < 1:
         raise HTTPException(400, "PDF has no pages")
     if page_count > MAX_PAGES:
-        raise HTTPException(422, f"PDF exceeds {MAX_PAGES} pages")
+        raise HTTPException(422, f"PDF exceeds {MAX_PAGES} pages (beta limit)")
+
+    if PUBLIC_BETA and len(_running) >= MAX_CONCURRENT_JOBS:
+        raise HTTPException(
+            429,
+            "Сервер занят другим документом. Подождите и попробуйте снова.",
+        )
 
     cleanup_old_jobs()
 
