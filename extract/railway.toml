@@ -1,0 +1,11 @@
+# Railway service config — set Root Directory to `extract` in project settings.
+# Docs: ../docs/DEPLOY_EXTRACT.md
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

@@ -9,8 +9,7 @@ https://beaver20007.github.io/magical-pdf/
 ```
 
 - **Защитить** — полностью в браузере, без сервера.
-- **Распознать** — UI на Pages + облачный Extract API (бета). Настройка: [`docs/DEPLOY_EXTRACT.md`](docs/DEPLOY_EXTRACT.md).  
-  Deploy API: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://dashboard.render.com/select-repo?type=blueprint)
+- **Распознать** — UI на Pages + облачный Extract API (бета). Деплой API: [**Railway**](https://railway.app/dashboard) (Root Directory `extract`) — [`docs/DEPLOY_EXTRACT.md`](docs/DEPLOY_EXTRACT.md).
 
 ## Part of DOCRAFT ecosystem
 

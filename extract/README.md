@@ -15,6 +15,11 @@ $env:HF_HUB_DISABLE_SSL_VERIFICATION = "1"   # if corporate SSL
 
 API: http://127.0.0.1:8765 — Swagger at `/docs`.
 
+## Public beta (Railway)
+
+Deploy from repo with **Root Directory** = `extract` — see [`../docs/DEPLOY_EXTRACT.md`](../docs/DEPLOY_EXTRACT.md).  
+Config: [`railway.toml`](railway.toml), [`Dockerfile`](Dockerfile).
+
 ## Jobs data
 
 `extract/data/jobs/` (gitignored). Override with `OCR_DOCS_DATA_DIR`.
