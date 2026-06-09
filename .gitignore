@@ -44,6 +44,11 @@ src-tauri/icons/icon.iconset/
 src-tauri/icons/* [0-9].png
 src-tauri/icons/* [0-9].icns
 
+# Extract Python sidecar
+extract/.venv/
+extract/data/
+extract/**/__pycache__/
+
 # Temporary files
 tmp/
 .tmp/

@@ -50,8 +50,8 @@ User → magical-pdf UI (Extract tab)
 
 Copy verbatim first, refactor later:
 
-- [ ] `src/pipeline/` → `extract/pipeline/`
-- [ ] `src/api/`, `src/worker.py`, `src/config.py`
+- [x] `src/pipeline/` → `extract/src/pipeline/` (Phase 5.1)
+- [x] `src/api/`, `src/worker.py`, `src/config.py` (Phase 5.1)
 - [ ] `docs/IR_SCHEMA.md` mirror → `extract/docs/` or link to docraft
 - [ ] Worker: `layout_mode="layout"` default; auto PPTX if landscape
 - [ ] Drop `both` mode from user-facing UI (internal debug only)
