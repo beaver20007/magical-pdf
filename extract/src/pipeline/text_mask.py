@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from src.pipeline.ir import Bbox, TextBlock
+from src.pipeline.ir import Bbox, TableBlock, TextBlock
 
 
 def _pad_bbox(bbox: Bbox, pad: float) -> Bbox:
@@ -75,5 +75,33 @@ def mask_page_background(
     output_path: Path,
     *,
     pad: float = 0.004,
+    table_blocks: list[TableBlock] | None = None,
 ) -> Path:
-    return mask_text_regions(bg_path, page_text_blocks, output_path, pad=pad, adaptive=True)
+    """Mask text and table areas so they can be re-emitted as editable Word content."""
+    img = Image.open(bg_path).convert("RGB")
+    w, h = img.size
+    draw = ImageDraw.Draw(img)
+
+    # Mask text blocks with adaptive background color.
+    for block in page_text_blocks:
+        extra = 0.006 if block.role == "caption" else pad
+        bb = _pad_bbox(block.bbox, extra)
+        x0, y0 = int(bb.x * w), int(bb.y * h)
+        x1, y1 = int((bb.x + bb.w) * w), int((bb.y + bb.h) * h)
+        if x1 <= x0 or y1 <= y0:
+            continue
+        color = _sample_fill(img, x0, y0, x1, y1)
+        draw.rectangle([x0, y0, x1, y1], fill=color)
+
+    # Mask table regions with white — removes the raster table so Word table shows cleanly.
+    for tblock in (table_blocks or []):
+        bb = _pad_bbox(tblock.bbox, pad)
+        x0, y0 = int(bb.x * w), int(bb.y * h)
+        x1, y1 = int((bb.x + bb.w) * w), int((bb.y + bb.h) * h)
+        if x1 <= x0 or y1 <= y0:
+            continue
+        draw.rectangle([x0, y0, x1, y1], fill=(255, 255, 255))
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(output_path, format="PNG")
+    return output_path

@@ -8,7 +8,9 @@ from pathlib import Path
 from docx import Document
 from docx.enum.text import WD_LINE_SPACING
 from docx.oxml import parse_xml
+from docx.oxml.ns import qn
 from docx.shared import Pt
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 from src.pipeline.ir import DocumentIR, ImageBlock, Page, TableBlock, TextBlock, TextRun
 from src.pipeline.text_mask import mask_page_background
@@ -16,6 +18,9 @@ from src.pipeline.text_mask import mask_page_background
 _PT_TO_EMU = 12700
 _SHAPE_ID = 2000
 _DEFAULT_FONT = "Garamond"
+# Fallback to Times New Roman which ships with Windows and supports Cyrillic.
+_FALLBACK_FONT = "Times New Roman"
+_CYRILLIC_SAFE_FONTS = {"Garamond", "Garamond-Bold"}
 
 
 def _next_id() -> int:
@@ -47,10 +52,13 @@ def _bbox_pt(bbox, page: Page) -> tuple[float, float, float, float]:
 
 def _word_font(name: str | None, bold: bool) -> str:
     if not name:
-        return _DEFAULT_FONT
+        return _FALLBACK_FONT
     base = name.replace("-Bold", "").replace(",Bold", "").strip()
     if not base:
-        base = _DEFAULT_FONT
+        return _FALLBACK_FONT
+    # Garamond doesn't include Cyrillic in standard Windows installs — use Times New Roman.
+    if base in _CYRILLIC_SAFE_FONTS:
+        return _FALLBACK_FONT
     return base
 
 
@@ -90,6 +98,52 @@ def _runs_xml(runs: list[TextRun]) -> str:
             </w:r>"""
         )
     return "".join(parts) if parts else "<w:r><w:t></w:t></w:r>"
+
+
+def _anchor_image_xml(
+    rel_id: str,
+    width_pt: float,
+    height_pt: float,
+    shape_id: int,
+) -> str:
+    """Full-page background image anchored at (0,0) behind all content."""
+    w_e, h_e = _emu(width_pt), _emu(height_pt)
+    return f"""
+    <w:drawing xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+        xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+        xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+        xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+      <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"
+          relativeHeight="1" behindDoc="1" locked="1" layoutInCell="1" allowOverlap="0">
+        <wp:simplePos x="0" y="0"/>
+        <wp:positionH relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionH>
+        <wp:positionV relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionV>
+        <wp:extent cx="{w_e}" cy="{h_e}"/>
+        <wp:effectExtent l="0" t="0" r="0" b="0"/>
+        <wp:wrapNone/>
+        <wp:docPr id="{shape_id}" name="Background {shape_id}"/>
+        <wp:cNvGraphicFramePr/>
+        <a:graphic>
+          <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+            <pic:pic>
+              <pic:nvPicPr>
+                <pic:cNvPr id="{shape_id}" name="Background"/>
+                <pic:cNvPicPr><a:picLocks noChangeAspect="1"/></pic:cNvPicPr>
+              </pic:nvPicPr>
+              <pic:blipFill>
+                <a:blip r:embed="{rel_id}"/>
+                <a:stretch><a:fillRect/></a:stretch>
+              </pic:blipFill>
+              <pic:spPr>
+                <a:xfrm><a:off x="0" y="0"/><a:ext cx="{w_e}" cy="{h_e}"/></a:xfrm>
+                <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+              </pic:spPr>
+            </pic:pic>
+          </a:graphicData>
+        </a:graphic>
+      </wp:anchor>
+    </w:drawing>"""
 
 
 def _anchor_textbox_runs_xml(
@@ -274,6 +328,71 @@ def _page_text_blocks(ir: DocumentIR, page_index: int) -> list[TextBlock]:
     return blocks
 
 
+def _inline_to_behind_anchor(run, shape_id: int) -> None:
+    """Convert the last inline picture in run to a behind-doc anchored drawing."""
+    from lxml import etree
+    NS_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+
+    drawing = run._r.find(qn("w:drawing"))
+    if drawing is None:
+        return
+    inline = drawing.find(qn("wp:inline"))
+    if inline is None:
+        return
+
+    extent = inline.find(qn("wp:extent"))
+    cx = extent.get("cx", "7556500") if extent is not None else "7556500"
+    cy = extent.get("cy", "10693400") if extent is not None else "10693400"
+
+    # Build anchor element with same children as inline but add position/wrap.
+    anchor = etree.SubElement(drawing, qn("wp:anchor"))
+    anchor.set("distT", "0"); anchor.set("distB", "0")
+    anchor.set("distL", "0"); anchor.set("distR", "0")
+    anchor.set("simplePos", "0")
+    anchor.set("relativeHeight", "1")
+    anchor.set("behindDoc", "1")
+    anchor.set("locked", "1")
+    anchor.set("layoutInCell", "1")
+    anchor.set("allowOverlap", "0")
+
+    sp = etree.SubElement(anchor, qn("wp:simplePos"))
+    sp.set("x", "0"); sp.set("y", "0")
+
+    ph = etree.SubElement(anchor, qn("wp:positionH"))
+    ph.set("relativeFrom", "page")
+    po = etree.SubElement(ph, qn("wp:posOffset"))
+    po.text = "0"
+
+    pv = etree.SubElement(anchor, qn("wp:positionV"))
+    pv.set("relativeFrom", "page")
+    po2 = etree.SubElement(pv, qn("wp:posOffset"))
+    po2.text = "0"
+
+    ext2 = etree.SubElement(anchor, qn("wp:extent"))
+    ext2.set("cx", cx); ext2.set("cy", cy)
+
+    ee = etree.SubElement(anchor, qn("wp:effectExtent"))
+    ee.set("l", "0"); ee.set("t", "0"); ee.set("r", "0"); ee.set("b", "0")
+
+    etree.SubElement(anchor, qn("wp:wrapNone"))
+
+    dp = etree.SubElement(anchor, qn("wp:docPr"))
+    dp.set("id", str(shape_id)); dp.set("name", f"Background {shape_id}")
+
+    etree.SubElement(anchor, qn("wp:cNvGraphicFramePr"))
+
+    # Move graphic element from inline to anchor
+    graphic = inline.find(
+        "{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"
+    )
+    if graphic is not None:
+        inline.remove(graphic)
+        anchor.append(graphic)
+
+    # Remove inline from drawing
+    drawing.remove(inline)
+
+
 def emit_docx_native_fidelity(
     ir: DocumentIR,
     output_path: Path,
@@ -304,9 +423,11 @@ def emit_docx_native_fidelity(
         page_texts = _page_text_blocks(ir, pi)
         page_tables = _page_table_blocks(ir, pi)
 
-        if bg and bg.exists() and page_texts:
+        if bg and bg.exists():
             masked = work_mask / f"native_page_{pi:03d}.png"
-            bg_use = mask_page_background(bg, page_texts, masked, pad=0.002)
+            bg_use = mask_page_background(
+                bg, page_texts, masked, pad=0.002, table_blocks=page_tables
+            )
         else:
             bg_use = bg
 
@@ -314,12 +435,16 @@ def emit_docx_native_fidelity(
         pf = para.paragraph_format
         pf.space_before = Pt(0)
         pf.space_after = Pt(0)
-        pf.line_spacing_rule = WD_LINE_SPACING.EXACTLY
-        pf.line_spacing = Pt(0.1)
 
         run = para.add_run()
+
+        # Background: add as inline then convert to behindDoc anchor so it sits behind text.
         if bg_use and Path(bg_use).exists():
-            run.add_picture(str(bg_use), width=Pt(page.width_pt), height=Pt(page.height_pt))
+            try:
+                run.add_picture(str(bg_use), width=Pt(page.width_pt), height=Pt(page.height_pt))
+                _inline_to_behind_anchor(run, _next_id())
+            except Exception:
+                pass
 
         for block in page_texts:
             runs = _runs_for_block(block)
