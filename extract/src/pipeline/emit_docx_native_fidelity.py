@@ -363,6 +363,85 @@ def _inline_to_behind_anchor(run, shape_id: int) -> None:
     drawing.remove(inline)
 
 
+def _emit_text_para(doc: Document, block: TextBlock, page: Page) -> None:
+    """Add a standard paragraph for a text block (no floating, pure flow layout)."""
+    from docx.shared import RGBColor
+    para = doc.add_paragraph()
+    pf = para.paragraph_format
+    pf.space_before = Pt(2)
+    pf.space_after = Pt(2)
+    if block.role == "title":
+        para.style = "Heading 1"
+        pf.alignment = 1  # CENTER
+
+    for tr in block.runs:
+        run = para.add_run(tr.text)
+        run.bold = getattr(tr, "bold", False)
+        font_size = max(8, int(tr.font_size_pt)) if getattr(tr, "font_size_pt", None) else 11
+        run.font.size = Pt(font_size)
+        run.font.name = _FALLBACK_FONT
+
+
+def _table_body_flow_xml(rows: list[list[str]], page_width_pt: float) -> str:
+    """Body-level table in natural document flow — no absolute positioning."""
+    if not rows:
+        return ""
+    col_count = max(len(r) for r in rows)
+    if col_count == 0:
+        return ""
+
+    def twip(pt: float) -> int:
+        return max(1, int(pt * 20))
+
+    usable_width = page_width_pt - 72  # subtract 1 inch total margins equivalent
+    col_w_twip = max(1, twip(usable_width) // col_count)
+    tbl_w_twip = col_w_twip * col_count
+
+    def cell_xml(text: str) -> str:
+        safe = html.escape(str(text), quote=False)
+        return (
+            f'<w:tc><w:tcPr>'
+            f'<w:tcW w:w="{col_w_twip}" w:type="dxa"/>'
+            f'<w:tcBorders>'
+            f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
+            f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
+            f'<w:left w:val="single" w:sz="4" w:color="000000"/>'
+            f'<w:right w:val="single" w:sz="4" w:color="000000"/>'
+            f'</w:tcBorders>'
+            f'<w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>'
+            f'</w:tcPr>'
+            f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>'
+            f'<w:r><w:rPr><w:sz w:val="18"/>'
+            f'<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
+            f'</w:rPr><w:t xml:space="preserve">{safe}</w:t></w:r></w:p></w:tc>'
+        )
+
+    rows_xml = "".join(
+        f'<w:tr>{"".join(cell_xml(row[ci] if ci < len(row) else "") for ci in range(col_count))}</w:tr>'
+        for row in rows
+    )
+    grid_xml = "".join(f'<w:gridCol w:w="{col_w_twip}"/>' for _ in range(col_count))
+
+    return (
+        f'<w:tbl>'
+        f'<w:tblPr>'
+        f'<w:tblW w:w="{tbl_w_twip}" w:type="dxa"/>'
+        f'<w:jc w:val="center"/>'
+        f'<w:tblBorders>'
+        f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:left w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:right w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:insideH w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:insideV w:val="single" w:sz="4" w:color="000000"/>'
+        f'</w:tblBorders>'
+        f'</w:tblPr>'
+        f'<w:tblGrid>{grid_xml}</w:tblGrid>'
+        f'{rows_xml}'
+        f'</w:tbl>'
+    )
+
+
 def emit_docx_native_fidelity(
     ir: DocumentIR,
     output_path: Path,
@@ -389,57 +468,38 @@ def emit_docx_native_fidelity(
             doc.add_section()
         _set_section(doc.sections[-1], page)
 
-        bg = page_backgrounds[pi] if pi < len(page_backgrounds) else None
         page_texts = _page_text_blocks(ir, pi)
         page_tables = _page_table_blocks(ir, pi)
 
-        if bg and bg.exists():
-            masked = work_mask / f"native_page_{pi:03d}.png"
-            bg_use = mask_page_background(
-                bg, page_texts, masked, pad=0.002, table_blocks=page_tables
-            )
-        else:
-            bg_use = bg
+        # Sort all blocks by vertical position to emit in reading order.
+        table_y = {id(t): t.bbox.y for t in page_tables}
+        text_y  = {id(t): t.bbox.y for t in page_texts}
 
-        para = doc.add_paragraph()
-        pf = para.paragraph_format
-        pf.space_before = Pt(0)
-        pf.space_after = Pt(0)
+        # Emit text blocks that come BEFORE any table.
+        table_top_y = min((t.bbox.y for t in page_tables), default=1.0)
+        table_bot_y = max((t.bbox.y + t.bbox.h for t in page_tables), default=0.0)
 
-        run = para.add_run()
+        for block in sorted(page_texts, key=lambda b: b.bbox.y):
+            if block.bbox.y >= table_top_y:
+                break
+            _emit_text_para(doc, block, page)
 
-        # Background: add as inline then convert to behindDoc anchor so it sits behind text.
-        if bg_use and Path(bg_use).exists():
-            try:
-                run.add_picture(str(bg_use), width=Pt(page.width_pt), height=Pt(page.height_pt))
-                _inline_to_behind_anchor(run, _next_id())
-            except Exception:
-                pass
-
-        for block in page_texts:
-            runs = _runs_for_block(block)
-            if not runs:
-                continue
-            left, top, width, height = _bbox_pt(block.bbox, page)
-            run._r.append(
-                parse_xml(
-                    _anchor_textbox_runs_xml(runs, left, top, width, height, _next_id())
-                )
-            )
-
-        # Tables: body-level floating elements using w:tblpPr for correct positioning.
+        # Emit tables as proper body-level Word tables (no tblpPr — natural flow).
         _W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
         for tblock in page_tables:
             if not tblock.rows:
                 continue
-            left, top, width, _ = _bbox_pt(tblock.bbox, page)
-            inner = _table_body_xml(tblock.rows, left, top, width)
+            _, _, width, _ = _bbox_pt(tblock.bbox, page)
+            inner = _table_body_flow_xml(tblock.rows, page.width_pt)
             if inner:
-                # Wrap with namespace declaration so lxml can parse it.
                 wrapped = inner.replace("<w:tbl>", f"<w:tbl {_W_NS}>", 1)
                 doc.element.body.append(parse_xml(wrapped))
 
-        # Raster logos and line art remain in the masked background layer.
+        # Emit text blocks that come AFTER the table.
+        for block in sorted(page_texts, key=lambda b: b.bbox.y):
+            if block.bbox.y < table_bot_y:
+                continue
+            _emit_text_para(doc, block, page)
 
     doc.save(output_path)
     return output_path
