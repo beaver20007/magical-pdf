@@ -248,6 +248,7 @@ def _table_body_xml(
             f'<w:left w:val="single" w:sz="4" w:color="000000"/>'
             f'<w:right w:val="single" w:sz="4" w:color="000000"/>'
             f'</w:tcBorders>'
+            f'<w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>'
             f'</w:tcPr>'
             f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>'
             f'<w:r><w:rPr><w:sz w:val="18"/><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/></w:rPr>'
