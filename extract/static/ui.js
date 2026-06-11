@@ -5,6 +5,13 @@ import {
   isPublicExtractBeta,
 } from "./nav.js";
 
+// When running inside Tauri desktop app, start the extract server automatically.
+if (window.__TAURI__?.core?.invoke) {
+  window.__TAURI__.core.invoke("ensure_extract_server").catch((e) => {
+    console.warn("ensure_extract_server:", e);
+  });
+}
+
 const fileInput = document.getElementById("fileInput");
 const dropZone = document.getElementById("dropZone");
 const fileHint = document.getElementById("fileHint");
