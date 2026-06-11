@@ -217,29 +217,31 @@ def _page_table_blocks(ir: DocumentIR, page_index: int) -> list[TableBlock]:
     return blocks
 
 
-def _table_xml(
+def _table_body_xml(
     rows: list[list[str]],
     left_pt: float,
     top_pt: float,
     width_pt: float,
-    height_pt: float,
-    shape_id: int,
 ) -> str:
-    """Positioned floating table as DrawingML textbox containing an OOXML table."""
+    """Body-level floating table using w:tblpPr for absolute page-relative positioning."""
     if not rows:
         return ""
     col_count = max(len(r) for r in rows)
     if col_count == 0:
         return ""
 
-    col_w = max(1, int(width_pt / col_count))
-    col_w_emu = _emu(col_w)
+    # Use twips (1/20 pt) for w:tblpPr and w:tcW.
+    def twip(pt: float) -> int:
+        return max(1, int(pt * 20))
+
+    col_w_twip = max(1, twip(width_pt) // col_count)
+    tbl_w_twip = col_w_twip * col_count
 
     def cell_xml(text: str) -> str:
         safe = html.escape(str(text), quote=False)
         return (
             f'<w:tc><w:tcPr>'
-            f'<w:tcW w:w="{col_w_emu}" w:type="dxa"/>'
+            f'<w:tcW w:w="{col_w_twip}" w:type="dxa"/>'
             f'<w:tcBorders>'
             f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
             f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
@@ -248,73 +250,40 @@ def _table_xml(
             f'</w:tcBorders>'
             f'</w:tcPr>'
             f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>'
-            f'<w:r><w:rPr><w:sz w:val="18"/></w:rPr>'
+            f'<w:r><w:rPr><w:sz w:val="18"/><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/></w:rPr>'
             f'<w:t xml:space="preserve">{safe}</w:t></w:r></w:p></w:tc>'
         )
 
-    rows_xml = ""
-    for row in rows:
-        cells = "".join(cell_xml(row[ci] if ci < len(row) else "") for ci in range(col_count))
-        rows_xml += f"<w:tr>{cells}</w:tr>"
+    rows_xml = "".join(
+        f'<w:tr>{"".join(cell_xml(row[ci] if ci < len(row) else "") for ci in range(col_count))}</w:tr>'
+        for row in rows
+    )
 
-    tbl_xml = (
+    grid_xml = "".join(f'<w:gridCol w:w="{col_w_twip}"/>' for _ in range(col_count))
+
+    x_twip = twip(left_pt)
+    y_twip = twip(top_pt)
+
+    return (
         f'<w:tbl>'
         f'<w:tblPr>'
-        f'<w:tblStyle w:val="TableGrid"/>'
-        f'<w:tblW w:w="{_emu(width_pt)}" w:type="dxa"/>'
+        f'<w:tblpPr w:horzAnchor="page" w:vertAnchor="page"'
+        f' w:tblpX="{x_twip}" w:tblpY="{y_twip}"'
+        f' w:leftFromText="0" w:rightFromText="0" w:topFromText="0" w:bottomFromText="0"/>'
+        f'<w:tblW w:w="{tbl_w_twip}" w:type="dxa"/>'
         f'<w:tblBorders>'
+        f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:left w:val="single" w:sz="4" w:color="000000"/>'
+        f'<w:right w:val="single" w:sz="4" w:color="000000"/>'
         f'<w:insideH w:val="single" w:sz="4" w:color="000000"/>'
         f'<w:insideV w:val="single" w:sz="4" w:color="000000"/>'
         f'</w:tblBorders>'
         f'</w:tblPr>'
-        f'<w:tblGrid>{_grid_cols(col_count, col_w_emu)}</w:tblGrid>'
+        f'<w:tblGrid>{grid_xml}</w:tblGrid>'
         f'{rows_xml}'
         f'</w:tbl>'
     )
-
-    left_e, top_e = _emu(left_pt), _emu(top_pt)
-    w_e, h_e = _emu(width_pt), _emu(max(height_pt, 20.0))
-
-    return f"""
-    <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
-      <mc:Choice Requires="wps">
-        <w:drawing xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-            xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
-          <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"
-              relativeHeight="251658241" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">
-            <wp:simplePos x="0" y="0"/>
-            <wp:positionH relativeFrom="page"><wp:posOffset>{left_e}</wp:posOffset></wp:positionH>
-            <wp:positionV relativeFrom="page"><wp:posOffset>{top_e}</wp:posOffset></wp:positionV>
-            <wp:extent cx="{w_e}" cy="{h_e}"/>
-            <wp:effectExtent l="0" t="0" r="0" b="0"/>
-            <wp:wrapNone/>
-            <wp:docPr id="{shape_id}" name="Table {shape_id}"/>
-            <wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>
-            <a:graphic>
-              <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
-                <wps:wsp>
-                  <wps:cNvSpPr txBox="1"/>
-                  <wps:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="{w_e}" cy="{h_e}"/></a:xfrm>
-                    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-                    <a:noFill/>
-                    <a:ln w="0"><a:noFill/></a:ln>
-                  </wps:spPr>
-                  <wps:txbx>
-                    <w:txbxContent xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-                      {tbl_xml}
-                    </w:txbxContent>
-                  </wps:txbx>
-                  <wps:bodyPr wrap="square" lIns="36000" tIns="36000" rIns="36000" bIns="36000"/>
-                </wps:wsp>
-              </a:graphicData>
-            </a:graphic>
-          </wp:anchor>
-        </w:drawing>
-      </mc:Choice>
-    </mc:AlternateContent>"""
 
 
 def _page_text_blocks(ir: DocumentIR, page_index: int) -> list[TextBlock]:
@@ -457,13 +426,17 @@ def emit_docx_native_fidelity(
                 )
             )
 
+        # Tables: body-level floating elements using w:tblpPr for correct positioning.
+        _W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
         for tblock in page_tables:
             if not tblock.rows:
                 continue
-            left, top, width, height = _bbox_pt(tblock.bbox, page)
-            xml = _table_xml(tblock.rows, left, top, width, height, _next_id())
-            if xml:
-                run._r.append(parse_xml(xml))
+            left, top, width, _ = _bbox_pt(tblock.bbox, page)
+            inner = _table_body_xml(tblock.rows, left, top, width)
+            if inner:
+                # Wrap with namespace declaration so lxml can parse it.
+                wrapped = inner.replace("<w:tbl>", f"<w:tbl {_W_NS}>", 1)
+                doc.element.body.append(parse_xml(wrapped))
 
         # Raster logos and line art remain in the masked background layer.
 
