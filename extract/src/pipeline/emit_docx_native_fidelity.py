@@ -382,8 +382,22 @@ def _emit_text_para(doc: Document, block: TextBlock, page: Page) -> None:
         run.font.name = _FALLBACK_FONT
 
 
-def _table_body_flow_xml(rows: list[list[str]], page_width_pt: float) -> str:
-    """Body-level table in natural document flow — no absolute positioning."""
+def _row_to_spans(row: list[str | None]) -> list[tuple[str, int]]:
+    """Convert a row with None colspan-markers into (text, colspan) pairs."""
+    cells: list[tuple[str, int]] = []
+    i = 0
+    while i < len(row):
+        val = row[i]
+        span = 1
+        while i + span < len(row) and row[i + span] is None:
+            span += 1
+        cells.append((val or "", span))
+        i += span
+    return cells
+
+
+def _table_body_flow_xml(rows: list[list[str | None]], page_width_pt: float) -> str:
+    """Body-level table with colspan support (None = continuation cell)."""
     if not rows:
         return ""
     col_count = max(len(r) for r in rows)
@@ -393,15 +407,18 @@ def _table_body_flow_xml(rows: list[list[str]], page_width_pt: float) -> str:
     def twip(pt: float) -> int:
         return max(1, int(pt * 20))
 
-    usable_width = page_width_pt - 72  # subtract 1 inch total margins equivalent
+    usable_width = page_width_pt - 72
     col_w_twip = max(1, twip(usable_width) // col_count)
     tbl_w_twip = col_w_twip * col_count
 
-    def cell_xml(text: str) -> str:
+    def cell_xml(text: str, colspan: int) -> str:
         safe = html.escape(str(text), quote=False)
+        cell_w = col_w_twip * colspan
+        grid_span = f'<w:gridSpan w:val="{colspan}"/>' if colspan > 1 else ""
         return (
             f'<w:tc><w:tcPr>'
-            f'<w:tcW w:w="{col_w_twip}" w:type="dxa"/>'
+            f'<w:tcW w:w="{cell_w}" w:type="dxa"/>'
+            f'{grid_span}'
             f'<w:tcBorders>'
             f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
             f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
@@ -417,7 +434,7 @@ def _table_body_flow_xml(rows: list[list[str]], page_width_pt: float) -> str:
         )
 
     rows_xml = "".join(
-        f'<w:tr>{"".join(cell_xml(row[ci] if ci < len(row) else "") for ci in range(col_count))}</w:tr>'
+        f'<w:tr>{"".join(cell_xml(t, s) for t, s in _row_to_spans(row))}</w:tr>'
         for row in rows
     )
     grid_xml = "".join(f'<w:gridCol w:w="{col_w_twip}"/>' for _ in range(col_count))

@@ -40,6 +40,13 @@ class MetaInfo(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class TextRun(BaseModel):
+    text: str = ""
+    font_name: str | None = None
+    font_size_pt: float | None = None
+    bold: bool = False
+
+
 class TextBlock(BaseModel):
     type: Literal["text"] = "text"
     id: str = Field(default_factory=lambda: f"b-{uuid4().hex[:8]}")
@@ -59,6 +66,7 @@ class TextBlock(BaseModel):
     confidence: float = 1.0
     font_size_pt: float | None = None
     font_name: str | None = None
+    runs: list[TextRun] = Field(default_factory=list)
 
 
 class TableBlock(BaseModel):
@@ -66,7 +74,7 @@ class TableBlock(BaseModel):
     id: str = Field(default_factory=lambda: f"b-{uuid4().hex[:8]}")
     page_index: int = 0
     bbox: Bbox = Field(default_factory=Bbox)
-    rows: list[list[str]] = Field(default_factory=list)
+    rows: list[list[str | None]] = Field(default_factory=list)
     confidence: float = 1.0
 
 

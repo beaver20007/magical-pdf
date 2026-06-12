@@ -261,16 +261,20 @@ def extract_native_pdf(
                     bb = _norm_bbox(rect, pw, ph)
                     table_zones.append(bb)
 
-                    # Extract structured rows — each cell text via clip extraction.
-                    rows_data: list[list[str]] = []
+                    # Extract structured rows. None in extract() = colspan continuation.
+                    rows_data: list[list[str | None]] = []
                     raw_rows = table.extract()
                     for ri, row in enumerate(table.rows):
-                        row_cells: list[str] = []
+                        row_cells: list[str | None] = []
                         for ci, cell_rect in enumerate(row.cells):
-                            cell_text = ""
                             if ri < len(raw_rows) and ci < len(raw_rows[ri]):
                                 raw = raw_rows[ri][ci]
-                                cell_text = str(raw).strip() if raw else ""
+                                if raw is None:
+                                    row_cells.append(None)
+                                    continue
+                                cell_text = str(raw).strip()
+                            else:
+                                cell_text = ""
                             if not cell_text and cell_rect is not None:
                                 clip_blocks = _lines_in_rect(
                                     page,
