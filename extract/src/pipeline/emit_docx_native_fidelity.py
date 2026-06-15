@@ -18,7 +18,6 @@ from src.pipeline.text_mask import mask_page_background
 _PT_TO_EMU = 12700
 _SHAPE_ID = 2000
 _DEFAULT_FONT = "Garamond"
-# Fallback to Times New Roman which ships with Windows and supports Cyrillic.
 _FALLBACK_FONT = "Times New Roman"
 _CYRILLIC_SAFE_FONTS = {"Garamond", "Garamond-Bold"}
 
@@ -56,7 +55,6 @@ def _word_font(name: str | None, bold: bool) -> str:
     base = name.replace("-Bold", "").replace(",Bold", "").strip()
     if not base:
         return _FALLBACK_FONT
-    # Garamond doesn't include Cyrillic in standard Windows installs — use Times New Roman.
     if base in _CYRILLIC_SAFE_FONTS:
         return _FALLBACK_FONT
     return base
@@ -100,6 +98,13 @@ def _runs_xml(runs: list[TextRun]) -> str:
     return "".join(parts) if parts else "<w:r><w:t></w:t></w:r>"
 
 
+_NS_W   = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+_NS_WP  = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+_NS_A   = "http://schemas.openxmlformats.org/drawingml/2006/main"
+_NS_PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture"
+_NS_R   = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+
+
 def _anchor_image_xml(
     rel_id: str,
     width_pt: float,
@@ -108,98 +113,44 @@ def _anchor_image_xml(
 ) -> str:
     """Full-page background image anchored at (0,0) behind all content."""
     w_e, h_e = _emu(width_pt), _emu(height_pt)
-    return f"""
-    <w:drawing xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-        xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-        xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-        xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
-        xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-      <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"
-          relativeHeight="1" behindDoc="1" locked="1" layoutInCell="1" allowOverlap="0">
-        <wp:simplePos x="0" y="0"/>
-        <wp:positionH relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionH>
-        <wp:positionV relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionV>
-        <wp:extent cx="{w_e}" cy="{h_e}"/>
-        <wp:effectExtent l="0" t="0" r="0" b="0"/>
-        <wp:wrapNone/>
-        <wp:docPr id="{shape_id}" name="Background {shape_id}"/>
-        <wp:cNvGraphicFramePr/>
-        <a:graphic>
-          <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
-            <pic:pic>
-              <pic:nvPicPr>
-                <pic:cNvPr id="{shape_id}" name="Background"/>
-                <pic:cNvPicPr><a:picLocks noChangeAspect="1"/></pic:cNvPicPr>
-              </pic:nvPicPr>
-              <pic:blipFill>
-                <a:blip r:embed="{rel_id}"/>
-                <a:stretch><a:fillRect/></a:stretch>
-              </pic:blipFill>
-              <pic:spPr>
-                <a:xfrm><a:off x="0" y="0"/><a:ext cx="{w_e}" cy="{h_e}"/></a:xfrm>
-                <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-              </pic:spPr>
-            </pic:pic>
-          </a:graphicData>
-        </a:graphic>
-      </wp:anchor>
-    </w:drawing>"""
-
-
-def _anchor_textbox_runs_xml(
-    runs: list[TextRun],
-    left_pt: float,
-    top_pt: float,
-    width_pt: float,
-    height_pt: float,
-    shape_id: int,
-) -> str:
-    runs_body = _runs_xml(runs)
-    left_e, top_e = _emu(left_pt), _emu(top_pt)
-    w_e, h_e = _emu(width_pt), _emu(height_pt)
-    return f"""
-    <mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
-      <mc:Choice Requires="wps">
-        <w:drawing xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
-            xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
-          <wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"
-              relativeHeight="251658240" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">
-            <wp:simplePos x="0" y="0"/>
-            <wp:positionH relativeFrom="page"><wp:posOffset>{left_e}</wp:posOffset></wp:positionH>
-            <wp:positionV relativeFrom="page"><wp:posOffset>{top_e}</wp:posOffset></wp:positionV>
-            <wp:extent cx="{w_e}" cy="{h_e}"/>
-            <wp:effectExtent l="0" t="0" r="0" b="0"/>
-            <wp:wrapNone/>
-            <wp:docPr id="{shape_id}" name="NativeText {shape_id}"/>
-            <wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>
-            <a:graphic>
-              <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
-                <wps:wsp>
-                  <wps:cNvSpPr txBox="1"/>
-                  <wps:spPr>
-                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="{w_e}" cy="{h_e}"/></a:xfrm>
-                    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-                    <a:noFill/>
-                    <a:ln w="0"><a:noFill/></a:ln>
-                  </wps:spPr>
-                  <wps:txbx>
-                    <w:txbxContent>
-                      <w:p>
-                        <w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr>
-                        {runs_body}
-                      </w:p>
-                    </w:txbxContent>
-                  </wps:txbx>
-                  <wps:bodyPr wrap="square" lIns="0" tIns="0" rIns="0" bIns="0"/>
-                </wps:wsp>
-              </a:graphicData>
-            </a:graphic>
-          </wp:anchor>
-        </w:drawing>
-      </mc:Choice>
-    </mc:AlternateContent>"""
+    return (
+        f'<w:drawing'
+        f' xmlns:w="{_NS_W}"'
+        f' xmlns:wp="{_NS_WP}"'
+        f' xmlns:a="{_NS_A}"'
+        f' xmlns:pic="{_NS_PIC}"'
+        f' xmlns:r="{_NS_R}">'
+        f'<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"'
+        f' relativeHeight="1" behindDoc="1" locked="1" layoutInCell="1" allowOverlap="0">'
+        f'<wp:simplePos x="0" y="0"/>'
+        f'<wp:positionH relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionH>'
+        f'<wp:positionV relativeFrom="page"><wp:posOffset>0</wp:posOffset></wp:positionV>'
+        f'<wp:extent cx="{w_e}" cy="{h_e}"/>'
+        f'<wp:effectExtent l="0" t="0" r="0" b="0"/>'
+        f'<wp:wrapNone/>'
+        f'<wp:docPr id="{shape_id}" name="Background{shape_id}"/>'
+        f'<wp:cNvGraphicFramePr/>'
+        f'<a:graphic>'
+        f'<a:graphicData uri="{_NS_PIC}">'
+        f'<pic:pic>'
+        f'<pic:nvPicPr>'
+        f'<pic:cNvPr id="{shape_id}" name="Background"/>'
+        f'<pic:cNvPicPr><a:picLocks noChangeAspect="1"/></pic:cNvPicPr>'
+        f'</pic:nvPicPr>'
+        f'<pic:blipFill>'
+        f'<a:blip r:embed="{rel_id}"/>'
+        f'<a:stretch><a:fillRect/></a:stretch>'
+        f'</pic:blipFill>'
+        f'<pic:spPr>'
+        f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{w_e}" cy="{h_e}"/></a:xfrm>'
+        f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+        f'</pic:spPr>'
+        f'</pic:pic>'
+        f'</a:graphicData>'
+        f'</a:graphic>'
+        f'</wp:anchor>'
+        f'</w:drawing>'
+    )
 
 
 def _grid_cols(col_count: int, col_w_emu: int) -> str:
@@ -217,76 +168,6 @@ def _page_table_blocks(ir: DocumentIR, page_index: int) -> list[TableBlock]:
     return blocks
 
 
-def _table_body_xml(
-    rows: list[list[str]],
-    left_pt: float,
-    top_pt: float,
-    width_pt: float,
-) -> str:
-    """Body-level floating table using w:tblpPr for absolute page-relative positioning."""
-    if not rows:
-        return ""
-    col_count = max(len(r) for r in rows)
-    if col_count == 0:
-        return ""
-
-    # Use twips (1/20 pt) for w:tblpPr and w:tcW.
-    def twip(pt: float) -> int:
-        return max(1, int(pt * 20))
-
-    col_w_twip = max(1, twip(width_pt) // col_count)
-    tbl_w_twip = col_w_twip * col_count
-
-    def cell_xml(text: str) -> str:
-        safe = html.escape(str(text), quote=False)
-        return (
-            f'<w:tc><w:tcPr>'
-            f'<w:tcW w:w="{col_w_twip}" w:type="dxa"/>'
-            f'<w:tcBorders>'
-            f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
-            f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
-            f'<w:left w:val="single" w:sz="4" w:color="000000"/>'
-            f'<w:right w:val="single" w:sz="4" w:color="000000"/>'
-            f'</w:tcBorders>'
-            f'<w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>'
-            f'</w:tcPr>'
-            f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>'
-            f'<w:r><w:rPr><w:sz w:val="18"/><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/></w:rPr>'
-            f'<w:t xml:space="preserve">{safe}</w:t></w:r></w:p></w:tc>'
-        )
-
-    rows_xml = "".join(
-        f'<w:tr>{"".join(cell_xml(row[ci] if ci < len(row) else "") for ci in range(col_count))}</w:tr>'
-        for row in rows
-    )
-
-    grid_xml = "".join(f'<w:gridCol w:w="{col_w_twip}"/>' for _ in range(col_count))
-
-    x_twip = twip(left_pt)
-    y_twip = twip(top_pt)
-
-    return (
-        f'<w:tbl>'
-        f'<w:tblPr>'
-        f'<w:tblpPr w:horzAnchor="page" w:vertAnchor="page"'
-        f' w:tblpX="{x_twip}" w:tblpY="{y_twip}"'
-        f' w:leftFromText="0" w:rightFromText="0" w:topFromText="0" w:bottomFromText="0"/>'
-        f'<w:tblW w:w="{tbl_w_twip}" w:type="dxa"/>'
-        f'<w:tblBorders>'
-        f'<w:top w:val="single" w:sz="4" w:color="000000"/>'
-        f'<w:bottom w:val="single" w:sz="4" w:color="000000"/>'
-        f'<w:left w:val="single" w:sz="4" w:color="000000"/>'
-        f'<w:right w:val="single" w:sz="4" w:color="000000"/>'
-        f'<w:insideH w:val="single" w:sz="4" w:color="000000"/>'
-        f'<w:insideV w:val="single" w:sz="4" w:color="000000"/>'
-        f'</w:tblBorders>'
-        f'</w:tblPr>'
-        f'<w:tblGrid>{grid_xml}</w:tblGrid>'
-        f'{rows_xml}'
-        f'</w:tbl>'
-    )
-
-
 def _page_text_blocks(ir: DocumentIR, page_index: int) -> list[TextBlock]:
     blocks: list[TextBlock] = []
     for b in ir.blocks:
@@ -296,90 +177,6 @@ def _page_text_blocks(ir: DocumentIR, page_index: int) -> list[TextBlock]:
             blocks.append(b)
     blocks.sort(key=lambda x: (x.bbox.y, x.bbox.x))
     return blocks
-
-
-def _inline_to_behind_anchor(run, shape_id: int) -> None:
-    """Convert the last inline picture in run to a behind-doc anchored drawing."""
-    from lxml import etree
-    NS_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
-
-    drawing = run._r.find(qn("w:drawing"))
-    if drawing is None:
-        return
-    inline = drawing.find(qn("wp:inline"))
-    if inline is None:
-        return
-
-    extent = inline.find(qn("wp:extent"))
-    cx = extent.get("cx", "7556500") if extent is not None else "7556500"
-    cy = extent.get("cy", "10693400") if extent is not None else "10693400"
-
-    # Build anchor element with same children as inline but add position/wrap.
-    anchor = etree.SubElement(drawing, qn("wp:anchor"))
-    anchor.set("distT", "0"); anchor.set("distB", "0")
-    anchor.set("distL", "0"); anchor.set("distR", "0")
-    anchor.set("simplePos", "0")
-    anchor.set("relativeHeight", "1")
-    anchor.set("behindDoc", "1")
-    anchor.set("locked", "1")
-    anchor.set("layoutInCell", "1")
-    anchor.set("allowOverlap", "0")
-
-    sp = etree.SubElement(anchor, qn("wp:simplePos"))
-    sp.set("x", "0"); sp.set("y", "0")
-
-    ph = etree.SubElement(anchor, qn("wp:positionH"))
-    ph.set("relativeFrom", "page")
-    po = etree.SubElement(ph, qn("wp:posOffset"))
-    po.text = "0"
-
-    pv = etree.SubElement(anchor, qn("wp:positionV"))
-    pv.set("relativeFrom", "page")
-    po2 = etree.SubElement(pv, qn("wp:posOffset"))
-    po2.text = "0"
-
-    ext2 = etree.SubElement(anchor, qn("wp:extent"))
-    ext2.set("cx", cx); ext2.set("cy", cy)
-
-    ee = etree.SubElement(anchor, qn("wp:effectExtent"))
-    ee.set("l", "0"); ee.set("t", "0"); ee.set("r", "0"); ee.set("b", "0")
-
-    etree.SubElement(anchor, qn("wp:wrapNone"))
-
-    dp = etree.SubElement(anchor, qn("wp:docPr"))
-    dp.set("id", str(shape_id)); dp.set("name", f"Background {shape_id}")
-
-    etree.SubElement(anchor, qn("wp:cNvGraphicFramePr"))
-
-    # Move graphic element from inline to anchor
-    graphic = inline.find(
-        "{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"
-    )
-    if graphic is not None:
-        inline.remove(graphic)
-        anchor.append(graphic)
-
-    # Remove inline from drawing
-    drawing.remove(inline)
-
-
-def _emit_text_para(doc: Document, block: TextBlock, page: Page) -> None:
-    """Add a standard paragraph for a text block (no floating, pure flow layout)."""
-    from docx.shared import RGBColor
-    para = doc.add_paragraph()
-    pf = para.paragraph_format
-    pf.space_before = Pt(2)
-    pf.space_after = Pt(2)
-    if block.role == "title":
-        para.style = "Heading 1"
-        pf.alignment = 1  # CENTER
-
-    for tr in block.runs:
-        run = para.add_run(tr.text)
-        run.bold = getattr(tr, "bold", False)
-        font_size = max(8, int(tr.font_size_pt)) if getattr(tr, "font_size_pt", None) else 11
-        run.font.size = Pt(font_size)
-        run.font.name = _FALLBACK_FONT
 
 
 def _row_to_spans(row: list[str | None]) -> list[tuple[str, int]]:
@@ -396,8 +193,36 @@ def _row_to_spans(row: list[str | None]) -> list[tuple[str, int]]:
     return cells
 
 
-def _table_body_flow_xml(rows: list[list[str | None]], page_width_pt: float) -> str:
-    """Body-level table with colspan support (None = continuation cell)."""
+
+def _cell_runs_xml(runs: list[TextRun], default_sz: int = 18) -> str:
+    """Build w:r XML from runs, falling back to default_sz if no size info."""
+    if not runs:
+        return f'<w:r><w:rPr><w:sz w:val="{default_sz}"/><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr><w:t></w:t></w:r>'
+    parts: list[str] = []
+    for run in runs:
+        if not run.text:
+            continue
+        safe = html.escape(run.text, quote=False)
+        font = _word_font(run.font_name, run.bold)
+        size = run.font_size_pt or 9.0
+        sz = max(14, min(72, int(round(size * 2))))
+        bold_xml = "<w:b/>" if run.bold or "Bold" in (run.font_name or "") else ""
+        parts.append(
+            f'<w:r><w:rPr>'
+            f'<w:rFonts w:ascii="{font}" w:hAnsi="{font}" w:cs="{font}"/>'
+            f'<w:sz w:val="{sz}"/>'
+            f'{bold_xml}'
+            f'</w:rPr><w:t xml:space="preserve">{safe}</w:t></w:r>'
+        )
+    return "".join(parts) if parts else f'<w:r><w:rPr><w:sz w:val="{default_sz}"/></w:rPr><w:t></w:t></w:r>'
+
+
+def _table_body_flow_xml(
+    tblock: TableBlock,
+    page_width_pt: float,
+) -> str:
+    """Body-level table with colspan support, proportional columns, and per-cell font runs."""
+    rows = tblock.rows
     if not rows:
         return ""
     col_count = max(len(r) for r in rows)
@@ -407,14 +232,31 @@ def _table_body_flow_xml(rows: list[list[str | None]], page_width_pt: float) -> 
     def twip(pt: float) -> int:
         return max(1, int(pt * 20))
 
-    usable_width = page_width_pt - 72
-    col_w_twip = max(1, twip(usable_width) // col_count)
-    tbl_w_twip = col_w_twip * col_count
+    # Compute column widths: use detected PDF widths if available, else equal split.
+    col_widths_pt = tblock.col_widths_pt
+    if col_widths_pt and len(col_widths_pt) == col_count and sum(col_widths_pt) > 0:
+        total_w = sum(col_widths_pt)
+        # Scale to usable page width (leave 36pt each side).
+        usable = page_width_pt - 72
+        scale = usable / total_w
+        col_w_twips = [max(1, twip(w * scale)) for w in col_widths_pt]
+    else:
+        usable = page_width_pt - 72
+        single = max(1, twip(usable) // col_count)
+        col_w_twips = [single] * col_count
 
-    def cell_xml(text: str, colspan: int) -> str:
-        safe = html.escape(str(text), quote=False)
-        cell_w = col_w_twip * colspan
+    tbl_w_twip = sum(col_w_twips)
+    grid_xml = "".join(f'<w:gridCol w:w="{w}"/>' for w in col_w_twips)
+
+    cell_runs_data = tblock.cell_runs  # list[list[list[TextRun]]]
+    cell_aligns_data = tblock.cell_aligns  # list[list[str]]
+
+    def cell_xml(text: str, colspan: int, ci_logical: int, runs: list[TextRun], align: str = "left") -> str:
+        end = min(ci_logical + colspan, len(col_w_twips))
+        cell_w = sum(col_w_twips[ci_logical:end]) if end > ci_logical else 1000
         grid_span = f'<w:gridSpan w:val="{colspan}"/>' if colspan > 1 else ""
+        runs_xml = _cell_runs_xml(runs)
+        jc = f'<w:jc w:val="center"/>' if align == "center" else ""
         return (
             f'<w:tc><w:tcPr>'
             f'<w:tcW w:w="{cell_w}" w:type="dxa"/>'
@@ -427,17 +269,74 @@ def _table_body_flow_xml(rows: list[list[str | None]], page_width_pt: float) -> 
             f'</w:tcBorders>'
             f'<w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>'
             f'</w:tcPr>'
-            f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>'
-            f'<w:r><w:rPr><w:sz w:val="18"/>'
-            f'<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>'
-            f'</w:rPr><w:t xml:space="preserve">{safe}</w:t></w:r></w:p></w:tc>'
+            f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/>{jc}</w:pPr>'
+            f'{runs_xml}</w:p></w:tc>'
         )
 
-    rows_xml = "".join(
-        f'<w:tr>{"".join(cell_xml(t, s) for t, s in _row_to_spans(row))}</w:tr>'
-        for row in rows
-    )
-    grid_xml = "".join(f'<w:gridCol w:w="{col_w_twip}"/>' for _ in range(col_count))
+    # First pass: decompose all rows into (text, span, runs, align) tuples.
+    all_orig: list[list[tuple[str, int, list[TextRun], str]]] = []
+    for ri, row in enumerate(rows):
+        orig_row: list[tuple[str, int, list[TextRun], str]] = []
+        ci = 0
+        i = 0
+        while i < len(row):
+            span = 1
+            while i + span < len(row) and row[i + span] is None:
+                span += 1
+            text = row[i] or ""
+            runs: list[TextRun] = []
+            align = "left"
+            if cell_runs_data and ri < len(cell_runs_data) and ci < len(cell_runs_data[ri]):
+                runs = cell_runs_data[ri][ci]
+            if cell_aligns_data and ri < len(cell_aligns_data) and ci < len(cell_aligns_data[ri]):
+                align = cell_aligns_data[ri][ci]
+            orig_row.append((text, span, runs, align))
+            ci += span
+            i += span
+        all_orig.append(orig_row)
+
+    # Second pass: merge consecutive wide-span continuation rows.
+    # Pattern: [('', 1, [], 'left'), (text, N>=4, runs, align)] where continuation has no bold first run.
+    merged_orig: list[list[tuple[str, int, list[TextRun], str]]] = []
+    for orig in all_orig:
+        # Skip all-empty rows (PDF layout artifacts).
+        if all(t == "" for t, _, _, _ in orig):
+            continue
+        is_wide = (len(orig) == 2 and orig[0][0] == "" and orig[0][1] == 1 and orig[1][1] >= 4)
+        first_run_bold = bool(orig[1][2] and orig[1][2][0].bold) if is_wide else False
+        is_continuation = is_wide and not first_run_bold
+        if is_continuation and merged_orig:
+            prev = merged_orig[-1]
+            prev_is_wide = (len(prev) == 2 and prev[0][0] == "" and prev[0][1] == 1 and prev[1][1] >= 4)
+            if prev_is_wide:
+                prev_text, prev_span, prev_runs, prev_align = prev[1]
+                curr_text, _, curr_runs, _ = orig[1]
+                joined = (prev_text.rstrip() + " " + curr_text.strip()).strip()
+                merged_orig[-1] = [prev[0], (joined, prev_span, prev_runs + curr_runs, prev_align)]
+                continue
+        merged_orig.append(list(orig))
+
+    rows_xml_parts: list[str] = []
+    for orig in merged_orig:
+        # Merge leading empty x1 cell into adjacent wide content cell.
+        if (len(orig) >= 2
+                and orig[0][0] == ""
+                and orig[0][1] == 1
+                and orig[1][0].strip()
+                and orig[1][1] >= 4):
+            merged_span = orig[0][1] + orig[1][1]
+            final = [(orig[1][0], merged_span, orig[1][2], orig[1][3])] + list(orig[2:])
+        else:
+            final = orig
+
+        ci_logical = 0
+        cells_xml = ""
+        for text, colspan, runs, align in final:
+            cells_xml += cell_xml(text, colspan, ci_logical, runs, align)
+            ci_logical += colspan
+        rows_xml_parts.append(f'<w:tr>{cells_xml}</w:tr>')
+
+    rows_xml = "".join(rows_xml_parts)
 
     return (
         f'<w:tbl>'
@@ -459,6 +358,126 @@ def _table_body_flow_xml(rows: list[list[str | None]], page_width_pt: float) -> 
     )
 
 
+_NS_WPS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+
+
+def _emit_text_para(doc: Document, block: TextBlock, page: Page) -> None:
+    para = doc.add_paragraph()
+    pf = para.paragraph_format
+    pf.space_before = Pt(1)
+    pf.space_after = Pt(1)
+
+    # Determine alignment from bbox: if block center is past 40% of page width → center.
+    block_center_x = block.bbox.x + block.bbox.w / 2
+    if block_center_x > 0.40:
+        pf.alignment = 1  # CENTER
+    else:
+        pf.alignment = 0  # LEFT
+
+    for tr in block.runs:
+        run = para.add_run(tr.text)
+        run.bold = getattr(tr, "bold", False)
+        font_size = max(8, int(tr.font_size_pt)) if getattr(tr, "font_size_pt", None) else 11
+        run.font.size = Pt(font_size)
+        run.font.name = _FALLBACK_FONT
+
+
+def _emit_text_box(doc: Document, block: TextBlock, page: Page) -> None:
+    """Emit a text block as a floating anchored text box positioned at exact PDF coordinates."""
+    x_emu = int(block.bbox.x * page.width_pt * _PT_TO_EMU)
+    y_emu = int(block.bbox.y * page.height_pt * _PT_TO_EMU)
+    w_emu = max(int(block.bbox.w * page.width_pt * _PT_TO_EMU), 10000)
+    h_emu = max(int(block.bbox.h * page.height_pt * _PT_TO_EMU), 10000)
+
+    runs_xml = _runs_xml(block.runs)
+    shape_id = _next_id()
+
+    anchor_xml = (
+        f'<w:drawing'
+        f' xmlns:w="{_NS_W}"'
+        f' xmlns:wp="{_NS_WP}"'
+        f' xmlns:a="{_NS_A}"'
+        f' xmlns:wps="{_NS_WPS}">'
+        f'<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0"'
+        f' relativeHeight="251658240" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">'
+        f'<wp:simplePos x="0" y="0"/>'
+        f'<wp:positionH relativeFrom="page"><wp:posOffset>{x_emu}</wp:posOffset></wp:positionH>'
+        f'<wp:positionV relativeFrom="page"><wp:posOffset>{y_emu}</wp:posOffset></wp:positionV>'
+        f'<wp:extent cx="{w_emu}" cy="{h_emu}"/>'
+        f'<wp:effectExtent l="0" t="0" r="0" b="0"/>'
+        f'<wp:wrapNone/>'
+        f'<wp:docPr id="{shape_id}" name="TextBox{shape_id}"/>'
+        f'<wp:cNvGraphicFramePr/>'
+        f'<a:graphic>'
+        f'<a:graphicData uri="{_NS_WPS}">'
+        f'<wps:wsp>'
+        f'<wps:cNvSpPr txBx="1"><a:spLocks noChangeArrowheads="1"/></wps:cNvSpPr>'
+        f'<wps:spPr>'
+        f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{w_emu}" cy="{h_emu}"/></a:xfrm>'
+        f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+        f'<a:noFill/>'
+        f'<a:ln><a:noFill/></a:ln>'
+        f'</wps:spPr>'
+        f'<wps:txbx>'
+        f'<w:txbxContent>'
+        f'<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>'
+        f'{runs_xml}'
+        f'</w:p>'
+        f'</w:txbxContent>'
+        f'</wps:txbx>'
+        f'<wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="clip" horzOverflow="clip"'
+        f' vert="horz" wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0">'
+        f'<a:normAutofit/>'
+        f'</wps:bodyPr>'
+        f'</wps:wsp>'
+        f'</a:graphicData>'
+        f'</a:graphic>'
+        f'</wp:anchor>'
+        f'</w:drawing>'
+    )
+
+    para = doc.add_paragraph()
+    para.paragraph_format.space_before = Pt(0)
+    para.paragraph_format.space_after = Pt(0)
+    run = para.add_run()
+    run._r.append(parse_xml(anchor_xml))
+
+
+def _add_background_image(doc: Document, bg_path: Path, page: Page) -> None:
+    """Insert full-page masked background as a behindDoc=1 anchor in a zero-height paragraph."""
+    para = doc.add_paragraph()
+    para.paragraph_format.space_before = Pt(0)
+    para.paragraph_format.space_after = Pt(0)
+    run = para.add_run()
+    run.add_picture(str(bg_path), width=Pt(page.width_pt), height=Pt(page.height_pt))
+
+    # Extract the relationship id from the inline picture, then replace the entire
+    # <w:drawing> with a new one that uses a behindDoc anchor instead of inline.
+    r_elem = run._r
+    drawing = r_elem.find(qn("w:drawing"))
+    if drawing is None:
+        return
+    inline = drawing.find(qn("wp:inline"))
+    if inline is None:
+        return
+
+    ns_a = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    ns_r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    blip = inline.find(f".//{{{ns_a}}}blip")
+    if blip is None:
+        return
+    rel_id = blip.get(f"{{{ns_r}}}embed")
+    if not rel_id:
+        return
+
+    # Replace the whole <w:drawing> element with a new anchor-based one.
+    shape_id = _next_id()
+    anchor_xml = _anchor_image_xml(rel_id, page.width_pt, page.height_pt, shape_id)
+    new_drawing = parse_xml(anchor_xml)
+    r_elem.remove(drawing)
+    r_elem.append(new_drawing)
+
+
 def emit_docx_native_fidelity(
     ir: DocumentIR,
     output_path: Path,
@@ -467,7 +486,7 @@ def emit_docx_native_fidelity(
     mask_dir: Path | None = None,
     dpi: int = 200,
 ) -> Path:
-    """Masked page raster (borders, logo) + PDF-positioned editable text with native fonts."""
+    """Masked page raster (borders, logo) + editable text table with PDF fonts."""
     global _SHAPE_ID
     _SHAPE_ID = 2000
 
@@ -479,6 +498,8 @@ def emit_docx_native_fidelity(
     pages = ir.pages or [Page(index=i) for i in range(ir.source.page_count)]
     page_count = ir.source.page_count
 
+    _W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
+
     for pi in range(page_count):
         page = pages[pi] if pi < len(pages) else Page(index=pi)
         if pi > 0:
@@ -488,35 +509,37 @@ def emit_docx_native_fidelity(
         page_texts = _page_text_blocks(ir, pi)
         page_tables = _page_table_blocks(ir, pi)
 
-        # Sort all blocks by vertical position to emit in reading order.
-        table_y = {id(t): t.bbox.y for t in page_tables}
-        text_y  = {id(t): t.bbox.y for t in page_texts}
-
-        # Emit text blocks that come BEFORE any table.
         table_top_y = min((t.bbox.y for t in page_tables), default=1.0)
         table_bot_y = max((t.bbox.y + t.bbox.h for t in page_tables), default=0.0)
 
-        for block in sorted(page_texts, key=lambda b: b.bbox.y):
-            if block.bbox.y >= table_top_y:
-                break
-            _emit_text_para(doc, block, page)
+        # Insert background image if provided for this page.
+        bg_path = page_backgrounds[pi] if pi < len(page_backgrounds) else None
+        if bg_path and bg_path.exists():
+            _add_background_image(doc, bg_path, page)
 
-        # Emit tables as proper body-level Word tables (no tblpPr — natural flow).
-        _W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
-        for tblock in page_tables:
-            if not tblock.rows:
-                continue
-            _, _, width, _ = _bbox_pt(tblock.bbox, page)
-            inner = _table_body_flow_xml(tblock.rows, page.width_pt)
-            if inner:
-                wrapped = inner.replace("<w:tbl>", f"<w:tbl {_W_NS}>", 1)
-                doc.element.body.append(parse_xml(wrapped))
+        if page_tables:
+            # Document-style page: emit text as in-flow paragraphs, tables as Word tables.
+            for block in sorted(page_texts, key=lambda b: b.bbox.y):
+                if block.bbox.y >= table_top_y:
+                    break
+                _emit_text_para(doc, block, page)
 
-        # Emit text blocks that come AFTER the table.
-        for block in sorted(page_texts, key=lambda b: b.bbox.y):
-            if block.bbox.y < table_bot_y:
-                continue
-            _emit_text_para(doc, block, page)
+            for tblock in page_tables:
+                if not tblock.rows:
+                    continue
+                inner = _table_body_flow_xml(tblock, page.width_pt)
+                if inner:
+                    wrapped = inner.replace("<w:tbl>", f"<w:tbl {_W_NS}>", 1)
+                    doc.element.body.append(parse_xml(wrapped))
+
+            for block in sorted(page_texts, key=lambda b: b.bbox.y):
+                if block.bbox.y < table_bot_y:
+                    continue
+                _emit_text_para(doc, block, page)
+        else:
+            # Slide-style page (no tables): emit all text as positioned floating text boxes.
+            for block in sorted(page_texts, key=lambda b: b.bbox.y):
+                _emit_text_box(doc, block, page)
 
     doc.save(output_path)
     return output_path

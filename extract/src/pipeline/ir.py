@@ -76,6 +76,9 @@ class TableBlock(BaseModel):
     bbox: Bbox = Field(default_factory=Bbox)
     rows: list[list[str | None]] = Field(default_factory=list)
     confidence: float = 1.0
+    col_widths_pt: list[float] = Field(default_factory=list)
+    cell_runs: list[list[list["TextRun"]]] = Field(default_factory=list)
+    cell_aligns: list[list[str]] = Field(default_factory=list)
 
 
 class ImageBlock(BaseModel):

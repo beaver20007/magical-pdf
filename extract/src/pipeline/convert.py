@@ -12,6 +12,8 @@ import fitz
 
 from src.config import DEFAULT_BATCH_PAGES, PAGE_BG_DPI, PUBLIC_BETA, SUPPLEMENT_OCR
 from src.pipeline.analyze import analyze_pdf
+from src.pipeline.native_extract import extract_native_pdf, is_native_pdf
+from src.pipeline.emit_docx_native_fidelity import emit_docx_native_fidelity
 from src.pipeline.emit_docx import emit_docx
 from src.pipeline.emit_docx_editable import emit_docx_editable
 from src.pipeline.emit_docx_layout import emit_docx_layout
@@ -173,6 +175,28 @@ def convert_pdf(
     input_path = Path(input_path)
     pdf = load_pdf(input_path)
     work_assets = assets_dir or input_path.parent / "assets"
+
+    if is_native_pdf(input_path):
+        if progress_callback:
+            progress_callback(0.2, "Native PDF extraction (text layer)")
+        ir = extract_native_pdf(pdf, assets_dir=work_assets, languages=languages)
+        page_bg_dir = work_assets / "page_backgrounds"
+        if progress_callback:
+            progress_callback(0.85, "Rendering page backgrounds")
+        bg_paths = render_pdf_pages(input_path, page_bg_dir, dpi=200)
+        for i, p in enumerate(ir.pages):
+            if i < len(bg_paths):
+                p.background_image = str(bg_paths[i])
+        if progress_callback:
+            progress_callback(0.95, "Emitting positioned native DOCX")
+        if manifest_path:
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
+            manifest_path.write_text(ir.model_dump_json(indent=2), encoding="utf-8")
+        if output_docx:
+            emit_docx_native_fidelity(ir, output_docx, page_backgrounds=bg_paths)
+        if output_pptx:
+            emit_pptx(ir, output_pptx, page_backgrounds=bg_paths)
+        return ir
 
     use_batch = _resolve_batch_pages(pdf.page_count, batch_pages)
     if use_batch and pdf.page_count > use_batch:

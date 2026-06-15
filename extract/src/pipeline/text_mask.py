@@ -77,30 +77,38 @@ def mask_page_background(
     pad: float = 0.004,
     table_blocks: list[TableBlock] | None = None,
 ) -> Path:
-    """Mask text and table areas so they can be re-emitted as editable Word content."""
+    """Mask text and table areas so they can be re-emitted as editable Word content.
+
+    Strategy: mask the ENTIRE region from y=0 down to the table bottom with white.
+    This eliminates logo/watermark bleed into the header and table area.
+    Only the area below the table (stamp + signature) remains visible.
+    """
     img = Image.open(bg_path).convert("RGB")
     w, h = img.size
     draw = ImageDraw.Draw(img)
 
-    # Mask text blocks with adaptive background color.
-    for block in page_text_blocks:
-        extra = 0.006 if block.role == "caption" else pad
-        bb = _pad_bbox(block.bbox, extra)
-        x0, y0 = int(bb.x * w), int(bb.y * h)
-        x1, y1 = int((bb.x + bb.w) * w), int((bb.y + bb.h) * h)
-        if x1 <= x0 or y1 <= y0:
-            continue
-        color = _sample_fill(img, x0, y0, x1, y1)
-        draw.rectangle([x0, y0, x1, y1], fill=color)
+    # Compute the lowest table boundary on this page.
+    table_bot_y = max(
+        (tblock.bbox.y + tblock.bbox.h for tblock in (table_blocks or [])),
+        default=0.0,
+    )
 
-    # Mask table regions with white — removes the raster table so Word table shows cleanly.
-    for tblock in (table_blocks or []):
-        bb = _pad_bbox(tblock.bbox, pad)
-        x0, y0 = int(bb.x * w), int(bb.y * h)
-        x1, y1 = int((bb.x + bb.w) * w), int((bb.y + bb.h) * h)
-        if x1 <= x0 or y1 <= y0:
-            continue
-        draw.rectangle([x0, y0, x1, y1], fill=(255, 255, 255))
+    if table_bot_y > 0:
+        # Mask everything from the top of the page down to table bottom + small pad.
+        # This cleanly removes watermarks/logos from the header and table zones.
+        mask_bottom = min(h, int((table_bot_y + 0.01) * h))
+        draw.rectangle([0, 0, w, mask_bottom], fill=(255, 255, 255))
+    else:
+        # No table found — fall back to masking individual text blocks.
+        for block in page_text_blocks:
+            extra = 0.006 if block.role == "caption" else pad
+            bb = _pad_bbox(block.bbox, extra)
+            x0, y0 = int(bb.x * w), int(bb.y * h)
+            x1, y1 = int((bb.x + bb.w) * w), int((bb.y + bb.h) * h)
+            if x1 <= x0 or y1 <= y0:
+                continue
+            color = _sample_fill(img, x0, y0, x1, y1)
+            draw.rectangle([x0, y0, x1, y1], fill=color)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(output_path, format="PNG")

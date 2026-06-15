@@ -261,31 +261,69 @@ def extract_native_pdf(
                     bb = _norm_bbox(rect, pw, ph)
                     table_zones.append(bb)
 
+                    # Detect actual column widths from first row cell rects.
+                    col_widths_pt: list[float] = []
+                    if table.rows:
+                        seen_x: dict[int, float] = {}
+                        for ci, cell_rect in enumerate(table.rows[0].cells):
+                            if cell_rect is not None:
+                                r = fitz.Rect(cell_rect)
+                                col_widths_pt.append(max(1.0, r.x1 - r.x0))
+                            else:
+                                col_widths_pt.append(0.0)
+
                     # Extract structured rows. None in extract() = colspan continuation.
                     rows_data: list[list[str | None]] = []
+                    cell_runs_data: list[list[list[TextRun]]] = []
+                    cell_aligns_data: list[list[str]] = []
                     raw_rows = table.extract()
                     for ri, row in enumerate(table.rows):
                         row_cells: list[str | None] = []
+                        row_cell_runs: list[list[TextRun]] = []
+                        row_cell_aligns: list[str] = []
                         for ci, cell_rect in enumerate(row.cells):
                             if ri < len(raw_rows) and ci < len(raw_rows[ri]):
                                 raw = raw_rows[ri][ci]
                                 if raw is None:
                                     row_cells.append(None)
+                                    row_cell_runs.append([])
+                                    row_cell_aligns.append("left")
                                     continue
                                 cell_text = str(raw).strip()
                             else:
                                 cell_text = ""
-                            if not cell_text and cell_rect is not None:
+                            cell_line_runs: list[TextRun] = []
+                            cell_align = "left"
+                            if cell_rect is not None:
+                                cr = fitz.Rect(cell_rect)
                                 clip_blocks = _lines_in_rect(
                                     page,
-                                    fitz.Rect(cell_rect),
+                                    cr,
                                     page_index=page_index,
                                     pw=pw,
                                     ph=ph,
                                 )
-                                cell_text = " ".join(b.text for b in clip_blocks).strip()
+                                for lb in clip_blocks:
+                                    cell_line_runs.extend(lb.runs)
+                                if not cell_text:
+                                    cell_text = " ".join(b.text for b in clip_blocks).strip()
+                                # Detect center alignment: average line center x ≈ cell center x.
+                                if clip_blocks:
+                                    cell_cx = (cr.x0 + cr.x1) / 2
+                                    line_centers = []
+                                    for lb in clip_blocks:
+                                        tl = lb.bbox.x * pw
+                                        tr = (lb.bbox.x + lb.bbox.w) * pw
+                                        line_centers.append((tl + tr) / 2)
+                                    avg_cx = sum(line_centers) / len(line_centers)
+                                    if abs(avg_cx - cell_cx) < (cr.x1 - cr.x0) * 0.20:
+                                        cell_align = "center"
                             row_cells.append(cell_text)
+                            row_cell_runs.append(cell_line_runs)
+                            row_cell_aligns.append(cell_align)
                         rows_data.append(row_cells)
+                        cell_runs_data.append(row_cell_runs)
+                        cell_aligns_data.append(row_cell_aligns)
 
                     if rows_data:
                         blocks.append(
@@ -294,6 +332,9 @@ def extract_native_pdf(
                                 bbox=bb,
                                 rows=rows_data,
                                 confidence=1.0,
+                                col_widths_pt=col_widths_pt,
+                                cell_runs=cell_runs_data,
+                                cell_aligns=cell_aligns_data,
                             )
                         )
             except Exception:
