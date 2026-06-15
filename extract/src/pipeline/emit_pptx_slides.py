@@ -119,16 +119,18 @@ class OcrWord(NamedTuple):
 
 
 import re as _re
-_ALPHANUM = _re.compile(r"[А-Яа-яёЁA-Za-z0-9]")
-_NOISE    = _re.compile(r"^[|\\/*+=(){}\[\]<>«»""''`^~@#$%&]{1,2}$")
+_ALPHANUM      = _re.compile(r"[А-Яа-яёЁA-Za-z0-9]")
+_CLEAN_ALNUM   = _re.compile(r"[А-Яа-яёЁA-Za-z0-9\-.,:%°+]")  # "чистые" символы
+_NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»“”‘’`^~@#$%&]{1,2}$")
 
 
 def _is_valid_ocr(text: str) -> bool:
     """
     Принимаем OCR-результат если:
     - длина >= 2
-    - содержит хотя бы 1 букву или цифру
+    - содержит хотя бы 1 кириллическую/латинскую букву или цифру
     - не является чисто-пунктуационным мусором
+    - ≥ 50% символов (без пробелов) — "чистые" (кирилица/латиница/цифры/знаки)
     """
     t = text.strip()
     if len(t) < 2:
@@ -137,6 +139,12 @@ def _is_valid_ocr(text: str) -> bool:
         return False
     if _NOISE.match(t):
         return False
+    # Проверяем долю "чистых" символов (≥ 50%) — фильтруем "ées éée" акцентный мусор
+    no_space = t.replace(" ", "")
+    if no_space:
+        clean_count = sum(1 for c in no_space if _CLEAN_ALNUM.match(c))
+        if clean_count / len(no_space) < 0.5:
+            return False
     return True
 
 
@@ -201,6 +209,13 @@ def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]
     except Exception as e:
         print(f"    Tesseract psm={psm} error: {e}")
         return []
+
+    iw, ih = img.size  # размер апскейлнутого изображения
+    # Максимальный допустимый размер bbox слова (в нативных пикселях):
+    # слово шире 40% или выше 25% изображения — PSM-артефакт, не реальная аннотация
+    max_word_w = iw * 0.40 / up_scale
+    max_word_h = ih * 0.25 / up_scale
+
     words: list[OcrWord] = []
     for j in range(len(data["text"])):
         txt = (data["text"][j] or "").strip()
@@ -214,6 +229,9 @@ def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]
         y0 = int(data["top"][j] / up_scale)
         x1 = int((data["left"][j] + data["width"][j]) / up_scale)
         y1 = int((data["top"][j] + data["height"][j]) / up_scale)
+        # Отбрасываем bbox слишком большого размера (шум PSM 6 / PSM 3)
+        if (x1 - x0) > max_word_w or (y1 - y0) > max_word_h:
+            continue
         words.append(OcrWord(text=txt, px0=x0, py0=y0, px1=x1, py1=y1, conf=conf / 100.0))
     return words
 
@@ -242,10 +260,11 @@ def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
     variants = _make_gray_variants(crop_img)
     all_words: list[OcrWord] = []
 
+    # Только PSM 11 (sparse text) — находит отдельные аннотации по всему чертежу.
+    # PSM 6 (uniform block) на технических чертежах создаёт гигантские мусорные bbox.
     for img_variant, up_scale in variants:
-        for psm in (11, 6):
-            batch = _run_tesseract(img_variant, psm=psm, up_scale=up_scale)
-            all_words = _merge_word_lists(all_words, batch, tol=12)
+        batch = _run_tesseract(img_variant, psm=11, up_scale=up_scale)
+        all_words = _merge_word_lists(all_words, batch, tol=12)
 
     return all_words
 
@@ -365,8 +384,12 @@ def _add_block_textbox(slide, block: dict) -> None:
                 fnt.color.rgb = _rgb_from_fitz(span.get("color"))
 
 
-def _group_ocr_into_lines(words: list[OcrWord]) -> list[list[OcrWord]]:
-    """Группирует OCR-слова с близкими y-координатами в визуальные строки."""
+def _group_ocr_into_lines(words: list[OcrWord],
+                          img_native_w: int = 0) -> list[list[OcrWord]]:
+    """Группирует OCR-слова с близкими y-координатами в визуальные строки.
+    Использует порог 40% высоты строки (не 70%) чтобы не сливать аннотации
+    на разных уровнях чертежа. Удаляет строки шириной > 60% изображения.
+    """
     if not words:
         return []
     sorted_w = sorted(words, key=lambda w: w.py0)
@@ -376,7 +399,7 @@ def _group_ocr_into_lines(words: list[OcrWord]) -> list[list[OcrWord]]:
     avg_h = max(sorted_w[0].py1 - sorted_w[0].py0, 1)
     for w in sorted_w[1:]:
         h = max(w.py1 - w.py0, 1)
-        threshold = max(4, avg_h * 0.7)
+        threshold = max(3, avg_h * 0.4)
         if abs(w.py0 - cur_y0) <= threshold:
             cur_line.append(w)
             avg_h = (avg_h + h) / 2
@@ -386,6 +409,14 @@ def _group_ocr_into_lines(words: list[OcrWord]) -> list[list[OcrWord]]:
             cur_y0 = w.py0
             avg_h = h
     lines.append(sorted(cur_line, key=lambda ww: ww.px0))
+
+    # Фильтруем строки, которые слишком широкие (мусор от PSM или неправильная группировка)
+    if img_native_w > 0:
+        max_line_w = img_native_w * 0.60
+        lines = [
+            ln for ln in lines
+            if (max(w.px1 for w in ln) - min(w.px0 for w in ln)) <= max_line_w
+        ]
     return lines
 
 
@@ -414,7 +445,8 @@ def _add_ocr_line_textbox(
     y_pt = img_pt_y + py0 * sy
     w_pt = max((px1 - px0) * sx * 1.05, 4.0)
     h_pt = max((py1 - py0) * sy * 1.3, 4.0)
-    font_size = max(5.0, (py1 - py0) * sy * 0.72)
+    # Аннотации на чертежах мелкие: не даём шрифту превысить 11pt
+    font_size = min(11.0, max(5.0, (py1 - py0) * sy * 0.72))
 
     txBox = slide.shapes.add_textbox(
         Emu(_emu(x_pt)), Emu(_emu(y_pt)),
@@ -638,7 +670,7 @@ def emit_pptx_slides(
         for cd in cropped_data:
             bx0, by0, bx1, by1 = cd["bbox_pt"]
             cw, ch = cd["crop_px"]
-            for line_words in _group_ocr_into_lines(cd["words"]):
+            for line_words in _group_ocr_into_lines(cd["words"], img_native_w=cw):
                 _add_ocr_line_textbox(
                     slide, line_words,
                     img_pt_x=bx0, img_pt_y=by0,
