@@ -1,4 +1,4 @@
-"""
+﻿"""
 emit_pptx_slides.py — конвертация slide-PDF в PPTX с редактируемым текстом.
 
 Архитектура (v5):
@@ -120,32 +120,52 @@ class OcrWord(NamedTuple):
 
 import re as _re
 _ALPHANUM      = _re.compile(r"[А-Яа-яёЁA-Za-z0-9]")
-_CLEAN_ALNUM   = _re.compile(r"[А-Яа-яёЁA-Za-z0-9\-.,:%°+]")  # "чистые" символы
-_NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»“”‘’`^~@#$%&]{1,2}$")
+# "чистые" символы — всё что может быть в реальной аннотации чертежа
+_CLEAN_ALNUM   = _re.compile(r"[А-Яа-яёЁA-Za-z0-9\-—.,:%°+=()①-⑨₁-₉/\\]")
+_NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»""''`^~@#$%&]{1,2}$")
+# Паттерн измерительного значения: —0.36, -1.13, ±0.05 и т.д.
+_MEASUREMENT   = _re.compile(r"^[—\-±]?\d+[.,]\d+$")
+# Одиночная заглавная латинская/кириллическая буква — размерный маркер (B, C, А, Б)
+_DIM_MARKER    = _re.compile(r"^[А-ЯA-Z]�?[₁₂₃₄₅₆₇₈₉]?$")
 
 
 def _is_valid_ocr(text: str) -> bool:
     """
     Принимаем OCR-результат если:
-    - длина >= 2
+    - длина >= 1 (одиночный маркер типа B, C, А)
     - содержит хотя бы 1 кириллическую/латинскую букву или цифру
     - не является чисто-пунктуационным мусором
-    - ≥ 50% символов (без пробелов) — "чистые" (кирилица/латиница/цифры/знаки)
+    - ≥ 40% символов (без пробелов) — "чистые"
     """
     t = text.strip()
-    if len(t) < 2:
+    if not t:
         return False
+    # Одиночный символ допустим только если это размерный маркер (заглавная буква)
+    if len(t) == 1:
+        return bool(_re.match(r"[А-ЯA-Z0-9]", t))
     if not _ALPHANUM.search(t):
         return False
     if _NOISE.match(t):
         return False
-    # Проверяем долю "чистых" символов (≥ 50%) — фильтруем "ées éée" акцентный мусор
+    # Фильтруем акцентный мусор "ées éée": доля "чистых" символов ≥ 40%
     no_space = t.replace(" ", "")
     if no_space:
         clean_count = sum(1 for c in no_space if _CLEAN_ALNUM.match(c))
-        if clean_count / len(no_space) < 0.5:
+        if clean_count / len(no_space) < 0.40:
             return False
     return True
+
+
+def _min_conf_for(text: str) -> int:
+    """Минимальный confidence в зависимости от типа текста."""
+    t = text.strip()
+    if len(t) == 1:
+        return 80   # одиночные символы: только при высокой уверенности
+    if _MEASUREMENT.match(t):
+        return 25   # числа-измерения: допускаем низкий conf (сложный фон)
+    if len(t) <= 2:
+        return 55   # короткие аббревиатуры
+    return 30       # всё остальное
 
 
 def _remove_hatching(gray_arr) -> object:
@@ -211,10 +231,11 @@ def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]
         return []
 
     iw, ih = img.size  # размер апскейлнутого изображения
-    # Максимальный допустимый размер bbox слова (в нативных пикселях):
-    # слово шире 40% или выше 25% изображения — PSM-артефакт, не реальная аннотация
-    max_word_w = iw * 0.40 / up_scale
-    max_word_h = ih * 0.25 / up_scale
+    # Максимальный допустимый размер bbox слова (в нативных пикселях).
+    # PSM 6 убран, но оставляем разумный лимит на случай аномальных bbox:
+    # слово шире 55% или выше 30% изображения — скорее всего артефакт
+    max_word_w = iw * 0.55 / up_scale
+    max_word_h = ih * 0.30 / up_scale
 
     words: list[OcrWord] = []
     for j in range(len(data["text"])):
@@ -222,14 +243,13 @@ def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]
         conf = int(data["conf"][j])
         if not txt or not _is_valid_ocr(txt):
             continue
-        min_conf = 60 if len(txt) <= 2 else 35
-        if conf < min_conf:
+        if conf < _min_conf_for(txt):
             continue
         x0 = int(data["left"][j] / up_scale)
         y0 = int(data["top"][j] / up_scale)
         x1 = int((data["left"][j] + data["width"][j]) / up_scale)
         y1 = int((data["top"][j] + data["height"][j]) / up_scale)
-        # Отбрасываем bbox слишком большого размера (шум PSM 6 / PSM 3)
+        # Отбрасываем bbox слишком большого размера (шум без PSM 6)
         if (x1 - x0) > max_word_w or (y1 - y0) > max_word_h:
             continue
         words.append(OcrWord(text=txt, px0=x0, py0=y0, px1=x1, py1=y1, conf=conf / 100.0))
@@ -410,9 +430,9 @@ def _group_ocr_into_lines(words: list[OcrWord],
             avg_h = h
     lines.append(sorted(cur_line, key=lambda ww: ww.px0))
 
-    # Фильтруем строки, которые слишком широкие (мусор от PSM или неправильная группировка)
+    # Фильтруем строки шире 80% изображения (без PSM 6 таких быть не должно)
     if img_native_w > 0:
-        max_line_w = img_native_w * 0.60
+        max_line_w = img_native_w * 0.80
         lines = [
             ln for ln in lines
             if (max(w.px1 for w in ln) - min(w.px0 for w in ln)) <= max_line_w
