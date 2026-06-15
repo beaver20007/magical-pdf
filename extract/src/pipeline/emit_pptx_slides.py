@@ -161,17 +161,34 @@ def _remove_hatching(gray_arr) -> object:
     return np.array(result)
 
 
-def _preprocess_for_ocr(crop_img: Image.Image, upscale: int = 2) -> tuple[Image.Image, float]:
-    """Апскейл + повышение контраста для Tesseract."""
+def _make_gray_variants(crop_img: Image.Image) -> list[tuple[Image.Image, float]]:
+    """
+    Возвращает несколько вариантов препроцессинга:
+    1. Luminosity-grayscale + контраст + 2x upscale
+    2. Min(R,G,B) + контраст + 2x upscale — цветной текст (синий, красный) становится чёрным
+    Всегда 2x upscale чтобы 4-6pt аннотации (≈20px native) стали ≥40px для Tesseract.
+    """
     from PIL import ImageEnhance
-    gray = crop_img.convert("L")
-    gray = ImageEnhance.Contrast(gray).enhance(2.5)
-    w, h = gray.size
-    if upscale > 1:
-        up = gray.resize((w * upscale, h * upscale), Image.LANCZOS)
-    else:
-        up = gray
-    return up.convert("RGB"), float(upscale)
+    import numpy as _np
+
+    w, h = crop_img.size
+    UPSCALE = 2
+    results: list[tuple[Image.Image, float]] = []
+
+    def _up(img: Image.Image) -> Image.Image:
+        return img.resize((w * UPSCALE, h * UPSCALE), Image.LANCZOS)
+
+    # Вариант 1: стандартный grayscale
+    g1 = ImageEnhance.Contrast(crop_img.convert("L")).enhance(2.5)
+    results.append((_up(g1).convert("RGB"), float(UPSCALE)))
+
+    # Вариант 2: min(R,G,B) — любой насыщенный цвет → чёрный
+    arr = _np.array(crop_img.convert("RGB"))
+    min_ch = _np.min(arr, axis=2).astype(_np.uint8)
+    g2 = ImageEnhance.Contrast(Image.fromarray(min_ch)).enhance(2.0)
+    results.append((_up(g2).convert("RGB"), float(UPSCALE)))
+
+    return results
 
 
 def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]:
@@ -201,34 +218,36 @@ def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]
     return words
 
 
-def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
-    """
-    OCR через Tesseract v5 (LSTM). Запускает psm 11 (sparse) + psm 6 (block),
-    объединяет результаты, убирает дубликаты по позиции.
-    Возвращает слова с координатами в ИСХОДНЫХ пикселях кропа.
-    """
-    # Для больших изображений нативного разрешения апскейл не нужен
-    w, h = crop_img.size
-    upscale = 1 if min(w, h) >= 800 else 2
-    upscaled, up_scale = _preprocess_for_ocr(crop_img, upscale=upscale)
-
-    words_11 = _run_tesseract(upscaled, psm=11, up_scale=up_scale)
-    words_6  = _run_tesseract(upscaled, psm=6,  up_scale=up_scale)
-
-    # Объединяем: добавляем из psm=6 те слова, которых нет в psm=11
-    # (сравниваем по центру bbox с допуском 5px)
+def _merge_word_lists(base: list[OcrWord], extra: list[OcrWord], tol: int = 8) -> list[OcrWord]:
+    """Добавляет слова из extra, которых нет в base (по центру bbox с допуском tol px)."""
     def _center(w: OcrWord):
         return ((w.px0 + w.px1) / 2, (w.py0 + w.py1) / 2)
-
-    existing = [_center(w) for w in words_11]
-    merged = list(words_11)
-    for w in words_6:
+    existing = [_center(w) for w in base]
+    merged = list(base)
+    for w in extra:
         cx, cy = _center(w)
-        if not any(abs(cx - ex) < 8 and abs(cy - ey) < 8 for ex, ey in existing):
+        if not any(abs(cx - ex) < tol and abs(cy - ey) < tol for ex, ey in existing):
             merged.append(w)
             existing.append((cx, cy))
-
     return merged
+
+
+def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
+    """
+    OCR через Tesseract v5 (LSTM).
+    Запускает несколько вариантов препроцессинга (grayscale + min-channel)
+    и режимов PSM (11=sparse, 6=block), объединяет результаты.
+    Возвращает слова с координатами в ИСХОДНЫХ пикселях кропа.
+    """
+    variants = _make_gray_variants(crop_img)
+    all_words: list[OcrWord] = []
+
+    for img_variant, up_scale in variants:
+        for psm in (11, 6):
+            batch = _run_tesseract(img_variant, psm=psm, up_scale=up_scale)
+            all_words = _merge_word_lists(all_words, batch, tol=12)
+
+    return all_words
 
 
 # ── Шрифт ────────────────────────────────────────────────────────────────────
