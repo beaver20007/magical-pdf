@@ -35,6 +35,13 @@ try:
 except Exception:
     _HAS_OCR_CACHE = False
 
+try:
+    import cv2 as _cv2
+    _HAS_CV2 = True
+except ImportError:
+    _cv2 = None  # type: ignore[assignment]
+    _HAS_CV2 = False
+
 _PT_TO_EMU = 12700
 
 _TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -148,9 +155,16 @@ _TECH_WHITELIST = frozenset({
     'мм', 'см', 'дм', 'км', 'кг', 'шт', 'пм', 'пл', 'вп', 'ту',
     'пвх', 'пп', 'дп', 'бв', 'пу', 'ду', 'дн', 'кн', 'мн', 'па',
     'dn', 'pp', 'pe', 'kg', 'mm', 'cm', 'wt', 'kw', 'hz', 'pvc',
+    'pp-r', 'pe-x', 'pvc-u', 'pvc-c', 'hdpe',
 })
 # Смешанные буквенно-цифровые технические токены: Dn100, DN50, PN16, PVC32, Dn110
-_TECH_MIXED = _re.compile(r'^[A-Za-z]{1,4}\d{2,4}[a-zA-Z]?$')
+# Цифры обязательны — чтобы не захватывать чисто-буквенный мусор (ALY, MBX, ALLY)
+_TECH_MIXED = _re.compile(r'^[A-Za-z]{1,4}[-]?[A-Za-z]{0,2}\d{2,4}[a-zA-Z]?$')
+# Известные бренды/продукты сантехнической и строительной области
+_DOMAIN_BRANDS = frozenset({
+    'betomax', 'polymax', 'perfokora', 'perfokor', 'wafix', 'wavin',
+    'rehau', 'kan', 'gebo', 'viega', 'valtek', 'kalde',
+})
 
 
 def _apply_char_subs(text: str) -> str:
@@ -211,7 +225,7 @@ def _is_valid_ocr(text: str) -> bool:
     t = text.strip()
     if t.lower() in _TECH_WHITELIST:
         return True
-    if _TECH_MIXED.match(t) and not _re.search(r'[а-яёА-ЯЁ]', t):
+    if _TECH_MIXED.match(t) and not _re.search(r'[а-яёА-ЯЁ]', t) and len(t) >= 2:
         return True
     if not t:
         return False
@@ -237,6 +251,9 @@ def _is_valid_ocr(text: str) -> bool:
     # Полностью заглавные латинские слова ≥4 букв без кириллицы — OCR мусор (NALLY, ALLY)
     if _ALL_CAPS_LATIN.match(t) and not _CYRILLIC.search(t):
         return False
+    # Известные бренды/продукты — всегда принимаем независимо от регистра
+    if t.lower() in _DOMAIN_BRANDS:
+        return True
     # Фильтруем акцентный мусор (ées, éée): доля "чистых" символов ≥ 40%
     no_space = t.replace(" ", "")
     if no_space:
@@ -430,6 +447,100 @@ def _merge_word_lists(base: list[OcrWord], extra: list[OcrWord], tol: int = 8) -
     return merged
 
 
+def _vote_ocr_results(variant_results: list[list[OcrWord]]) -> list[OcrWord]:
+    """Phase 56: Confidence-Weighted Multi-Variant Voting.
+
+    Groups candidate words from all preprocessing variants by approximate
+    position (within 10px x, 8px y), scores each candidate text by summing
+    confidence values across variants that produced it plus domain bonuses,
+    and returns the highest-scoring word per position group.
+
+    Bonuses:
+      +0.20  text in _TECH_WHITELIST
+      +0.15  text matches _TECH_MIXED
+      +0.10  text matches _MEASUREMENT
+    """
+    if not variant_results:
+        return []
+
+    TOL_X = 10
+    TOL_Y = 8
+
+    all_words: list[OcrWord] = []
+    for words in variant_results:
+        all_words.extend(words)
+
+    if not all_words:
+        return []
+
+    def _center(w: OcrWord) -> tuple[float, float]:
+        return ((w.px0 + w.px1) / 2.0, (w.py0 + w.py1) / 2.0)
+
+    def _bonus(text: str) -> float:
+        t = text.strip()
+        score = 0.0
+        if t.lower() in _TECH_WHITELIST:
+            score += 0.20
+        if _TECH_MIXED.match(t):
+            score += 0.15
+        if _MEASUREMENT.match(t):
+            score += 0.10
+        return score
+
+    groups: list[list[OcrWord]] = []
+    group_centers: list[tuple[float, float]] = []
+
+    for w in all_words:
+        cx, cy = _center(w)
+        matched = -1
+        for gi, (gcx, gcy) in enumerate(group_centers):
+            if abs(cx - gcx) <= TOL_X and abs(cy - gcy) <= TOL_Y:
+                matched = gi
+                break
+        if matched >= 0:
+            groups[matched].append(w)
+            n = len(groups[matched])
+            old_gcx, old_gcy = group_centers[matched]
+            group_centers[matched] = (
+                (old_gcx * (n - 1) + cx) / n,
+                (old_gcy * (n - 1) + cy) / n,
+            )
+        else:
+            groups.append([w])
+            group_centers.append((cx, cy))
+
+    winners: list[OcrWord] = []
+    for group in groups:
+        scores: dict[str, float] = {}
+        best_word_for: dict[str, OcrWord] = {}
+        for w in group:
+            t = w.text.strip()
+            if not t:
+                continue
+            s = scores.get(t, 0.0) + w.conf + _bonus(t)
+            scores[t] = s
+            if t not in best_word_for or w.conf > best_word_for[t].conf:
+                best_word_for[t] = w
+        if not scores:
+            continue
+        best_text = max(scores, key=lambda k: scores[k])
+        same = [w for w in group if w.text.strip() == best_text]
+        avg_px0 = int(sum(w.px0 for w in same) / len(same))
+        avg_py0 = int(sum(w.py0 for w in same) / len(same))
+        avg_px1 = int(sum(w.px1 for w in same) / len(same))
+        avg_py1 = int(sum(w.py1 for w in same) / len(same))
+        avg_conf = scores[best_text] / max(len(same), 1)
+        avg_conf = min(avg_conf, 1.0)
+        winners.append(OcrWord(
+            text=best_text,
+            px0=avg_px0, py0=avg_py0,
+            px1=avg_px1, py1=avg_py1,
+            conf=avg_conf,
+        ))
+
+    return winners
+
+
 def _has_dense_text_grid(img: Image.Image) -> bool:
     """
     Определяет плотную текстовую сетку (таблицы, штамп-блоки).
@@ -596,6 +707,154 @@ def _reread_low_conf_measurements(words: list[OcrWord], crop_img: Image.Image) -
         return words
     return [replaced.get(i, w) for i, w in enumerate(words)]
 
+
+# ── Phase 55: Table Structure Recovery ───────────────────────────────────────
+
+def _detect_table_cells(img: Image.Image) -> list[tuple[int, int, int, int]] | None:
+    """Detects table cell bounding boxes via Hough line detection (cv2).
+
+    Converts to grayscale, applies adaptive threshold, runs HoughLinesP to
+    find horizontal and vertical line segments.  Returns a list of
+    (x0, y0, x1, y1) cell rectangles built from the intersection grid when
+    >= 4 horizontal lines AND >= 2 vertical lines are found, otherwise None.
+    Returns None immediately when cv2 is not available.
+
+    Conservative Hough params:
+      minLineLength(H) = img.width  * 0.3
+      minLineLength(V) = img.height * 0.2
+      maxLineGap       = 10
+      threshold        = 80
+    """
+    if not _HAS_CV2:
+        return None
+
+    import numpy as _np
+
+    iw, ih = img.size
+    gray = _np.array(img.convert("L"))
+
+    thresh = _cv2.adaptiveThreshold(
+        gray, 255,
+        _cv2.ADAPTIVE_THRESH_MEAN_C,
+        _cv2.THRESH_BINARY_INV,
+        blockSize=15, C=10,
+    )
+
+    min_h_len = max(10, int(iw * 0.3))
+    min_v_len = max(10, int(ih * 0.2))
+    hough_thresh = 80
+    max_gap = 10
+
+    h_kernel = _cv2.getStructuringElement(_cv2.MORPH_RECT, (min_h_len // 2, 1))
+    h_img = _cv2.morphologyEx(thresh, _cv2.MORPH_OPEN, h_kernel)
+    h_lines_raw = _cv2.HoughLinesP(
+        h_img, rho=1, theta=3.14159265358979 / 180,
+        threshold=hough_thresh,
+        minLineLength=min_h_len,
+        maxLineGap=max_gap,
+    )
+
+    v_kernel = _cv2.getStructuringElement(_cv2.MORPH_RECT, (1, min_v_len // 2))
+    v_img = _cv2.morphologyEx(thresh, _cv2.MORPH_OPEN, v_kernel)
+    v_lines_raw = _cv2.HoughLinesP(
+        v_img, rho=1, theta=3.14159265358979 / 180,
+        threshold=hough_thresh,
+        minLineLength=min_v_len,
+        maxLineGap=max_gap,
+    )
+
+    h_ys: list[int] = []
+    if h_lines_raw is not None:
+        for seg in h_lines_raw:
+            x1r, y1r, x2r, y2r = seg[0]
+            if abs(y2r - y1r) <= 5:
+                h_ys.append((y1r + y2r) // 2)
+
+    v_xs: list[int] = []
+    if v_lines_raw is not None:
+        for seg in v_lines_raw:
+            x1r, y1r, x2r, y2r = seg[0]
+            if abs(x2r - x1r) <= 5:
+                v_xs.append((x1r + x2r) // 2)
+
+    if len(h_ys) < 4 or len(v_xs) < 2:
+        return None
+
+    def _cluster(vals: list[int], gap: int = 8) -> list[int]:
+        vals = sorted(set(vals))
+        clusters: list[list[int]] = []
+        cur = [vals[0]]
+        for v in vals[1:]:
+            if v - cur[-1] <= gap:
+                cur.append(v)
+            else:
+                clusters.append(cur)
+                cur = [v]
+        clusters.append(cur)
+        return [sum(c) // len(c) for c in clusters]
+
+    h_sorted = _cluster(h_ys)
+    v_sorted = _cluster(v_xs)
+
+    if len(h_sorted) < 4 or len(v_sorted) < 2:
+        return None
+
+    cells: list[tuple[int, int, int, int]] = []
+    for ri in range(len(h_sorted) - 1):
+        for ci in range(len(v_sorted) - 1):
+            x0 = v_sorted[ci]
+            y0 = h_sorted[ri]
+            x1 = v_sorted[ci + 1]
+            y1 = h_sorted[ri + 1]
+            if x1 - x0 < 4 or y1 - y0 < 4:
+                continue
+            cells.append((x0, y0, x1, y1))
+
+    return cells if cells else None
+
+
+def _ocr_table_cells(
+    crop_img: Image.Image,
+    cells: list[tuple[int, int, int, int]],
+) -> list[OcrWord]:
+    """OCR each table cell individually with PSM 7 (single text line).
+
+    Returns OcrWords with pixel coordinates mapped back to the full crop image
+    space (not the individual cell space).
+    """
+    from PIL import ImageEnhance as _IE
+
+    words: list[OcrWord] = []
+    iw, ih = crop_img.size
+
+    for x0, y0, x1, y1 in cells:
+        cx0 = max(0, x0 - 2)
+        cy0 = max(0, y0 - 2)
+        cx1 = min(iw, x1 + 2)
+        cy1 = min(ih, y1 + 2)
+        if cx1 <= cx0 or cy1 <= cy0:
+            continue
+        cell_img = crop_img.crop((cx0, cy0, cx1, cy1))
+        cw, ch = cell_img.size
+        if cw < 4 or ch < 4:
+            continue
+        up = 3
+        cell_up = cell_img.resize((cw * up, ch * up), Image.LANCZOS)
+        cell_up = _IE.Contrast(cell_up.convert("L")).enhance(2.5).convert("RGB")
+        raw_words = _run_tesseract(cell_up, psm=7, up_scale=float(up))
+        for w in raw_words:
+            words.append(OcrWord(
+                w.text,
+                cx0 + w.px0,
+                cy0 + w.py0,
+                cx0 + w.px1,
+                cy0 + w.py1,
+                w.conf,
+            ))
+
+    return words
+
+
 def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
     """
     OCR через Tesseract v5 (LSTM).
@@ -608,12 +867,16 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
         if cached is not None:
             return cached
     variants = _make_gray_variants(crop_img)
-    all_words: list[OcrWord] = []
+
+    # ── Phase 56: Confidence-Weighted Multi-Variant Voting ────────────────────
+    # Collect per-variant word lists, then vote instead of plain merge.
+    variant_word_lists: list[list[OcrWord]] = []
 
     # PSM 6 (uniform block) — приоритетно для плотных текстовых сеток (таблицы, штамп-блоки)
     if _has_dense_text_grid(crop_img):
         dense_words = _run_tesseract(variants[0][0], psm=6, up_scale=variants[0][1])
-        all_words = _merge_word_lists(all_words, dense_words, tol=8)
+        if dense_words:
+            variant_word_lists.append(dense_words)
 
     # PSM 11 (sparse text) — для разбросанных аннотаций на чертежах
     # PSM 6 (uniform block) добавляем только для первого варианта (grayscale) —
@@ -621,12 +884,13 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
     # Вариант 3 (equalize) — только PSM 11, без PSM 6 чтобы не удвоить шум
     for vi, (img_variant, up_scale) in enumerate(variants):
         batch11 = _run_tesseract(img_variant, psm=11, up_scale=up_scale)
-        all_words = _merge_word_lists(all_words, batch11, tol=12)
+        if batch11:
+            variant_word_lists.append(batch11)
         if vi == 0:
             # PSM 6 на grayscale варианте — дополнительно для табличного текста
             batch6 = _run_tesseract(img_variant, psm=6, up_scale=up_scale)
-            # tol=15: PSM 6 bbox может чуть смещаться vs PSM 11 — дедуплицируем
-            all_words = _merge_word_lists(all_words, batch6, tol=15)
+            if batch6:
+                variant_word_lists.append(batch6)
 
     # PSM 7 (single text line) — для изолированных числовых значений на чистом фоне
     # (слайды 8, 18). Принимаем только слова-измерения/_TECH_MARKER чтобы не добавлять шум.
@@ -635,7 +899,11 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
         w for w in batch7
         if _MEASUREMENT.match(w.text.strip()) or _TECH_MARKER.match(w.text.strip())
     ]
-    all_words = _merge_word_lists(all_words, batch7_filtered, tol=10)
+    if batch7_filtered:
+        variant_word_lists.append(batch7_filtered)
+
+    # Vote across all preprocessing variants
+    all_words: list[OcrWord] = _vote_ocr_results(variant_word_lists)
 
     up_scale_main = variants[0][1] if variants else 2.0
     rotated_words = _try_rotated_ocr(crop_img, up_scale_main)
@@ -704,6 +972,16 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
                 all_words = _merge_word_lists(all_words, psm8_words, tol=10)
 
     all_words = _reread_low_conf_measurements(all_words, crop_img)
+
+    # Phase 55: Table Structure Recovery — run before returning to merge
+    # per-cell OCR results for images that contain grid tables.
+    table_cells = _detect_table_cells(crop_img)
+    if table_cells:
+        print(f"    [Phase 55] Table detected: {len(table_cells)} cells — running per-cell OCR")
+        cell_words = _ocr_table_cells(crop_img, table_cells)
+        if cell_words:
+            all_words = _merge_word_lists(all_words, cell_words, tol=8)
+            print(f"    [Phase 55] Cell OCR added {len(cell_words)} words")
 
     if _HAS_OCR_CACHE and assets_dir:
         _save_ocr_cache(crop_img, 'v1', all_words, assets_dir)
@@ -1026,6 +1304,23 @@ def _clean_token(t: str) -> str:
     return t
 
 
+def _min_conf_for_line(words: list) -> float:
+    """Returns the minimum confidence threshold (0-1 float) for a line of OcrWords.
+
+    Rules (in priority order):
+    - Any word matches _MEASUREMENT -> threshold 0.20  (measurement values on hatched backgrounds)
+    - Any word contains Cyrillic    -> threshold 0.22  (Cyrillic OCR is more reliable)
+    - Default                       -> threshold 0.28
+    """
+    has_measurement = any(_MEASUREMENT.match(w.text.strip()) for w in words)
+    if has_measurement:
+        return 0.20
+    has_cyrillic = any(_CYRILLIC.search(w.text) for w in words)
+    if has_cyrillic:
+        return 0.22
+    return 0.28
+
+
 def _overlaps_native(
     ocr_bbox_pt: tuple[float, float, float, float],
     native_bboxes_pt: list[tuple[float, float, float, float]],
@@ -1140,6 +1435,88 @@ def _add_ocr_line_textbox(
     run.font.color.rgb = RGBColor(0, 0, 0)
 
 
+# ── Заголовок слайда (outline panel) ─────────────────────────────────────────
+
+def _infer_slide_title(words: list[str], slide_idx: int) -> str:
+    """Infers a slide title for PowerPoint outline panel.
+
+    Strategy:
+    1. Longest ALL_CAPS run of >= 2 consecutive words.
+    2. First 6 words when total words >= 3.
+    3. Fallback: "Слайд {slide_idx + 1}".
+    Result truncated to 60 chars.
+    """
+    _MAX = 60
+    _ALLCAPS = _re.compile(r'^[А-ЯЁA-Z0-9\-/:.,%°]+$')
+
+    def _truncate(s: str) -> str:
+        return s[:_MAX].rstrip() if len(s) > _MAX else s
+
+    if not words:
+        return f"Слайд {slide_idx + 1}"
+
+    # Strategy 1: longest run of ALL_CAPS words
+    best_caps: list[str] = []
+    cur_caps: list[str] = []
+    for w in words:
+        if _ALLCAPS.match(w.strip()):
+            cur_caps.append(w.strip())
+        else:
+            if len(cur_caps) > len(best_caps):
+                best_caps = cur_caps
+            cur_caps = []
+    if len(cur_caps) > len(best_caps):
+        best_caps = cur_caps
+    if len(best_caps) >= 2:
+        return _truncate(" ".join(best_caps))
+
+    # Strategy 2: first run of >= 3 words (any case)
+    if len(words) >= 3:
+        return _truncate(" ".join(words[:6]))
+
+    return f"Слайд {slide_idx + 1}"
+
+
+def _set_slide_title(slide, title: str) -> None:
+    """Sets slide title text for PowerPoint outline panel.
+
+    Tries the title placeholder (idx=0) first. Falls back to a tiny 1pt
+    white invisible textbox tagged as a title placeholder via XML.
+    """
+    # Try existing title placeholder
+    for ph in slide.placeholders:
+        if ph.placeholder_format.idx == 0:
+            try:
+                ph.text = title
+                return
+            except Exception:
+                break
+
+    # Fallback: tiny invisible textbox at origin
+    txBox = slide.shapes.add_textbox(Emu(0), Emu(0), Emu(1), Emu(1))
+    tf = txBox.text_frame
+    p = tf.paragraphs[0]
+    run = p.add_run()
+    run.text = title
+    run.font.size = Pt(1)
+    run.font.color.rgb = RGBColor(255, 255, 255)
+    _set_no_line(txBox)
+
+    # Tag as title placeholder so PowerPoint outline panel picks it up
+    from lxml import etree as _etree
+    _PML_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    try:
+        _nvSpPr = txBox._element[0]  # nvSpPr
+        _nvPr = _nvSpPr.find(f"{{{_PML_NS}}}nvPr")
+        if _nvPr is None:
+            _nvPr = _etree.SubElement(_nvSpPr, f"{{{_PML_NS}}}nvPr")
+        if _nvPr.find(f"{{{_PML_NS}}}ph") is None:
+            ph_el = _etree.SubElement(_nvPr, f"{{{_PML_NS}}}ph")
+            ph_el.set("type", "title")
+    except Exception:
+        pass  # Best-effort — outline panel degrades gracefully
+
+
 # ── Фон слайда ───────────────────────────────────────────────────────────────
 
 def _set_slide_bg(slide, rgb: tuple[int, int, int]) -> None:
@@ -1172,7 +1549,7 @@ def emit_pptx_slides(
     Конвертирует slide-PDF в PPTX.
     Каждый слайд: белый фон + вектор-слой + отдельные изображения (с OCR) + text boxes.
     """
-    _search_index: list[dict] = []
+    _search_index: list[list[str]] = []
 
     work_dir = assets_dir or output_path.parent / "pptx_assets"
     raw_dir  = work_dir / "raw"
@@ -1330,6 +1707,20 @@ def emit_pptx_slides(
 
         _set_slide_bg(slide, bg_color)
 
+        # Slide title for PowerPoint outline panel
+        _title_words: list[str] = []
+        for _blk in text_blocks:
+            for _ln in _blk.get("lines", []):
+                for _sp in _ln.get("spans", []):
+                    _title_words.extend(_sp.get("text", "").split())
+                    if len(_title_words) >= 20:
+                        break
+                if len(_title_words) >= 20:
+                    break
+            if len(_title_words) >= 20:
+                break
+        _set_slide_title(slide, _infer_slide_title(_title_words, i))
+
         # Вектор-слой (декор, рамки, линии)
         if vec_png:
             slide.shapes.add_picture(
@@ -1380,6 +1771,14 @@ def emit_pptx_slides(
             for line_words in lines:
                 if not line_words:
                     continue
+                # Phase 52: per-token confidence filtering
+                _line_threshold = _min_conf_for_line(line_words)
+                line_words = [
+                    w for w in line_words
+                    if w.conf >= _line_threshold or w.text.strip().lower() in _TECH_WHITELIST
+                ]
+                if not line_words:
+                    continue
                 px0 = min(w.px0 for w in line_words)
                 py0 = min(w.py0 for w in line_words)
                 px1 = max(w.px1 for w in line_words)
@@ -1426,28 +1825,89 @@ def emit_pptx_slides(
                         "source": "native",
                     })
 
-        _search_index.append({"slide": i + 1, "words": _slide_words})
+        # Build per-slide token list for v2 index.
+        # Lines are stored as sentinel-prefixed entries so _build_search_index
+        # can reconstruct both individual words and full line strings.
+        _slide_tokens: list[str] = []
+        for _entry in _slide_words:
+            _line_txt = _entry["text"]
+            # Sentinel prefix '\x00' marks a full line entry
+            _slide_tokens.append("\x00" + _line_txt)
+        _search_index.append(_slide_tokens)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(output_path))
 
     _index_path = output_path.with_suffix(".search_index.json")
-    _index_payload = {
-        "source_pdf": pdf_path.name,
-        "slides": _search_index,
-    }
+    _index_v2 = _build_search_index(_search_index)
+    _index_v2["source_pdf"] = pdf_path.name
     _index_path.write_text(
-        json.dumps(_index_payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(_index_v2, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print(f"  Search index → {_index_path}")
+    print(f"  Search index v2 → {_index_path}")
 
     return output_path
 
 
-def _pt_rects_to_px(
-    rects_pt: list[tuple], scale: float
-) -> list[tuple[int, int, int, int]]:
-    return [
-        (int(x0*scale), int(y0*scale), int(x1*scale), int(y1*scale))
-        for x0, y0, x1, y1 in rects_pt
-    ]
+def _build_search_index(slide_texts: list[list[str]]) -> dict:
+    """Build v2 search index from per-slide word lists.
+
+    Args:
+        slide_texts: list of lists; each inner list contains individual token
+                     strings for one slide (already split by space from line text).
+
+    Returns:
+        v2 index dict with version, slides, and global_index.
+    """
+    slides_out: list[dict] = []
+    global_index: dict[str, list[int]] = {}
+
+    for slide_idx, tokens in enumerate(slide_texts):
+        words: list[str] = []
+        lines: list[str] = []
+        measurements: list[str] = []
+        keywords: list[str] = []
+
+        _tok_buf: list[str] = []
+        for tok in tokens:
+            if tok.startswith("\x00"):
+                line_text = tok[1:]
+                lines.append(line_text)
+                _tok_buf.extend(line_text.split())
+            else:
+                _tok_buf.append(tok)
+
+        for w in _tok_buf:
+            w_strip = w.strip()
+            if not w_strip:
+                continue
+            words.append(w_strip)
+            if _MEASUREMENT.match(w_strip) or _TECH_MIXED.match(w_strip):
+                if w_strip not in measurements:
+                    measurements.append(w_strip)
+            if (
+                w_strip.lower() in _CYRILLIC_ENGINEERING
+                or (len(w_strip) >= 6 and bool(_CYRILLIC.fullmatch(w_strip)))
+            ):
+                if w_strip not in keywords:
+                    keywords.append(w_strip)
+            key = w_strip.lower()
+            if key not in global_index:
+                global_index[key] = []
+            if slide_idx not in global_index[key]:
+                global_index[key].append(slide_idx)
+
+        slides_out.append({
+            "slide_idx": slide_idx,
+            "word_count": len(words),
+            "words": words,
+            "lines": lines,
+            "measurements": measurements,
+            "keywords": keywords,
+        })
+
+    return {
+        "version": 2,
+        "slides": slides_out,
+        "global_index": global_index,
+    }
