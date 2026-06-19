@@ -27,6 +27,12 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.util import Emu, Pt
 
+try:
+    from src.pipeline.ocr_cache import load_ocr_cache as _load_ocr_cache, save_ocr_cache as _save_ocr_cache
+    _HAS_OCR_CACHE = True
+except Exception:
+    _HAS_OCR_CACHE = False
+
 _PT_TO_EMU = 12700
 
 _TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -135,6 +141,31 @@ _SHORT_LOWER_LAT = _re.compile(r"^[a-z]{2,5}[).,!|]*$")
 # Полностью заглавные латинские слова >=3 букв — OCR мусор (ALN, ALY, GRE, RAS, ALLY…)
 # 2-буквенные (PP, DN, SS, CA) обрабатываются отдельно в inline-фильтре
 _ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{3,}$")
+_DASH_SEQ        = _re.compile(r'^[\-—<>/\\]{2,6}$')
+_TECH_WHITELIST = frozenset({
+    'мм', 'см', 'дм', 'км', 'кг', 'шт', 'пм', 'пл', 'вп', 'ту',
+    'пвх', 'пп', 'дп', 'бв', 'пу', 'ду', 'дн', 'кн', 'мн', 'па',
+    'dn', 'pp', 'pe', 'kg', 'mm', 'cm', 'wt', 'kw', 'hz', 'pvc',
+})
+
+
+def _apply_char_subs(text: str) -> str:
+    """
+    Исправляет кириллические буквы, ошибочно распознанные в числовом контексте.
+    О/о → 0 рядом с цифрами/точкой, З → 3 рядом с цифрами.
+    """
+    t = text
+    # Кириллическая О/о между цифрами или знаками пунктуации (.,)
+    t = _re.sub(r'(?<=[.,\d])[Оо](?=[.,\d])', '0', t)
+    # Кириллическая О/о в начале числа
+    t = _re.sub(r'^[Оо](?=[.,\d])', '0', t)
+    # Кириллическая О/о в конце числа
+    t = _re.sub(r'(?<=[.,\d])[Оо]$', '0', t)
+    # Кириллическая З между цифрами
+    t = _re.sub(r'(?<=[\d])З(?=[\d])', '3', t)
+    # Кириллическая З в начале числа
+    t = _re.sub(r'^З(?=[.,\d])', '3', t)
+    return t
 
 
 def _is_valid_ocr(text: str) -> bool:
@@ -146,6 +177,8 @@ def _is_valid_ocr(text: str) -> bool:
     - ≥ 40% символов — "чистые"
     """
     t = text.strip()
+    if t.lower() in _TECH_WHITELIST:
+        return True
     if not t:
         return False
     # Одиночный символ — только размерный маркер (заглавная буква или цифра)
@@ -154,6 +187,8 @@ def _is_valid_ocr(text: str) -> bool:
     if not _ALPHANUM.search(t):
         return False
     if _NOISE.match(t):
+        return False
+    if _DASH_SEQ.match(t) and not _ALPHANUM.search(t):
         return False
     # Строчные латинские слова ≤5 символов без цифр/кириллицы — штриховка или мусор
     if _SHORT_LOWER_LAT.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
@@ -180,6 +215,8 @@ def _is_valid_ocr(text: str) -> bool:
 def _min_conf_for(text: str) -> int:
     """Минимальный confidence в зависимости от типа текста."""
     t = text.strip()
+    if text.strip().lower() in _TECH_WHITELIST:
+        return 30
     if len(t) == 1:
         return 80   # одиночные символы — только при высокой уверенности
     if _MEASUREMENT.match(t):
@@ -277,6 +314,28 @@ def _make_gray_variants(crop_img: Image.Image) -> list[tuple[Image.Image, float]
         g4 = ImageEnhance.Contrast(_opened4).enhance(2.0)
         results.append((_up(g4).convert("RGB"), float(UPSCALE)))
 
+    # Вариант 5: локальная адаптивная бинаризация — для сканов с неравномерной подсветкой
+    # (тени от сгиба, виньетирование). Глобальный контраст не справляется с локально тёмными зонами.
+    # Алгоритм: local_mean = BoxBlur(r=16); pixel < local_mean*0.88 → 0 (чёрный), иначе 255 (белый).
+    try:
+        import numpy as _np5
+        from PIL import ImageFilter as _IF5
+        _g5 = crop_img.convert("L")
+        _local_mean5 = _g5.filter(_IF5.BoxBlur(16))
+        _arr5 = _np5.array(_g5, dtype=_np5.float32)
+        _mean5 = _np5.array(_local_mean5, dtype=_np5.float32)
+        _bin5 = _np5.where(_arr5 < _mean5 * 0.88, 0, 255).astype(_np5.uint8)
+        g5 = Image.fromarray(_bin5)
+    except Exception:
+        from PIL import ImageFilter as _IF5
+        _g5 = crop_img.convert("L")
+        _local_mean5 = _g5.filter(_IF5.BoxBlur(16))
+        _px5 = list(_g5.getdata())
+        _mx5 = list(_local_mean5.getdata())
+        _bin5 = bytes([0 if p < m * 0.88 else 255 for p, m in zip(_px5, _mx5)])
+        g5 = Image.frombytes("L", _g5.size, _bin5)
+    results.append((_up(g5).convert("RGB"), float(UPSCALE)))
+
     return results
 
 
@@ -300,7 +359,7 @@ def _run_tesseract(img: Image.Image, psm: int, up_scale: float) -> list[OcrWord]
 
     words: list[OcrWord] = []
     for j in range(len(data["text"])):
-        txt = (data["text"][j] or "").strip()
+        txt = _apply_char_subs((data["text"][j] or "").strip())
         conf = int(data["conf"][j])
         if not txt or not _is_valid_ocr(txt):
             continue
@@ -331,15 +390,143 @@ def _merge_word_lists(base: list[OcrWord], extra: list[OcrWord], tol: int = 8) -
     return merged
 
 
-def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
+def _has_dense_text_grid(img: Image.Image) -> bool:
+    """
+    Определяет плотную текстовую сетку (таблицы, штамп-блоки).
+    Два критерия:
+    1. >18% тёмных пикселей (значение < 128) от общего числа пикселей.
+    2. >= 5 строк пикселей, где >40% пикселей тёмные.
+    """
+    gray = img.convert("L")
+    try:
+        import numpy as _np
+        arr = _np.array(gray)
+        dark_mask = arr < 128
+        total = dark_mask.size
+        dark_count = int(dark_mask.sum())
+        # Критерий 1: общая плотность тёмных пикселей
+        if total > 0 and dark_count / total > 0.18:
+            return True
+        # Критерий 2: количество строк с >40% тёмных пикселей
+        row_dark = dark_mask.sum(axis=1)
+        row_total = arr.shape[1]
+        dense_rows = int((row_dark > row_total * 0.40).sum())
+        if dense_rows >= 5:
+            return True
+    except ImportError:
+        # Fallback без numpy
+        pixels = list(gray.getdata())
+        total = len(pixels)
+        if total == 0:
+            return False
+        dark_count = sum(1 for p in pixels if p < 128)
+        if dark_count / total > 0.18:
+            return True
+        w, h = gray.size
+        dense_rows = 0
+        for row in range(h):
+            row_pixels = pixels[row * w:(row + 1) * w]
+            row_dark = sum(1 for p in row_pixels if p < 128)
+            if w > 0 and row_dark / w > 0.40:
+                dense_rows += 1
+        if dense_rows >= 5:
+            return True
+    return False
+
+
+def _find_small_regions(words: list[OcrWord]) -> list[tuple[int, int, int, int]]:
+    """Находит кластеры маленьких низкоуверенных слов для 4x upscale re-OCR."""
+    small = [w for w in words if (w.py1 - w.py0) < 20 and w.conf < 0.60]
+    if not small:
+        return []
+    # Сортируем по px0
+    small = sorted(small, key=lambda w: w.px0)
+    clusters: list[list[OcrWord]] = []
+    cur: list[OcrWord] = [small[0]]
+    for w in small[1:]:
+        prev = cur[-1]
+        prev_cy = (prev.py0 + prev.py1) / 2
+        cur_cy  = (w.py0 + w.py1) / 2
+        if (w.px0 - prev.px1) < 50 and abs(cur_cy - prev_cy) <= 30:
+            cur.append(w)
+        else:
+            clusters.append(cur)
+            cur = [w]
+    clusters.append(cur)
+    result: list[tuple[int, int, int, int]] = []
+    for cl in clusters:
+        x0 = min(w.px0 for w in cl) - 8
+        y0 = min(w.py0 for w in cl) - 8
+        x1 = max(w.px1 for w in cl) + 8
+        y1 = max(w.py1 for w in cl) + 8
+        result.append((x0, y0, x1, y1))
+    return result
+
+
+def _try_rotated_ocr(crop_img: Image.Image, up_scale: float) -> list[OcrWord]:
+    """Пробует OCR с поворотом на 90 и 270 градусов для вертикального текста.
+    Возвращает слова с координатами, трансформированными обратно в исходное пространство кропа.
+    """
+    from PIL import ImageEnhance
+    result: list[OcrWord] = []
+    for angle in [90, 270]:
+        rotated = crop_img.rotate(angle, expand=True)
+        g = ImageEnhance.Contrast(rotated.convert("L")).enhance(2.5)
+        g_rgb = g.convert("RGB")
+        words = _run_tesseract(g_rgb, psm=11, up_scale=up_scale)
+        if len(words) < 2:
+            continue
+        avg_conf = sum(w.conf for w in words) / len(words)
+        if avg_conf <= 0.55:
+            continue
+        rw, rh = rotated.size  # после expand=True: rw=orig_h, rh=orig_w (для 90 и 270)
+        transformed: list[OcrWord] = []
+        for w in words:
+            px0, py0, px1, py1 = w.px0, w.py0, w.px1, w.py1
+            if angle == 90:
+                # rotate(90, expand=True) поворачивает CCW:
+                # rotated.size = (orig_h, orig_w)
+                # новые координаты в orig: x' = py0, y' = rh - px1, x1' = py1, y1' = rh - px0
+                new_px0 = py0
+                new_py0 = rh - px1
+                new_px1 = py1
+                new_py1 = rh - px0
+            else:  # 270
+                # rotate(270, expand=True) поворачивает CW:
+                # rotated.size = (orig_h, orig_w)
+                # новые координаты в orig: x' = rw - py1, y' = px0, x1' = rw - py0, y1' = px1
+                new_px0 = rw - py1
+                new_py0 = px0
+                new_px1 = rw - py0
+                new_py1 = px1
+            transformed.append(OcrWord(
+                text=w.text,
+                px0=new_px0, py0=new_py0,
+                px1=new_px1, py1=new_py1,
+                conf=w.conf,
+            ))
+        result = _merge_word_lists(result, transformed, tol=20)
+    return result
+
+
+def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
     """
     OCR через Tesseract v5 (LSTM).
     Запускает несколько вариантов препроцессинга (grayscale + min-channel)
     и режимов PSM (11=sparse, 6=block), объединяет результаты.
     Возвращает слова с координатами в ИСХОДНЫХ пикселях кропа.
     """
+    if _HAS_OCR_CACHE and assets_dir:
+        cached = _load_ocr_cache(crop_img, 'v1', assets_dir)
+        if cached is not None:
+            return cached
     variants = _make_gray_variants(crop_img)
     all_words: list[OcrWord] = []
+
+    # PSM 6 (uniform block) — приоритетно для плотных текстовых сеток (таблицы, штамп-блоки)
+    if _has_dense_text_grid(crop_img):
+        dense_words = _run_tesseract(variants[0][0], psm=6, up_scale=variants[0][1])
+        all_words = _merge_word_lists(all_words, dense_words, tol=8)
 
     # PSM 11 (sparse text) — для разбросанных аннотаций на чертежах
     # PSM 6 (uniform block) добавляем только для первого варианта (grayscale) —
@@ -363,6 +550,31 @@ def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
     ]
     all_words = _merge_word_lists(all_words, batch7_filtered, tol=10)
 
+    up_scale_main = variants[0][1] if variants else 2.0
+    rotated_words = _try_rotated_ocr(crop_img, up_scale_main)
+    all_words = _merge_word_lists(all_words, rotated_words, tol=20)
+
+    # 4x upscale re-OCR для маленьких низкоуверенных регионов (char height < 20px, conf < 0.60)
+    small_regions = _find_small_regions(all_words)
+    iw, ih = crop_img.size
+    for rx0, ry0, rx1, ry1 in small_regions:
+        rx0 = max(0, rx0); ry0 = max(0, ry0); rx1 = min(iw, rx1); ry1 = min(ih, ry1)
+        if rx1 <= rx0 or ry1 <= ry0:
+            continue
+        sub = crop_img.crop((rx0, ry0, rx1, ry1))
+        from PIL import ImageEnhance as _IE
+        sub4x = sub.resize((sub.width * 4, sub.height * 4), Image.LANCZOS).convert("RGB")
+        sub4x_enhanced = _IE.Contrast(sub4x.convert("L")).enhance(2.5).convert("RGB")
+        sub_words_raw = _run_tesseract(sub4x_enhanced, psm=11, up_scale=4.0)
+        # Конвертируем координаты из sub4x-пространства обратно в пространство кропа
+        sub_words = [
+            OcrWord(w.text, rx0 + w.px0, ry0 + w.py0, rx0 + w.px1, ry0 + w.py1, w.conf)
+            for w in sub_words_raw
+        ]
+        all_words = _merge_word_lists(all_words, sub_words, tol=6)
+
+    if _HAS_OCR_CACHE and assets_dir:
+        _save_ocr_cache(crop_img, 'v1', all_words, assets_dir)
     return all_words
 
 
@@ -479,6 +691,55 @@ def _add_block_textbox(slide, block: dict) -> None:
                 fnt.bold   = bool(span.get("flags", 0) & (1 << 4))
                 fnt.italic = bool(span.get("flags", 0) & (1 << 1))
                 fnt.color.rgb = _rgb_from_fitz(span.get("color"))
+
+
+def _merge_close_lines(lines: list[list[OcrWord]], img_native_w: int) -> list[list[OcrWord]]:
+    """Merges vertically close OCR lines into single multi-line groups.
+    Улучшает поиск и логическую группировку аннотаций типа «СТАЛЬ / 45 / ГОСТ 1050».
+    """
+    from statistics import mean as _mean
+
+    def _avg_y(ln: list[OcrWord]) -> float:
+        return sum((w.py0 + w.py1) / 2 for w in ln) / len(ln)
+
+    def _avg_h_words(a: list[OcrWord], b: list[OcrWord]) -> float:
+        all_h = [w.py1 - w.py0 for w in a + b if w.py1 - w.py0 > 0]
+        return _mean(all_h) if all_h else 1.0
+
+    def _x_range(ln: list[OcrWord]) -> tuple[int, int]:
+        return (min(w.px0 for w in ln), max(w.px1 for w in ln))
+
+    for _pass in range(3):
+        merged = False
+        new_lines: list[list[OcrWord]] = []
+        i = 0
+        while i < len(lines):
+            if i + 1 < len(lines):
+                a = lines[i]
+                b = lines[i + 1]
+                # Only merge when b is strictly below a
+                if _avg_y(b) > _avg_y(a):
+                    avg_h = _avg_h_words(a, b)
+                    gap = min(w.py0 for w in b) - max(w.py1 for w in a)
+                    ax0, ax1 = _x_range(a)
+                    bx0, bx1 = _x_range(b)
+                    overlap = max(0, min(ax1, bx1) - max(ax0, bx0))
+                    min_span = max(1, min(ax1 - ax0, bx1 - bx0))
+                    overlap_frac = overlap / min_span
+                    combined_w = max(ax1, bx1) - min(ax0, bx0)
+                    width_ok = (img_native_w <= 0) or (combined_w < img_native_w * 0.75)
+                    if gap < avg_h * 1.8 and overlap_frac > 0.25 and width_ok:
+                        combined = sorted(a + b, key=lambda w: (w.py0, w.px0))
+                        new_lines.append(combined)
+                        i += 2
+                        merged = True
+                        continue
+            new_lines.append(lines[i])
+            i += 1
+        lines = new_lines
+        if not merged:
+            break
+    return lines
 
 
 def _group_ocr_into_lines(words: list[OcrWord],
@@ -718,6 +979,8 @@ def _add_ocr_line_textbox(
             return False, t
         # Очищаем токен: trailing буква после числа, leading \~[ перед числом
         cleaned = _clean_token(t)
+        if _DASH_SEQ.match(cleaned) and not _CYRILLIC.search(cleaned):
+            return False, cleaned
         return True, cleaned
 
     cleaned_parts: list[str] = []
@@ -946,7 +1209,9 @@ def emit_pptx_slides(
             cw, ch = cd["crop_px"]
             sx = (bx1 - bx0) / cw if cw > 0 else 1.0
             sy = (by1 - by0) / ch if ch > 0 else 1.0
-            for line_words in _group_ocr_into_lines(cd["words"], img_native_w=cw):
+            lines = _group_ocr_into_lines(cd["words"], img_native_w=cw)
+            lines = _merge_close_lines(lines, cw)
+            for line_words in lines:
                 if not line_words:
                     continue
                 px0 = min(w.px0 for w in line_words)
