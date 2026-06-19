@@ -129,9 +129,11 @@ _MEASUREMENT   = _re.compile(r"^([—\-±=]?\d+[.,]\d+|[.,]\d+)$")
 # Технические обозначения чертежей: i=4%, 1:200, 0.5%, уклон-значения
 _TECH_MARKER   = _re.compile(r"^(i=[0-9]+%?|[0-9]+:[0-9]+|[0-9]+[.,][0-9]+%|[А-Яа-яёЁ]{2,10}[0-9]*)$")
 # Штриховка читается как короткие латинские "слова" из e,s,a,f,t,i,c (без кириллицы/цифр)
-_HATCH_CHARS   = _re.compile(r"^[eésEéSaAftFTiIcCoOnNlLbBwWgGpPqQ]{2,5}[).,!|]*$")
-# Полностью заглавные латинские слова ≥4 букв без кириллицы — OCR мусор на чертежах
-_ALL_CAPS_LATIN = _re.compile(r"^[A-Z]{5,}$")
+# Строчные латинские слова ≤5 символов — штриховка (ah, ar, ee, jam, tum, bema).
+# Заглавные (Dn, PP) и смешанные не попадают под этот фильтр.
+_SHORT_LOWER_LAT = _re.compile(r"^[a-z]{2,5}[).,!|]*$")
+# Полностью заглавные латинские слова >=5 букв — OCR мусор (NALLY, WHICH)
+_ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{5,}$")
 
 
 def _is_valid_ocr(text: str) -> bool:
@@ -152,8 +154,8 @@ def _is_valid_ocr(text: str) -> bool:
         return False
     if _NOISE.match(t):
         return False
-    # Штриховка → короткие латинские слова без кириллицы и цифр
-    if _HATCH_CHARS.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
+    # Строчные латинские слова ≤5 символов без цифр/кириллицы — штриховка или мусор
+    if _SHORT_LOWER_LAT.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
         return False
     # Полностью заглавные латинские слова ≥4 букв без кириллицы — OCR мусор (NALLY, ALLY)
     if _ALL_CAPS_LATIN.match(t) and not _CYRILLIC.search(t):
@@ -241,6 +243,12 @@ def _make_gray_variants(crop_img: Image.Image) -> list[tuple[Image.Image, float]
     g2 = ImageEnhance.Contrast(Image.fromarray(min_ch)).enhance(2.0)
     results.append((_up(g2).convert("RGB"), float(UPSCALE)))
 
+    # Вариант 3: выравнивание гистограммы (ImageOps.equalize) — усиливает низкоконтрастный текст
+    from PIL import ImageOps
+    g3 = ImageOps.equalize(crop_img.convert("L"))
+    g3 = ImageEnhance.Contrast(g3).enhance(1.8)
+    results.append((_up(g3).convert("RGB"), float(UPSCALE)))
+
     return results
 
 
@@ -306,8 +314,9 @@ def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
     all_words: list[OcrWord] = []
 
     # PSM 11 (sparse text) — для разбросанных аннотаций на чертежах
-    # PSM 6 (uniform block) добавляем только для первого варианта — подхватывает
-    # сплошные блоки текста в таблицах, но не запускаем на min-channel (шум)
+    # PSM 6 (uniform block) добавляем только для первого варианта (grayscale) —
+    # подхватывает сплошные блоки текста в таблицах
+    # Вариант 3 (equalize) — только PSM 11, без PSM 6 чтобы не удвоить шум
     for vi, (img_variant, up_scale) in enumerate(variants):
         batch11 = _run_tesseract(img_variant, psm=11, up_scale=up_scale)
         all_words = _merge_word_lists(all_words, batch11, tol=12)
@@ -548,11 +557,15 @@ def _add_ocr_line_textbox(
 
     p = tf.paragraphs[0]
     run = p.add_run()
-    # Внутри строки убираем шумовые токены: одиночные спецсимволы и латинский мусор
-    _inline_noise = _re.compile(r'^["\'\`\*\\\|\^~<>{}\[\]@#]+$')
+    # Внутри строки убираем шумовые токены: пунктуация и строчный латинский мусор
+    _inline_noise   = _re.compile(r'^["\'\`\*\\\|\^~<>{}\[\]@#]+$')
+    _inline_low_lat = _re.compile(r'^[a-z]{1,5}[).,!|]*$')
     clean_words = [
         w for w in line_words
         if not _inline_noise.match(w.text.strip())
+        and not (_inline_low_lat.match(w.text.strip())
+                 and not _CYRILLIC.search(w.text)
+                 and not _re.search(r"\d", w.text))
     ]
     if not clean_words:
         clean_words = line_words
