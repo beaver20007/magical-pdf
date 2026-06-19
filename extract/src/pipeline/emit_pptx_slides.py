@@ -566,7 +566,8 @@ def _add_ocr_line_textbox(
     p = tf.paragraphs[0]
     run = p.add_run()
     # Внутри строки убираем шумовые токены: пунктуация и строчный латинский мусор
-    _inline_noise   = _re.compile(r'^["\'\`\*\\\|\^~<>{}\[\]@#]+$')
+    # Чистая пунктуация или слова начинающиеся с кавычки+"ts" стиля шума
+    _inline_noise   = _re.compile(r'^["\'\`\*\\\|\^~<>{}\[\]@#!]+$|^["\'\`\*][a-z]{1,3}$')
     _inline_low_lat = _re.compile(r'^[a-z]{1,5}[).,!|]*$')
     clean_words = [
         w for w in line_words
