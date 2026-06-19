@@ -158,6 +158,13 @@ def _is_valid_ocr(text: str) -> bool:
     # Строчные латинские слова ≤5 символов без цифр/кириллицы — штриховка или мусор
     if _SHORT_LOWER_LAT.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
         return False
+    # Длинные (>8 символов) латинские слова без кириллицы и цифр — OCR мусор
+    # (tlecxoynoeumens, Tlecxoynoeumens) — не могут быть реальными словами в рус. чертеже
+    if len(t) > 10 and t.isalpha() and not _CYRILLIC.search(t):
+        return False
+    # Слова оканчивающиеся на }]| — рамки таблиц (ints}, Lda])
+    if t[-1] in ('}', ']', '|') and not _CYRILLIC.search(t) and len(t) <= 8:
+        return False
     # Полностью заглавные латинские слова ≥4 букв без кириллицы — OCR мусор (NALLY, ALLY)
     if _ALL_CAPS_LATIN.match(t) and not _CYRILLIC.search(t):
         return False
