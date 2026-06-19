@@ -474,6 +474,28 @@ def _group_ocr_into_lines(words: list[OcrWord],
         return (short / len(ln)) > 0.70 and avg_conf < 0.55
 
     lines = [ln for ln in lines if not _is_hatch_line(ln)]
+
+    # Разбиваем "широкие" строки по горизонтальным разрывам.
+    # Если расстояние между соседними словами > 4× средней ширины слова,
+    # это скорее всего две разные аннотации на одной y-высоте.
+    split_lines: list[list[OcrWord]] = []
+    for ln in lines:
+        if len(ln) <= 1:
+            split_lines.append(ln)
+            continue
+        avg_w = sum(w.px1 - w.px0 for w in ln) / len(ln)
+        gap_thresh = max(avg_w * 4, 60)
+        cur = [ln[0]]
+        for w in ln[1:]:
+            gap = w.px0 - cur[-1].px1
+            if gap > gap_thresh:
+                split_lines.append(cur)
+                cur = [w]
+            else:
+                cur.append(w)
+        split_lines.append(cur)
+    lines = split_lines
+
     return lines
 
 
@@ -519,7 +541,15 @@ def _add_ocr_line_textbox(
 
     p = tf.paragraphs[0]
     run = p.add_run()
-    run.text = " ".join(w.text for w in line_words)
+    # Внутри строки убираем шумовые токены: одиночные спецсимволы и латинский мусор
+    _inline_noise = _re.compile(r'^["\'\`\*\\\|\^~<>{}\[\]@#]+$')
+    clean_words = [
+        w for w in line_words
+        if not _inline_noise.match(w.text.strip())
+    ]
+    if not clean_words:
+        clean_words = line_words
+    run.text = " ".join(w.text for w in clean_words)
     run.font.size  = Pt(font_size)
     run.font.name  = "Times New Roman"
     run.font.color.rgb = RGBColor(0, 0, 0)
