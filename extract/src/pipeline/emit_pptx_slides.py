@@ -21,6 +21,8 @@ from pathlib import Path
 from statistics import mode as stat_mode
 from typing import NamedTuple
 
+import json
+
 import fitz
 from PIL import Image, ImageDraw
 from pptx import Presentation
@@ -147,6 +149,8 @@ _TECH_WHITELIST = frozenset({
     'пвх', 'пп', 'дп', 'бв', 'пу', 'ду', 'дн', 'кн', 'мн', 'па',
     'dn', 'pp', 'pe', 'kg', 'mm', 'cm', 'wt', 'kw', 'hz', 'pvc',
 })
+# Смешанные буквенно-цифровые технические токены: Dn100, DN50, PN16, PVC32, Dn110
+_TECH_MIXED = _re.compile(r'^[A-Za-z]{1,4}\d{2,4}[a-zA-Z]?$')
 
 
 def _apply_char_subs(text: str) -> str:
@@ -168,6 +172,34 @@ def _apply_char_subs(text: str) -> str:
     return t
 
 
+_CYRILLIC_ENGINEERING = frozenset({
+    'отверстие', 'отверстия', 'фундамент', 'фундаменте', 'ограждение', 'ограждения',
+    'трубопровод', 'дренаж', 'колодец', 'люк', 'решетка', 'уклон', 'отметка',
+    'существующая', 'проектная', 'граница', 'скважина', 'насос', 'септик',
+    'канализация', 'газопровод', 'горизонталь',
+})
+
+_CYRILLIC_SUFFIXES = _re.compile(
+    r'(ия|ание|ение|ость|тель|ник|ный|ного|ого)$', _re.IGNORECASE
+)
+
+
+def _validate_cyrillic_token(text: str) -> bool:
+    """Проверяет, является ли кириллическое слово валидным инженерным термином.
+
+    Возвращает True если слово:
+    - совпадает с известным инженерным термином, ИЛИ
+    - длиной >= 5 чисто кириллических символов с известным суффиксом.
+    """
+    t = text.strip().lower()
+    if t in _CYRILLIC_ENGINEERING:
+        return True
+    if len(t) >= 5 and _CYRILLIC.fullmatch(t):
+        if _CYRILLIC_SUFFIXES.search(t):
+            return True
+    return False
+
+
 def _is_valid_ocr(text: str) -> bool:
     """
     Принимаем OCR-результат если:
@@ -178,6 +210,8 @@ def _is_valid_ocr(text: str) -> bool:
     """
     t = text.strip()
     if t.lower() in _TECH_WHITELIST:
+        return True
+    if _TECH_MIXED.match(t) and not _re.search(r'[а-яёА-ЯЁ]', t):
         return True
     if not t:
         return False
@@ -217,6 +251,8 @@ def _min_conf_for(text: str) -> int:
     t = text.strip()
     if text.strip().lower() in _TECH_WHITELIST:
         return 30
+    if _TECH_MIXED.match(t.strip()):
+        return 30
     if len(t) == 1:
         return 80   # одиночные символы — только при высокой уверенности
     if _MEASUREMENT.match(t):
@@ -229,6 +265,10 @@ def _min_conf_for(text: str) -> int:
         if _re.match(r'^[а-яёa-z]{2}$', t):
             return 70   # 2-char строчные фрагменты (ух, ен, oe) — повышенный порог
         return 50   # короткие аббревиатуры (заглавные, смешанные)
+    if len(t) >= 5 and _CYRILLIC.search(t) and not _re.search(r'[A-Za-z]', t):
+        if _validate_cyrillic_token(t):
+            return 22
+        return 35   # длинное кириллическое слово — умеренный порог
     return 28       # всё остальное
 
 
@@ -509,6 +549,53 @@ def _try_rotated_ocr(crop_img: Image.Image, up_scale: float) -> list[OcrWord]:
     return result
 
 
+
+def _reread_low_conf_measurements(words: list[OcrWord], crop_img: Image.Image) -> list[OcrWord]:
+    """Phase 43: 150% zoom targeted re-read for low-confidence measurement tokens.
+
+    Finds words matching _MEASUREMENT with conf < 0.55 and re-OCRs them at 3x
+    zoom using PSM 8 (single word). Replaces the original word if confidence
+    improves by more than 0.10. At most 8 re-reads per image to bound runtime.
+    """
+    iw, ih = crop_img.size
+    replaced: dict[int, OcrWord] = {}  # index -> replacement
+    re_reads = 0
+    for idx, w in enumerate(words):
+        if re_reads >= 8:
+            break
+        if not _MEASUREMENT.match(w.text.strip()):
+            continue
+        if w.conf >= 0.55:
+            continue
+        # Crop with 4px padding, clamped to image bounds
+        x0 = max(0, w.px0 - 4)
+        y0 = max(0, w.py0 - 4)
+        x1 = min(iw, w.px1 + 4)
+        y1 = min(ih, w.py1 + 4)
+        if x1 <= x0 or y1 <= y0:
+            continue
+        tile = crop_img.crop((x0, y0, x1, y1))
+        # 3x upscale -- main pass already does upscaling; this is a targeted re-read
+        tile3x = tile.resize((tile.width * 3, tile.height * 3), Image.LANCZOS).convert("L")
+        new_words = _run_tesseract(tile3x.convert("RGB"), psm=8, up_scale=3.0)
+        if not new_words:
+            re_reads += 1
+            continue
+        # Pick the highest-confidence result
+        best = max(new_words, key=lambda nw: nw.conf)
+        if best.conf > w.conf + 0.10:
+            # Coordinates remapped back to crop_img space (original bbox preserved)
+            replaced[idx] = OcrWord(
+                best.text,
+                w.px0, w.py0, w.px1, w.py1,
+                best.conf,
+            )
+        re_reads += 1
+
+    if not replaced:
+        return words
+    return [replaced.get(i, w) for i, w in enumerate(words)]
+
 def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
     """
     OCR через Tesseract v5 (LSTM).
@@ -572,6 +659,51 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
             for w in sub_words_raw
         ]
         all_words = _merge_word_lists(all_words, sub_words, tol=6)
+
+    # PSM 8 (single-word) recovery pass for small callout text in grid cells with no OCR hits
+    import numpy as _np
+    _GRID_ROWS, _GRID_COLS = 12, 4
+    cell_w = iw / _GRID_COLS
+    cell_h = ih / _GRID_ROWS
+    # Build set of cells that already contain at least one word center
+    occupied: set[tuple[int, int]] = set()
+    for w in all_words:
+        cx = (w.px0 + w.px1) / 2
+        cy = (w.py0 + w.py1) / 2
+        col = int(cx / cell_w)
+        row = int(cy / cell_h)
+        occupied.add((row, col))
+    # Find empty-but-dark cells
+    gray_arr = _np.array(crop_img.convert("L"))
+    psm8_candidates: list[tuple[int, int, int, int]] = []
+    for row in range(_GRID_ROWS):
+        for col in range(_GRID_COLS):
+            if (row, col) in occupied:
+                continue
+            cx0 = int(col * cell_w)
+            cy0 = int(row * cell_h)
+            cx1 = min(iw, int((col + 1) * cell_w))
+            cy1 = min(ih, int((row + 1) * cell_h))
+            if cx1 <= cx0 or cy1 <= cy0:
+                continue
+            cell_arr = gray_arr[cy0:cy1, cx0:cx1]
+            dark_frac = float((cell_arr < 100).sum()) / cell_arr.size
+            if dark_frac > 0.05:
+                psm8_candidates.append((cx0, cy0, cx1, cy1))
+    if 0 < len(psm8_candidates) <= 12:
+        for cx0, cy0, cx1, cy1 in psm8_candidates:
+            cell_crop = crop_img.crop((cx0, cy0, cx1, cy1))
+            cell3x = cell_crop.resize((cell_crop.width * 3, cell_crop.height * 3), Image.LANCZOS).convert("RGB")
+            psm8_words_raw = _run_tesseract(cell3x, psm=8, up_scale=3.0)
+            psm8_words = [
+                OcrWord(w.text, cx0 + w.px0, cy0 + w.py0, cx0 + w.px1, cy0 + w.py1, w.conf)
+                for w in psm8_words_raw
+                if w.conf > 0.55 and _is_valid_ocr(w.text) and len(w.text) > 3
+            ]
+            if psm8_words:
+                all_words = _merge_word_lists(all_words, psm8_words, tol=10)
+
+    all_words = _reread_low_conf_measurements(all_words, crop_img)
 
     if _HAS_OCR_CACHE and assets_dir:
         _save_ocr_cache(crop_img, 'v1', all_words, assets_dir)
@@ -933,13 +1065,24 @@ def _add_ocr_line_textbox(
     y_pt = img_pt_y + py0 * sy
     w_pt = max((px1 - px0) * sx * 1.10, 4.0)
     h_pt = max((py1 - py0) * sy * 1.4, 4.0)
-    # Шрифт: 25-й перцентиль высот слов (консервативнее медианы, избегает инфляции от подстрочников)
+    # Шрифт: классификация по средней высоте слов в пунктах (Phase 45)
     word_heights = sorted((w.py1 - w.py0) for w in line_words)
     p25_h = word_heights[len(word_heights) // 4]
-    # Динамический cap: 14.0 для высококонфидентных строк, иначе 11.0
-    all_high_conf = all(w.conf > 0.70 for w in line_words)
-    font_cap = 14.0 if all_high_conf else 11.0
-    font_size = min(font_cap, max(5.0, p25_h * sy * 0.72))
+    import statistics as _statistics
+    mean_h_px = _statistics.mean((w.py1 - w.py0) for w in line_words)
+    mean_h_pt = mean_h_px * sy
+    # Высококонфидентная строка (conf > 0.85 у всех слов) — cap +2pt
+    all_high_conf = all(w.conf > 0.85 for w in line_words)
+    conf_bonus = 2.0 if all_high_conf else 0.0
+    if mean_h_pt > 18:
+        # Крупный текст — заголовки/шапки
+        font_size = min(28.0 + conf_bonus, mean_h_pt * 0.75)
+    elif mean_h_pt > 10:
+        # Нормальный текст
+        font_size = min(14.0 + conf_bonus, max(5.0, p25_h * sy * 0.72))
+    else:
+        # Мелкий текст — выноски, сноски
+        font_size = min(10.0 + conf_bonus, max(5.0, mean_h_pt * 0.80))
 
     txBox = slide.shapes.add_textbox(
         Emu(_emu(x_pt)), Emu(_emu(y_pt)),
@@ -1029,6 +1172,8 @@ def emit_pptx_slides(
     Конвертирует slide-PDF в PPTX.
     Каждый слайд: белый фон + вектор-слой + отдельные изображения (с OCR) + text boxes.
     """
+    _search_index: list[dict] = []
+
     work_dir = assets_dir or output_path.parent / "pptx_assets"
     raw_dir  = work_dir / "raw"
     vec_dir  = work_dir / "vector"
@@ -1204,11 +1349,32 @@ def emit_pptx_slides(
         native_bboxes_pt = [tuple(block["bbox"]) for block in text_blocks]
 
         # OCR text boxes поверх каждого изображения (группировка по строкам)
+        _slide_words: list[dict] = []
         for cd in cropped_data:
             bx0, by0, bx1, by1 = cd["bbox_pt"]
             cw, ch = cd["crop_px"]
             sx = (bx1 - bx0) / cw if cw > 0 else 1.0
             sy = (by1 - by0) / ch if ch > 0 else 1.0
+
+            # PHASE 44 VALIDATION: проверяем соответствие аспектных соотношений.
+            # PDF bbox и нативный размер изображения должны масштабироваться одинаково.
+            # Расхождение > 5% означает, что PDF растянул изображение — используем
+            # минимальный масштаб (conservative), чтобы текст не вышел за границу.
+            if sx > 0 and sy > 0:
+                ratio_diff = abs(sx - sy) / max(sx, sy)
+                if ratio_diff > 0.05:
+                    print(
+                        f"  [WARN] aspect mismatch on slide {i} img bbox "
+                        f"({bx0:.1f},{by0:.1f},{bx1:.1f},{by1:.1f}): "
+                        f"sx={sx:.4f} sy={sy:.4f} diff={ratio_diff:.1%} — "
+                        f"using conservative min scale"
+                    )
+                    s_cons = min(sx, sy)
+                    bx1 = bx0 + s_cons * cw
+                    by1 = by0 + s_cons * ch
+                    sx = s_cons
+                    sy = s_cons
+
             lines = _group_ocr_into_lines(cd["words"], img_native_w=cw)
             lines = _merge_close_lines(lines, cw)
             for line_words in lines:
@@ -1232,13 +1398,49 @@ def emit_pptx_slides(
                     img_pt_w=bx1-bx0, img_pt_h=by1-by0,
                     crop_px_w=cw, crop_px_h=ch,
                 )
+                # Collect OCR line for search index
+                _avg_conf = sum(w.conf for w in line_words) / len(line_words)
+                _line_text = " ".join(w.text for w in line_words)
+                _slide_words.append({
+                    "text": _line_text,
+                    "x_pt": round(ocr_bbox_pt[0], 2),
+                    "y_pt": round(ocr_bbox_pt[1], 2),
+                    "conf": round(_avg_conf, 4),
+                    "source": "ocr",
+                })
 
         # Native PDF text boxes
         for block in text_blocks:
             _add_block_textbox(slide, block)
+            for _line in block.get("lines", []):
+                for _span in _line.get("spans", []):
+                    _txt = _span.get("text", "").strip()
+                    if not _txt:
+                        continue
+                    _sx0, _sy0, _sx1, _sy1 = _span["bbox"]
+                    _slide_words.append({
+                        "text": _txt,
+                        "x_pt": round(_sx0, 2),
+                        "y_pt": round(_sy0, 2),
+                        "conf": 1.0,
+                        "source": "native",
+                    })
+
+        _search_index.append({"slide": i + 1, "words": _slide_words})
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     prs.save(str(output_path))
+
+    _index_path = output_path.with_suffix(".search_index.json")
+    _index_payload = {
+        "source_pdf": pdf_path.name,
+        "slides": _search_index,
+    }
+    _index_path.write_text(
+        json.dumps(_index_payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"  Search index → {_index_path}")
+
     return output_path
 
 
