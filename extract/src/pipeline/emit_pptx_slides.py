@@ -120,13 +120,16 @@ class OcrWord(NamedTuple):
 
 import re as _re
 _ALPHANUM      = _re.compile(r"[А-Яа-яёЁA-Za-z0-9]")
+_CYRILLIC      = _re.compile(r"[А-Яа-яёЁ]")
 # "чистые" символы — всё что может быть в реальной аннотации чертежа
 _CLEAN_ALNUM   = _re.compile(r"[А-Яа-яёЁA-Za-z0-9\-—.,:%°+=()①-⑨₁-₉/\\]")
-_NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»""''`^~@#$%&]{1,2}$")
-# Паттерн измерительного значения: —0.36, -1.13, ±0.05 и т.д.
-_MEASUREMENT   = _re.compile(r"^[—\-±]?\d+[.,]\d+$")
-# Одиночная заглавная латинская/кириллическая буква — размерный маркер (B, C, А, Б)
-_DIM_MARKER    = _re.compile(r"^[А-ЯA-Z]�?[₁₂₃₄₅₆₇₈₉]?$")
+_NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»\"\'`^~@#$%&]{1,2}$")
+# Паттерны измерительных значений: —0.36, -1.13, ±0.05, .30 (ведущая точка)
+_MEASUREMENT   = _re.compile(r"^([—\-±]?\d+[.,]\d+|[.,]\d+)$")
+# Технические обозначения чертежей: i=4%, 1:200, 0.5%, уклон-значения
+_TECH_MARKER   = _re.compile(r"^(i=[0-9]+%?|[0-9]+:[0-9]+|[0-9]+[.,][0-9]+%|[А-Яа-яёЁ]{2,10}[0-9]*)$")
+# Штриховка читается как короткие латинские "слова" из e,s,a,f,t,i,c (без кириллицы/цифр)
+_HATCH_CHARS   = _re.compile(r"^[eésEéSaAftFTiIcCoOnNlLbB]{2,5}[).,!|]*$")
 
 
 def _is_valid_ocr(text: str) -> bool:
@@ -134,20 +137,23 @@ def _is_valid_ocr(text: str) -> bool:
     Принимаем OCR-результат если:
     - длина >= 1 (одиночный маркер типа B, C, А)
     - содержит хотя бы 1 кириллическую/латинскую букву или цифру
-    - не является чисто-пунктуационным мусором
-    - ≥ 40% символов (без пробелов) — "чистые"
+    - не является пунктуационным мусором или штриховочным шумом
+    - ≥ 40% символов — "чистые"
     """
     t = text.strip()
     if not t:
         return False
-    # Одиночный символ допустим только если это размерный маркер (заглавная буква)
+    # Одиночный символ — только размерный маркер (заглавная буква или цифра)
     if len(t) == 1:
         return bool(_re.match(r"[А-ЯA-Z0-9]", t))
     if not _ALPHANUM.search(t):
         return False
     if _NOISE.match(t):
         return False
-    # Фильтруем акцентный мусор "ées éée": доля "чистых" символов ≥ 40%
+    # Штриховка → короткие латинские слова без кириллицы и цифр
+    if _HATCH_CHARS.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
+        return False
+    # Фильтруем акцентный мусор (ées, éée): доля "чистых" символов ≥ 40%
     no_space = t.replace(" ", "")
     if no_space:
         clean_count = sum(1 for c in no_space if _CLEAN_ALNUM.match(c))
@@ -160,12 +166,14 @@ def _min_conf_for(text: str) -> int:
     """Минимальный confidence в зависимости от типа текста."""
     t = text.strip()
     if len(t) == 1:
-        return 80   # одиночные символы: только при высокой уверенности
+        return 80   # одиночные символы — только при высокой уверенности
     if _MEASUREMENT.match(t):
-        return 25   # числа-измерения: допускаем низкий conf (сложный фон)
+        return 20   # числа-измерения — очень низкий порог, сложный фон на чертежах
+    if _TECH_MARKER.match(t):
+        return 20   # технические маркеры: i=4%, 1:200, уклон
     if len(t) <= 2:
-        return 55   # короткие аббревиатуры
-    return 30       # всё остальное
+        return 50   # короткие аббревиатуры
+    return 28       # всё остальное (чуть мягче для плотных аннотаций)
 
 
 def _remove_hatching(gray_arr) -> object:
@@ -200,10 +208,20 @@ def _make_gray_variants(crop_img: Image.Image) -> list[tuple[Image.Image, float]
     import numpy as _np
 
     w, h = crop_img.size
-    UPSCALE = 2
+    # Для больших изображений уменьшаем масштаб чтобы не съесть всю RAM
+    # Tesseract работает хорошо при 150-300 DPI; нативные PDF-изображения уже ~150 DPI
+    MAX_DIM = 3000
+    if max(w, h) * 2 > MAX_DIM:
+        UPSCALE = max(1, MAX_DIM // max(w, h))
+    else:
+        UPSCALE = 2
+    if UPSCALE < 1:
+        UPSCALE = 1
     results: list[tuple[Image.Image, float]] = []
 
     def _up(img: Image.Image) -> Image.Image:
+        if UPSCALE == 1:
+            return img
         return img.resize((w * UPSCALE, h * UPSCALE), Image.LANCZOS)
 
     # Вариант 1: стандартный grayscale
@@ -280,11 +298,17 @@ def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
     variants = _make_gray_variants(crop_img)
     all_words: list[OcrWord] = []
 
-    # Только PSM 11 (sparse text) — находит отдельные аннотации по всему чертежу.
-    # PSM 6 (uniform block) на технических чертежах создаёт гигантские мусорные bbox.
-    for img_variant, up_scale in variants:
-        batch = _run_tesseract(img_variant, psm=11, up_scale=up_scale)
-        all_words = _merge_word_lists(all_words, batch, tol=12)
+    # PSM 11 (sparse text) — для разбросанных аннотаций на чертежах
+    # PSM 6 (uniform block) добавляем только для первого варианта — подхватывает
+    # сплошные блоки текста в таблицах, но не запускаем на min-channel (шум)
+    for vi, (img_variant, up_scale) in enumerate(variants):
+        batch11 = _run_tesseract(img_variant, psm=11, up_scale=up_scale)
+        all_words = _merge_word_lists(all_words, batch11, tol=12)
+        if vi == 0:
+            # PSM 6 на grayscale варианте — дополнительно для табличного текста
+            batch6 = _run_tesseract(img_variant, psm=6, up_scale=up_scale)
+            # tol=15: PSM 6 bbox может чуть смещаться vs PSM 11 — дедуплицируем
+            all_words = _merge_word_lists(all_words, batch6, tol=15)
 
     return all_words
 
@@ -412,21 +436,26 @@ def _group_ocr_into_lines(words: list[OcrWord],
     """
     if not words:
         return []
-    sorted_w = sorted(words, key=lambda w: w.py0)
+    # Сортируем по центру y, а не по py0 — стабильнее при разных baseline
+    sorted_w = sorted(words, key=lambda w: (w.py0 + w.py1) / 2)
     lines: list[list[OcrWord]] = []
     cur_line = [sorted_w[0]]
-    cur_y0 = sorted_w[0].py0
+    cur_cy = (sorted_w[0].py0 + sorted_w[0].py1) / 2
     avg_h = max(sorted_w[0].py1 - sorted_w[0].py0, 1)
     for w in sorted_w[1:]:
         h = max(w.py1 - w.py0, 1)
-        threshold = max(3, avg_h * 0.4)
-        if abs(w.py0 - cur_y0) <= threshold:
+        cy = (w.py0 + w.py1) / 2
+        # Порог: 50% средней высоты строки — слова на одной строке укладываются
+        threshold = max(4, avg_h * 0.50)
+        if abs(cy - cur_cy) <= threshold:
             cur_line.append(w)
+            # Обновляем центр строки как среднее всех слов
+            cur_cy = sum((ww.py0 + ww.py1) / 2 for ww in cur_line) / len(cur_line)
             avg_h = (avg_h + h) / 2
         else:
             lines.append(sorted(cur_line, key=lambda ww: ww.px0))
             cur_line = [w]
-            cur_y0 = w.py0
+            cur_cy = cy
             avg_h = h
     lines.append(sorted(cur_line, key=lambda ww: ww.px0))
 
@@ -437,6 +466,14 @@ def _group_ocr_into_lines(words: list[OcrWord],
             ln for ln in lines
             if (max(w.px1 for w in ln) - min(w.px0 for w in ln)) <= max_line_w
         ]
+
+    # Фильтруем "штриховочные" строки: >70% слов ≤3 символа И средний conf < 0.55
+    def _is_hatch_line(ln: list[OcrWord]) -> bool:
+        short = sum(1 for w in ln if len(w.text.strip()) <= 3)
+        avg_conf = sum(w.conf for w in ln) / len(ln)
+        return (short / len(ln)) > 0.70 and avg_conf < 0.55
+
+    lines = [ln for ln in lines if not _is_hatch_line(ln)]
     return lines
 
 
@@ -463,10 +500,12 @@ def _add_ocr_line_textbox(
 
     x_pt = img_pt_x + px0 * sx
     y_pt = img_pt_y + py0 * sy
-    w_pt = max((px1 - px0) * sx * 1.05, 4.0)
-    h_pt = max((py1 - py0) * sy * 1.3, 4.0)
-    # Аннотации на чертежах мелкие: не даём шрифту превысить 11pt
-    font_size = min(11.0, max(5.0, (py1 - py0) * sy * 0.72))
+    w_pt = max((px1 - px0) * sx * 1.10, 4.0)
+    h_pt = max((py1 - py0) * sy * 1.4, 4.0)
+    # Шрифт: медиана высот слов (стабильнее чем span всей строки)
+    word_heights = sorted((w.py1 - w.py0) for w in line_words)
+    med_h = word_heights[len(word_heights) // 2]
+    font_size = min(11.0, max(5.0, med_h * sy * 0.72))
 
     txBox = slide.shapes.add_textbox(
         Emu(_emu(x_pt)), Emu(_emu(y_pt)),
@@ -600,7 +639,10 @@ def emit_pptx_slides(
 
             # OCR
             ocr_words: list[OcrWord] = []
-            if ocr_images and native_w > 30 and native_h > 20:
+            # Пропускаем маленькие декоративные изображения (логотипы, иконки)
+            # Реальные чертежи всегда >= 900px по обоим измерениям
+            _is_tiny = min(native_w, native_h) < 600
+            if ocr_images and native_w > 30 and native_h > 20 and not _is_tiny:
                 print(f"  Слайд {i}, image {bi}: OCR ({native_w}x{native_h}px, "
                       f"{'native' if native_img else 'rendered'})...")
                 ocr_words = _ocr_crop(ocr_source)
