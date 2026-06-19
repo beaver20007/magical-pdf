@@ -189,7 +189,9 @@ def _min_conf_for(text: str) -> int:
     if _re.match(r"^\d{1,4}$", t):
         return 25   # целые числа (размеры, диаметры) — чуть выше порог от мусора
     if len(t) <= 2:
-        return 50   # короткие аббревиатуры
+        if _re.match(r'^[а-яёa-z]{2}$', t):
+            return 70   # 2-char строчные фрагменты (ух, ен, oe) — повышенный порог
+        return 50   # короткие аббревиатуры (заглавные, смешанные)
     return 28       # всё остальное
 
 
@@ -256,6 +258,24 @@ def _make_gray_variants(crop_img: Image.Image) -> list[tuple[Image.Image, float]
     g3 = ImageOps.equalize(crop_img.convert("L"))
     g3 = ImageEnhance.Contrast(g3).enhance(1.8)
     results.append((_up(g3).convert("RGB"), float(UPSCALE)))
+
+    # Вариант 4: для плотной штриховки — сильное морфологическое opening (kernel=9)
+    # Определяем наличие плотной штриховки по дисперсии пикселей (высокая плотность градиентов).
+    gray_arr4 = _np.array(crop_img.convert("L"))
+    _variance = float(_np.var(gray_arr4.astype("float32")))
+    # Нормализуем: максимальная теоретическая дисперсия = 128^2 = 16384
+    _edge_density = _variance / 16384.0
+    if _edge_density > 0.30:
+        # Плотная штриховка обнаружена: применяем opening с kernel=9
+        from PIL import Image as _PILImg, ImageFilter
+        _pil4 = _PILImg.fromarray(gray_arr4.astype("uint8"))
+        _inv4 = _PILImg.fromarray(255 - _np.array(_pil4))
+        _k9 = 9
+        _eroded4 = _inv4.filter(ImageFilter.MinFilter(_k9))
+        _dilated4 = _eroded4.filter(ImageFilter.MaxFilter(_k9))
+        _opened4 = _PILImg.fromarray(255 - _np.array(_dilated4))
+        g4 = ImageEnhance.Contrast(_opened4).enhance(2.0)
+        results.append((_up(g4).convert("RGB"), float(UPSCALE)))
 
     return results
 
@@ -333,6 +353,15 @@ def _ocr_crop(crop_img: Image.Image) -> list[OcrWord]:
             batch6 = _run_tesseract(img_variant, psm=6, up_scale=up_scale)
             # tol=15: PSM 6 bbox может чуть смещаться vs PSM 11 — дедуплицируем
             all_words = _merge_word_lists(all_words, batch6, tol=15)
+
+    # PSM 7 (single text line) — для изолированных числовых значений на чистом фоне
+    # (слайды 8, 18). Принимаем только слова-измерения/_TECH_MARKER чтобы не добавлять шум.
+    batch7 = _run_tesseract(variants[0][0], psm=7, up_scale=variants[0][1])
+    batch7_filtered = [
+        w for w in batch7
+        if _MEASUREMENT.match(w.text.strip()) or _TECH_MARKER.match(w.text.strip())
+    ]
+    all_words = _merge_word_lists(all_words, batch7_filtered, tol=10)
 
     return all_words
 
@@ -533,6 +562,34 @@ def _group_ocr_into_lines(words: list[OcrWord],
         split_lines.append(cur)
     lines = split_lines
 
+    # Merge-back step: if two consecutive gap-split lines have the same
+    # approximate y-center (within 1 line-height) and their combined width
+    # still fits within 80% of image width, they are likely one annotation
+    # that was falsely split.
+    merged: list[list[OcrWord]] = []
+    i = 0
+    while i < len(lines):
+        ln = lines[i]
+        if i + 1 < len(lines):
+            nxt = lines[i + 1]
+            # Average y-centers
+            cy1 = sum((w.py0 + w.py1) / 2 for w in ln) / len(ln)
+            cy2 = sum((w.py0 + w.py1) / 2 for w in nxt) / len(nxt)
+            avg_h_ln = sum(w.py1 - w.py0 for w in ln) / len(ln)
+            avg_h_nxt = sum(w.py1 - w.py0 for w in nxt) / len(nxt)
+            line_h = (avg_h_ln + avg_h_nxt) / 2
+            # Combined bounding box width
+            all_words = ln + nxt
+            combined_w = max(w.px1 for w in all_words) - min(w.px0 for w in all_words)
+            width_ok = (img_native_w <= 0) or (combined_w <= img_native_w * 0.80)
+            if abs(cy1 - cy2) <= line_h and width_ok:
+                merged.append(sorted(all_words, key=lambda ww: ww.px0))
+                i += 2
+                continue
+        merged.append(ln)
+        i += 1
+    lines = merged
+
     return lines
 
 
@@ -540,10 +597,13 @@ _MEAS_TRAIL   = _re.compile(r'^([—\-±=]?\d+[.,]\d+)[a-zA-Z!°]+$')
 _LEAD_NOISE   = _re.compile(r'^[\\~#*°]([=\-+]?\d)')
 _BRACKET_DIG  = _re.compile(r'^\[(\d)')
 _EQ_LETTER    = _re.compile(r'^=[a-zA-Z]$')
+# Trailing comma/period from measurement values: -0.300, → -0.300, -0,88. → -0,88
+_MEAS_TRAIL_PUNCT = _re.compile(r'^([—\-±=]?\d+[.,]\d+)[.,]+$')
 # Trailing punct from digit-only tokens: 10300! → 10300
 _DIGIT_TRAIL  = _re.compile(r'^(\d[\d.,]*)[\s!;.°]+$')
 # 2-3 символьные ALL CAPS Latin без цифр/кириллицы — штриховочный шум
 _CAPS2        = _re.compile(r'^[A-Z]{2,3}[!;.,]?$')
+_INIT_CAP_NOISE = _re.compile(r'^[A-Z][a-z]{1,3}$')
 
 
 def _clean_token(t: str) -> str:
@@ -562,11 +622,29 @@ def _clean_token(t: str) -> str:
         return t2
     if _BRACKET_DIG.match(t):
         return t[1:]
+    # trailing comma/period from measurement values: -0.300, → -0.300
+    m = _MEAS_TRAIL_PUNCT.match(t)
+    if m:
+        return m.group(1)
     # trailing punct from digit tokens: 10300! → 10300
     m = _DIGIT_TRAIL.match(t)
     if m:
         return m.group(1)
     return t
+
+
+def _overlaps_native(
+    ocr_bbox_pt: tuple[float, float, float, float],
+    native_bboxes_pt: list[tuple[float, float, float, float]],
+    tol: float = 5.0,
+) -> bool:
+    """Return True if the OCR line center falls inside any native text bbox (expanded by tol pt)."""
+    cx = (ocr_bbox_pt[0] + ocr_bbox_pt[2]) / 2
+    cy = (ocr_bbox_pt[1] + ocr_bbox_pt[3]) / 2
+    for x0, y0, x1, y1 in native_bboxes_pt:
+        if (x0 - tol) <= cx <= (x1 + tol) and (y0 - tol) <= cy <= (y1 + tol):
+            return True
+    return False
 
 
 def _add_ocr_line_textbox(
@@ -594,10 +672,13 @@ def _add_ocr_line_textbox(
     y_pt = img_pt_y + py0 * sy
     w_pt = max((px1 - px0) * sx * 1.10, 4.0)
     h_pt = max((py1 - py0) * sy * 1.4, 4.0)
-    # Шрифт: медиана высот слов (стабильнее чем span всей строки)
+    # Шрифт: 25-й перцентиль высот слов (консервативнее медианы, избегает инфляции от подстрочников)
     word_heights = sorted((w.py1 - w.py0) for w in line_words)
-    med_h = word_heights[len(word_heights) // 2]
-    font_size = min(11.0, max(5.0, med_h * sy * 0.72))
+    p25_h = word_heights[len(word_heights) // 4]
+    # Динамический cap: 14.0 для высококонфидентных строк, иначе 11.0
+    all_high_conf = all(w.conf > 0.70 for w in line_words)
+    font_cap = 14.0 if all_high_conf else 11.0
+    font_size = min(font_cap, max(5.0, p25_h * sy * 0.72))
 
     txBox = slide.shapes.add_textbox(
         Emu(_emu(x_pt)), Emu(_emu(y_pt)),
@@ -628,6 +709,9 @@ def _add_ocr_line_textbox(
             return False, t
         # 2-3-символьные ALL CAPS Latin — штриховочный шум (SS, CA, LN, FS, Ne→No)
         if _CAPS2.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
+            return False, t
+        # Начальная заглавная + 1-3 строчные Latin без цифр/кириллицы — штриховочный шум (Ne, Kr, Go, Gy, Ren)
+        if _INIT_CAP_NOISE.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t) and w.conf < 0.75:
             return False, t
         # = + одна буква: =f, =g — шум
         if _EQ_LETTER.match(t):
@@ -853,11 +937,30 @@ def emit_pptx_slides(
                 Emu(_emu(bx1 - bx0)), Emu(_emu(by1 - by0)),
             )
 
+        # Collect native text block bboxes for dedup check
+        native_bboxes_pt = [tuple(block["bbox"]) for block in text_blocks]
+
         # OCR text boxes поверх каждого изображения (группировка по строкам)
         for cd in cropped_data:
             bx0, by0, bx1, by1 = cd["bbox_pt"]
             cw, ch = cd["crop_px"]
+            sx = (bx1 - bx0) / cw if cw > 0 else 1.0
+            sy = (by1 - by0) / ch if ch > 0 else 1.0
             for line_words in _group_ocr_into_lines(cd["words"], img_native_w=cw):
+                if not line_words:
+                    continue
+                px0 = min(w.px0 for w in line_words)
+                py0 = min(w.py0 for w in line_words)
+                px1 = max(w.px1 for w in line_words)
+                py1 = max(w.py1 for w in line_words)
+                ocr_bbox_pt = (
+                    bx0 + px0 * sx,
+                    by0 + py0 * sy,
+                    bx0 + px1 * sx,
+                    by0 + py1 * sy,
+                )
+                if _overlaps_native(ocr_bbox_pt, native_bboxes_pt):
+                    continue
                 _add_ocr_line_textbox(
                     slide, line_words,
                     img_pt_x=bx0, img_pt_y=by0,
