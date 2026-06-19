@@ -124,12 +124,14 @@ _CYRILLIC      = _re.compile(r"[А-Яа-яёЁ]")
 # "чистые" символы — всё что может быть в реальной аннотации чертежа
 _CLEAN_ALNUM   = _re.compile(r"[А-Яа-яёЁA-Za-z0-9\-—.,:%°+=()①-⑨₁-₉/\\]")
 _NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»\"\'`^~@#$%&]{1,2}$")
-# Паттерны измерительных значений: —0.36, -1.13, ±0.05, .30 (ведущая точка)
-_MEASUREMENT   = _re.compile(r"^([—\-±]?\d+[.,]\d+|[.,]\d+)$")
+# Паттерны измерительных значений: —0.36, -1.13, ±0.05, .30 (ведущая точка), =0.36
+_MEASUREMENT   = _re.compile(r"^([—\-±=]?\d+[.,]\d+|[.,]\d+)$")
 # Технические обозначения чертежей: i=4%, 1:200, 0.5%, уклон-значения
 _TECH_MARKER   = _re.compile(r"^(i=[0-9]+%?|[0-9]+:[0-9]+|[0-9]+[.,][0-9]+%|[А-Яа-яёЁ]{2,10}[0-9]*)$")
 # Штриховка читается как короткие латинские "слова" из e,s,a,f,t,i,c (без кириллицы/цифр)
-_HATCH_CHARS   = _re.compile(r"^[eésEéSaAftFTiIcCoOnNlLbB]{2,5}[).,!|]*$")
+_HATCH_CHARS   = _re.compile(r"^[eésEéSaAftFTiIcCoOnNlLbBwWgGpPqQ]{2,5}[).,!|]*$")
+# Полностью заглавные латинские слова ≥4 букв без кириллицы — OCR мусор на чертежах
+_ALL_CAPS_LATIN = _re.compile(r"^[A-Z]{5,}$")
 
 
 def _is_valid_ocr(text: str) -> bool:
@@ -153,6 +155,9 @@ def _is_valid_ocr(text: str) -> bool:
     # Штриховка → короткие латинские слова без кириллицы и цифр
     if _HATCH_CHARS.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
         return False
+    # Полностью заглавные латинские слова ≥4 букв без кириллицы — OCR мусор (NALLY, ALLY)
+    if _ALL_CAPS_LATIN.match(t) and not _CYRILLIC.search(t):
+        return False
     # Фильтруем акцентный мусор (ées, éée): доля "чистых" символов ≥ 40%
     no_space = t.replace(" ", "")
     if no_space:
@@ -171,9 +176,11 @@ def _min_conf_for(text: str) -> int:
         return 20   # числа-измерения — очень низкий порог, сложный фон на чертежах
     if _TECH_MARKER.match(t):
         return 20   # технические маркеры: i=4%, 1:200, уклон
+    if _re.match(r"^\d{1,4}$", t):
+        return 25   # целые числа (размеры, диаметры) — чуть выше порог от мусора
     if len(t) <= 2:
         return 50   # короткие аббревиатуры
-    return 28       # всё остальное (чуть мягче для плотных аннотаций)
+    return 28       # всё остальное
 
 
 def _remove_hatching(gray_arr) -> object:
