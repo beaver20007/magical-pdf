@@ -141,6 +141,8 @@ _CLEAN_ALNUM   = _re.compile(r"[А-Яа-яёЁA-Za-z0-9\-—.,:%°+=()①-⑨₁
 _NOISE         = _re.compile(r"^[|\\/*+=(){}\[\]<>«»\"\'`^~@#$%&]{1,2}$")
 # Паттерны измерительных значений: —0.36, -1.13, ±0.05, .30 (ведущая точка), =0.36
 _MEASUREMENT   = _re.compile(r"^([—\-±=]?\d+[.,]\d+|[.,]\d+)$")
+# Phase 61: 2-decimal float tokens subject to Float Re-read
+_FLOAT_2DEC    = _re.compile(r'^-?\d+[.,]\d{2}$')
 # Технические обозначения чертежей: i=4%, 1:200, 0.5%, уклон-значения
 _TECH_MARKER   = _re.compile(r"^(i=[0-9]+%?|[0-9]+:[0-9]+|[0-9]+[.,][0-9]+%|[А-Яа-яёЁ]{2,10}[0-9]*)$")
 # Штриховка читается как короткие латинские "слова" из e,s,a,f,t,i,c (без кириллицы/цифр)
@@ -151,6 +153,7 @@ _SHORT_LOWER_LAT = _re.compile(r"^[a-z]{2,5}[).,!|]*$")
 # 2-буквенные (PP, DN, SS, CA) обрабатываются отдельно в inline-фильтре
 _ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{3,}$")
 _DASH_SEQ        = _re.compile(r'^[\-—<>/\\]{2,6}$')
+_ROT_MIN_CONF    = 55
 _TECH_WHITELIST = frozenset({
     'мм', 'см', 'дм', 'км', 'кг', 'шт', 'пм', 'пл', 'вп', 'ту',
     'пвх', 'пп', 'дп', 'бв', 'пу', 'ду', 'дн', 'кн', 'мн', 'па',
@@ -191,6 +194,13 @@ _CYRILLIC_ENGINEERING = frozenset({
     'трубопровод', 'дренаж', 'колодец', 'люк', 'решетка', 'уклон', 'отметка',
     'существующая', 'проектная', 'граница', 'скважина', 'насос', 'септик',
     'канализация', 'газопровод', 'горизонталь',
+    # Phase 66: Cyrillic Engineering Vocabulary Boost
+    'водопровод', 'водоснабжение', 'водоотведение', 'теплоснабжение',
+    'электроснабжение', 'вентиляция', 'кровля', 'перекрытие', 'перегородка',
+    'фасад', 'фундаментная', 'подвал', 'цоколь', 'парапет', 'пандус',
+    'лестница', 'пролёт', 'арматура', 'бетон', 'железобетон',
+    'монолит', 'сваи', 'ростверк', 'плита', 'балка', 'колонна',
+    'стена', 'проём', 'перемычка', 'ниша', 'штраба',
 })
 
 _CYRILLIC_SUFFIXES = _re.compile(
@@ -284,7 +294,10 @@ def _min_conf_for(text: str) -> int:
         return 50   # короткие аббревиатуры (заглавные, смешанные)
     if len(t) >= 5 and _CYRILLIC.search(t) and not _re.search(r'[A-Za-z]', t):
         if _validate_cyrillic_token(t):
-            return 22
+            # Phase 66: lower threshold for longer well-formed Cyrillic engineering terms
+            if len(t) >= 8 and _CYRILLIC.fullmatch(t) and _CYRILLIC_SUFFIXES.search(t):
+                return 18
+            return 18
         return 35   # длинное кириллическое слово — умеренный порог
     return 28       # всё остальное
 
@@ -625,6 +638,8 @@ def _try_rotated_ocr(crop_img: Image.Image, up_scale: float) -> list[OcrWord]:
         g = ImageEnhance.Contrast(rotated.convert("L")).enhance(2.5)
         g_rgb = g.convert("RGB")
         words = _run_tesseract(g_rgb, psm=11, up_scale=up_scale)
+        rot_words = [w for w in words if (w.conf if hasattr(w, 'conf') else 50) >= _ROT_MIN_CONF]
+        words = rot_words
         if len(words) < 2:
             continue
         avg_conf = sum(w.conf for w in words) / len(words)
@@ -706,6 +721,58 @@ def _reread_low_conf_measurements(words: list[OcrWord], crop_img: Image.Image) -
     if not replaced:
         return words
     return [replaced.get(i, w) for i, w in enumerate(words)]
+
+
+# ── Phase 61: Float Re-read for uncertain decimal values ─────────────────────
+
+def _reread_uncertain_floats(words: list[OcrWord], img: Image.Image) -> list[OcrWord]:
+    """Phase 61: High-zoom PSM-8 re-read for 2-decimal float tokens.
+
+    Finds words matching _FLOAT_2DEC (e.g. 0.95, -1.23, 0,88) regardless of
+    confidence and re-OCRs them at 1.5× zoom with PSM 8 and a digit-only
+    whitelist.  If the new read differs from the original it replaces the
+    token (preserving all other OcrWord fields).  At most 12 re-reads per
+    image to bound runtime.
+    """
+    import pytesseract
+    pytesseract.pytesseract.tesseract_cmd = _TESSERACT_CMD
+
+    out: list[OcrWord] = []
+    re_reads = 0
+    iw, ih = img.size
+    for w in words:
+        if re_reads >= 12 or not _FLOAT_2DEC.match(w.text.strip()):
+            out.append(w)
+            continue
+        try:
+            pad = 4
+            x0 = max(0, w.px0 - pad)
+            y0 = max(0, w.py0 - pad)
+            x1 = min(iw, w.px1 + pad)
+            y1 = min(ih, w.py1 + pad)
+            if x1 <= x0 or y1 <= y0:
+                out.append(w)
+                continue
+            tile = img.crop((x0, y0, x1, y1))
+            nw = int(tile.width * 1.5)
+            nh = int(tile.height * 1.5)
+            if nw < 4 or nh < 4:
+                out.append(w)
+                continue
+            tile = tile.resize((nw, nh), Image.LANCZOS).convert('L').convert('RGB')
+            cfg = '--oem 1 --psm 8 --tessedit_char_whitelist 0123456789.,-'
+            raw = pytesseract.image_to_string(tile, config=cfg, lang='rus+eng').strip()
+            # normalise decimal separator
+            raw = raw.replace(',', '.')
+            # strip trailing punctuation that sometimes leaks through
+            raw = raw.rstrip('.,;')
+            if _FLOAT_2DEC.match(raw) and raw != w.text.strip():
+                w = w._replace(text=raw)
+        except Exception:
+            pass
+        re_reads += 1
+        out.append(w)
+    return out
 
 
 # ── Phase 55: Table Structure Recovery ───────────────────────────────────────
@@ -972,6 +1039,7 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
                 all_words = _merge_word_lists(all_words, psm8_words, tol=10)
 
     all_words = _reread_low_conf_measurements(all_words, crop_img)
+    all_words = _reread_uncertain_floats(all_words, crop_img)
 
     # Phase 55: Table Structure Recovery — run before returning to merge
     # per-cell OCR results for images that contain grid tables.
@@ -982,6 +1050,8 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
         if cell_words:
             all_words = _merge_word_lists(all_words, cell_words, tol=8)
             print(f"    [Phase 55] Cell OCR added {len(cell_words)} words")
+
+    all_words = _dedup_words(all_words)
 
     if _HAS_OCR_CACHE and assets_dir:
         _save_ocr_cache(crop_img, 'v1', all_words, assets_dir)
@@ -1155,32 +1225,43 @@ def _merge_close_lines(lines: list[list[OcrWord]], img_native_w: int) -> list[li
 def _group_ocr_into_lines(words: list[OcrWord],
                           img_native_w: int = 0) -> list[list[OcrWord]]:
     """Группирует OCR-слова с близкими y-координатами в визуальные строки.
-    Использует порог 40% высоты строки (не 70%) чтобы не сливать аннотации
-    на разных уровнях чертежа. Удаляет строки шириной > 60% изображения.
+    Phase 65: Adaptive Line Gap — порог группировки вычисляется как median_h * 0.6,
+    где median_h — медианная высота слова. Это адаптивнее фиксированного avg_h * 0.5
+    и устойчивее к выбросам (крупные заголовки не растягивают порог).
+    Удаляет строки шириной > 80% изображения.
     """
     if not words:
         return []
+
+    # Phase 65: вычисляем медианную высоту слова один раз перед группировкой
+    heights = [w.py1 - w.py0 for w in words if w.py1 - w.py0 > 0]
+    if not heights:
+        median_h = 12
+    else:
+        heights.sort()
+        median_h = heights[len(heights) // 2]
+    median_h = max(median_h, 4)  # минимальная защита от вырождения
+
+    # Порог Y-расстояния для слов на одной строке
+    line_gap_threshold = median_h * 0.6
+    # Порог Y-расстояния для разделения отдельных текстовых блоков
+    block_split_threshold = median_h * 1.5
+
     # Сортируем по центру y, а не по py0 — стабильнее при разных baseline
     sorted_w = sorted(words, key=lambda w: (w.py0 + w.py1) / 2)
     lines: list[list[OcrWord]] = []
     cur_line = [sorted_w[0]]
     cur_cy = (sorted_w[0].py0 + sorted_w[0].py1) / 2
-    avg_h = max(sorted_w[0].py1 - sorted_w[0].py0, 1)
     for w in sorted_w[1:]:
-        h = max(w.py1 - w.py0, 1)
         cy = (w.py0 + w.py1) / 2
-        # Порог: 50% средней высоты строки — слова на одной строке укладываются
-        threshold = max(4, avg_h * 0.50)
-        if abs(cy - cur_cy) <= threshold:
+        if abs(cy - cur_cy) <= line_gap_threshold:
             cur_line.append(w)
             # Обновляем центр строки как среднее всех слов
             cur_cy = sum((ww.py0 + ww.py1) / 2 for ww in cur_line) / len(cur_line)
-            avg_h = (avg_h + h) / 2
         else:
             lines.append(sorted(cur_line, key=lambda ww: ww.px0))
             cur_line = [w]
             cur_cy = cy
-            avg_h = h
     lines.append(sorted(cur_line, key=lambda ww: ww.px0))
 
     # Фильтруем строки шире 80% изображения (без PSM 6 таких быть не должно)
@@ -1210,7 +1291,26 @@ def _group_ocr_into_lines(words: list[OcrWord],
         avg_conf = sum(w.conf for w in ln) / len(ln)
         return (caps_noise / len(ln)) > 0.55 and avg_conf < 0.65
 
-    lines = [ln for ln in lines if not _is_hatch_line(ln) and not _is_caps_noise_line(ln)]
+    def _is_dense_noise_line(ln: list[OcrWord]) -> bool:
+        """Phase 62: строки с высоким повторением символов — штриховочный мусор."""
+        joined = "".join(w.text for w in ln)
+        if len(joined) < 4:
+            return False
+        char_counts: dict[str, int] = {}
+        for c in joined:
+            char_counts[c] = char_counts.get(c, 0) + 1
+        repeated = sum(v for v in char_counts.values() if v > 1)
+        rep_ratio = repeated / len(joined)
+        has_digit = bool(_re.search(r"\d", joined))
+        non_alnum = sum(1 for c in joined if not _ALPHANUM.match(c))
+        non_alnum_ratio = non_alnum / len(joined)
+        if rep_ratio > 0.65 and not has_digit:
+            return True
+        if non_alnum_ratio > 0.5:
+            return True
+        return False
+
+    lines = [ln for ln in lines if not _is_hatch_line(ln) and not _is_caps_noise_line(ln) and not _is_dense_noise_line(ln)]
 
     # Разбиваем "широкие" строки по горизонтальным разрывам.
     # Если расстояние между соседними словами > 4× средней ширины слова,
@@ -1277,6 +1377,16 @@ _CAPS2        = _re.compile(r'^[A-Z]{2,3}[!;.,]?$')
 _INIT_CAP_NOISE = _re.compile(r'^[A-Z][a-z]{1,3}$')
 
 
+def _normalize_measurement(text: str) -> str:
+    """Phase 69: нормализует форматы измерений — запятая→точка, DN с пробелом, trailing zeros."""
+    t = text.strip()
+    t = _re.sub(r'(\d),(\d)', r'\1.\2', t)
+    t = _re.sub(r'(\d\.\d*[1-9])0+$', r'\1', t)
+    t = _re.sub(r'\b(DN|Dn|dn)\s+(\d+)', r'DN\2', t)
+    t = _re.sub(r'^(-?\d+\.\d+)[a-eg-z]$', r'\1', t)
+    return t
+
+
 def _clean_token(t: str) -> str:
     """Очищает OCR-токен от мусорных prefix/suffix: trailing буква, leading \\~*°[ перед числом."""
     # trailing single letter/symbol after decimal: -0.07g → -0.07
@@ -1301,6 +1411,8 @@ def _clean_token(t: str) -> str:
     m = _DIGIT_TRAIL.match(t)
     if m:
         return m.group(1)
+    if _MEASUREMENT.match(t) or _FLOAT_2DEC.match(t):
+        t = _normalize_measurement(t)
     return t
 
 
@@ -1321,6 +1433,40 @@ def _min_conf_for_line(words: list) -> float:
     return 0.28
 
 
+def _iou(a: tuple, b: tuple) -> float:
+    """Compute Intersection over Union for two (px0,py0,px1,py1) tuples."""
+    ix0 = max(a[0], b[0]); iy0 = max(a[1], b[1])
+    ix1 = min(a[2], b[2]); iy1 = min(a[3], b[3])
+    iw = max(0, ix1 - ix0); ih = max(0, iy1 - iy0)
+    inter = iw * ih
+    if inter == 0:
+        return 0.0
+    area_a = (a[2] - a[0]) * (a[3] - a[1])
+    area_b = (b[2] - b[0]) * (b[3] - b[1])
+    union = area_a + area_b - inter
+    return inter / union if union > 0 else 0.0
+
+
+def _dedup_words(words: list) -> list:
+    """Remove duplicate OcrWords with IoU > 0.5, keep higher-conf one."""
+    kept: list = []
+    for w in words:
+        bbox_w = (w.px0, w.py0, w.px1, w.py1) if hasattr(w, 'px0') else (w[1], w[2], w[3], w[4])
+        conf_w = w.conf if hasattr(w, 'conf') else 50
+        duplicate = False
+        for i, k in enumerate(kept):
+            bbox_k = (k.px0, k.py0, k.px1, k.py1) if hasattr(k, 'px0') else (k[1], k[2], k[3], k[4])
+            conf_k = k.conf if hasattr(k, 'conf') else 50
+            if _iou(bbox_w, bbox_k) > 0.5:
+                if conf_w > conf_k:
+                    kept[i] = w
+                duplicate = True
+                break
+        if not duplicate:
+            kept.append(w)
+    return kept
+
+
 def _overlaps_native(
     ocr_bbox_pt: tuple[float, float, float, float],
     native_bboxes_pt: list[tuple[float, float, float, float]],
@@ -1333,6 +1479,17 @@ def _overlaps_native(
         if (x0 - tol) <= cx <= (x1 + tol) and (y0 - tol) <= cy <= (y1 + tol):
             return True
     return False
+
+
+def _set_textbox_font(tf, font_size_pt: float) -> None:
+    """Phase 67: Унифицирует шрифт всех runs в OCR text box на Arial."""
+    from pptx.util import Pt
+    from pptx.dml.color import RGBColor
+    for para in tf.paragraphs:
+        for run in para.runs:
+            run.font.name = "Arial"
+            run.font.size = Pt(max(6, min(font_size_pt, 72)))
+            run.font.color.rgb = RGBColor(0x10, 0x10, 0x10)
 
 
 def _add_ocr_line_textbox(
@@ -1431,8 +1588,9 @@ def _add_ocr_line_textbox(
         cleaned_parts = [w.text for w in line_words]
     run.text = " ".join(cleaned_parts)
     run.font.size  = Pt(font_size)
-    run.font.name  = "Times New Roman"
-    run.font.color.rgb = RGBColor(0, 0, 0)
+    run.font.name  = "Arial"
+    run.font.color.rgb = RGBColor(0x10, 0x10, 0x10)
+    _set_textbox_font(tf, font_size)
 
 
 # ── Заголовок слайда (outline panel) ─────────────────────────────────────────
