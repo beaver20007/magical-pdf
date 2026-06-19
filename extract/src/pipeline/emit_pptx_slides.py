@@ -132,8 +132,9 @@ _TECH_MARKER   = _re.compile(r"^(i=[0-9]+%?|[0-9]+:[0-9]+|[0-9]+[.,][0-9]+%|[А-
 # Строчные латинские слова ≤5 символов — штриховка (ah, ar, ee, jam, tum, bema).
 # Заглавные (Dn, PP) и смешанные не попадают под этот фильтр.
 _SHORT_LOWER_LAT = _re.compile(r"^[a-z]{2,5}[).,!|]*$")
-# Полностью заглавные латинские слова >=5 букв — OCR мусор (NALLY, WHICH)
-_ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{5,}$")
+# Полностью заглавные латинские слова >=4 букв — OCR мусор (ALLY, NALLY, WHICH)
+# Сохраняем: 3-буквенные (MBX, ALY - риск, но они редки); 2-буквенные (PP, DN - OK)
+_ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{4,}$")
 
 
 def _is_valid_ocr(text: str) -> bool:
@@ -566,6 +567,8 @@ def _add_ocr_line_textbox(
         and not (_inline_low_lat.match(w.text.strip())
                  and not _CYRILLIC.search(w.text)
                  and not _re.search(r"\d", w.text))
+        and not (_ALL_CAPS_LATIN.match(w.text.strip())
+                 and not _CYRILLIC.search(w.text))
     ]
     if not clean_words:
         clean_words = line_words
