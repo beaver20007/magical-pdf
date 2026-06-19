@@ -132,9 +132,9 @@ _TECH_MARKER   = _re.compile(r"^(i=[0-9]+%?|[0-9]+:[0-9]+|[0-9]+[.,][0-9]+%|[А-
 # Строчные латинские слова ≤5 символов — штриховка (ah, ar, ee, jam, tum, bema).
 # Заглавные (Dn, PP) и смешанные не попадают под этот фильтр.
 _SHORT_LOWER_LAT = _re.compile(r"^[a-z]{2,5}[).,!|]*$")
-# Полностью заглавные латинские слова >=4 букв — OCR мусор (ALLY, NALLY, WHICH)
-# Сохраняем: 3-буквенные (MBX, ALY - риск, но они редки); 2-буквенные (PP, DN - OK)
-_ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{4,}$")
+# Полностью заглавные латинские слова >=3 букв — OCR мусор (ALN, ALY, GRE, RAS, ALLY…)
+# 2-буквенные (PP, DN, SS, CA) обрабатываются отдельно в inline-фильтре
+_ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{3,}$")
 
 
 def _is_valid_ocr(text: str) -> bool:
@@ -492,12 +492,25 @@ def _group_ocr_into_lines(words: list[OcrWord],
         ]
 
     # Фильтруем "штриховочные" строки: >70% слов ≤3 символа И средний conf < 0.55
+    _CAPS_NOISE_PAT = _re.compile(r'^[A-Z]{2,4}[!;.,]?$')
+
     def _is_hatch_line(ln: list[OcrWord]) -> bool:
         short = sum(1 for w in ln if len(w.text.strip()) <= 3)
         avg_conf = sum(w.conf for w in ln) / len(ln)
         return (short / len(ln)) > 0.70 and avg_conf < 0.55
 
-    lines = [ln for ln in lines if not _is_hatch_line(ln)]
+    def _is_caps_noise_line(ln: list[OcrWord]) -> bool:
+        """Строки где >55% слов — 2-4 char ALL CAPS Latin без цифр и кириллицы."""
+        caps_noise = sum(
+            1 for w in ln
+            if _CAPS_NOISE_PAT.match(w.text.strip())
+            and not _CYRILLIC.search(w.text)
+            and not _re.search(r"\d", w.text)
+        )
+        avg_conf = sum(w.conf for w in ln) / len(ln)
+        return (caps_noise / len(ln)) > 0.55 and avg_conf < 0.65
+
+    lines = [ln for ln in lines if not _is_hatch_line(ln) and not _is_caps_noise_line(ln)]
 
     # Разбиваем "широкие" строки по горизонтальным разрывам.
     # Если расстояние между соседними словами > 4× средней ширины слова,
@@ -521,6 +534,39 @@ def _group_ocr_into_lines(words: list[OcrWord],
     lines = split_lines
 
     return lines
+
+
+_MEAS_TRAIL   = _re.compile(r'^([—\-±=]?\d+[.,]\d+)[a-zA-Z!°]+$')
+_LEAD_NOISE   = _re.compile(r'^[\\~#*°]([=\-+]?\d)')
+_BRACKET_DIG  = _re.compile(r'^\[(\d)')
+_EQ_LETTER    = _re.compile(r'^=[a-zA-Z]$')
+# Trailing punct from digit-only tokens: 10300! → 10300
+_DIGIT_TRAIL  = _re.compile(r'^(\d[\d.,]*)[\s!;.°]+$')
+# 2-3 символьные ALL CAPS Latin без цифр/кириллицы — штриховочный шум
+_CAPS2        = _re.compile(r'^[A-Z]{2,3}[!;.,]?$')
+
+
+def _clean_token(t: str) -> str:
+    """Очищает OCR-токен от мусорных prefix/suffix: trailing буква, leading \\~*°[ перед числом."""
+    # trailing single letter/symbol after decimal: -0.07g → -0.07
+    m = _MEAS_TRAIL.match(t)
+    if m:
+        return m.group(1)
+    # leading noise char before digit: \=0.36 → =0.36, ~0.30 → 0.30, *0.20 → 0.20, °0.07q → 0.07q
+    if _LEAD_NOISE.match(t):
+        t2 = t[1:]
+        # second pass: handle compound cases (°0.07q → 0.07q → 0.07)
+        m2 = _MEAS_TRAIL.match(t2)
+        if m2:
+            return m2.group(1)
+        return t2
+    if _BRACKET_DIG.match(t):
+        return t[1:]
+    # trailing punct from digit tokens: 10300! → 10300
+    m = _DIGIT_TRAIL.match(t)
+    if m:
+        return m.group(1)
+    return t
 
 
 def _add_ocr_line_textbox(
@@ -565,22 +611,40 @@ def _add_ocr_line_textbox(
 
     p = tf.paragraphs[0]
     run = p.add_run()
-    # Внутри строки убираем шумовые токены: пунктуация и строчный латинский мусор
-    # Чистая пунктуация или слова начинающиеся с кавычки+"ts" стиля шума
+    # Inline-фильтры шумовых токенов
     _inline_noise   = _re.compile(r'^["\'\`\*\\\|\^~<>{}\[\]@#!]+$|^["\'\`\*][a-z]{1,3}$')
     _inline_low_lat = _re.compile(r'^[a-z]{1,5}[).,!|]*$')
-    clean_words = [
-        w for w in line_words
-        if not _inline_noise.match(w.text.strip())
-        and not (_inline_low_lat.match(w.text.strip())
-                 and not _CYRILLIC.search(w.text)
-                 and not _re.search(r"\d", w.text))
-        and not (_ALL_CAPS_LATIN.match(w.text.strip())
-                 and not _CYRILLIC.search(w.text))
-    ]
-    if not clean_words:
-        clean_words = line_words
-    run.text = " ".join(w.text for w in clean_words)
+
+    def _keep_word(w: OcrWord) -> tuple[bool, str]:
+        t = w.text.strip()
+        # Пунктуационный или цитатный мусор
+        if _inline_noise.match(t):
+            return False, t
+        # Строчный латинский без цифр/кириллицы
+        if _inline_low_lat.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
+            return False, t
+        # ≥3-символьные ALL CAPS Latin без кириллицы (уже не проходят _is_valid_ocr)
+        if _ALL_CAPS_LATIN.match(t) and not _CYRILLIC.search(t):
+            return False, t
+        # 2-3-символьные ALL CAPS Latin — штриховочный шум (SS, CA, LN, FS, Ne→No)
+        if _CAPS2.match(t) and not _CYRILLIC.search(t) and not _re.search(r"\d", t):
+            return False, t
+        # = + одна буква: =f, =g — шум
+        if _EQ_LETTER.match(t):
+            return False, t
+        # Очищаем токен: trailing буква после числа, leading \~[ перед числом
+        cleaned = _clean_token(t)
+        return True, cleaned
+
+    cleaned_parts: list[str] = []
+    for w in line_words:
+        keep, cleaned = _keep_word(w)
+        if keep and cleaned:
+            cleaned_parts.append(cleaned)
+
+    if not cleaned_parts:
+        cleaned_parts = [w.text for w in line_words]
+    run.text = " ".join(cleaned_parts)
     run.font.size  = Pt(font_size)
     run.font.name  = "Times New Roman"
     run.font.color.rgb = RGBColor(0, 0, 0)
