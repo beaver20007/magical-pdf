@@ -894,11 +894,16 @@ def _ocr_table_cells(
     words: list[OcrWord] = []
     iw, ih = crop_img.size
 
+    PAD = 6
     for x0, y0, x1, y1 in cells:
-        cx0 = max(0, x0 - 2)
-        cy0 = max(0, y0 - 2)
-        cx1 = min(iw, x1 + 2)
-        cy1 = min(ih, y1 + 2)
+        cell_w = x1 - x0
+        cell_h = y1 - y0
+        if cell_w < 20 or cell_h < 8:
+            continue  # слишком маленькая ячейка для OCR
+        cx0 = max(0, x0 - PAD)
+        cy0 = max(0, y0 - PAD)
+        cx1 = min(iw, x1 + PAD)
+        cy1 = min(ih, y1 + PAD)
         if cx1 <= cx0 or cy1 <= cy0:
             continue
         cell_img = crop_img.crop((cx0, cy0, cx1, cy1))
@@ -1056,6 +1061,53 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
         if cell_words:
             all_words = _merge_word_lists(all_words, cell_words, tol=8)
             print(f"    [Phase 55] Cell OCR added {len(cell_words)} words")
+
+    # ── Вертикальный текст: PSM 6 с поворотом для портретных кропов ─────────────
+    if crop_img.height > crop_img.width * 1.5:
+        orig_w, orig_h = crop_img.size
+        # Поворот 90° по часовой стрелке
+        rotated_cw = crop_img.rotate(-90, expand=True)
+        words_cw_raw = _run_tesseract(rotated_cw, psm=6, up_scale=1.0)
+        words_cw_fixed = []
+        for _w in words_cw_raw:
+            # CW rotation back: x_new = orig_h - y_old - h, y_new = x_old
+            new_px0 = orig_h - _w.py1
+            new_py0 = _w.px0
+            new_px1 = orig_h - _w.py0
+            new_py1 = _w.px1
+            words_cw_fixed.append(OcrWord(_w.text, new_px0, new_py0, new_px1, new_py1, _w.conf))
+        if words_cw_fixed:
+            all_words = _merge_word_lists(all_words, words_cw_fixed, tol=15)
+
+        # Поворот 90° против часовой стрелки
+        rotated_ccw = crop_img.rotate(90, expand=True)
+        words_ccw_raw = _run_tesseract(rotated_ccw, psm=6, up_scale=1.0)
+        words_ccw_fixed = []
+        for _w in words_ccw_raw:
+            # CCW rotation back: x_new = y_old, y_new = orig_w - x_old - w
+            new_px0 = _w.py0
+            new_py0 = orig_w - _w.px1
+            new_px1 = _w.py1
+            new_py1 = orig_w - _w.px0
+            words_ccw_fixed.append(OcrWord(_w.text, new_px0, new_py0, new_px1, new_py1, _w.conf))
+        if words_ccw_fixed:
+            all_words = _merge_word_lists(all_words, words_ccw_fixed, tol=15)
+
+    # ── Upscale 3x для мелкого текста (char height < 15px) ───────────────────
+    if all_words:
+        avg_char_h = sum((_w.py1 - _w.py0) for _w in all_words) / len(all_words)
+        if avg_char_h < 15:
+            _big = crop_img.resize(
+                (crop_img.width * 3, crop_img.height * 3),
+                Image.LANCZOS,
+            )
+            big_words_raw = _run_tesseract(_big, psm=6, up_scale=1.0)
+            big_words = [
+                OcrWord(_w.text, _w.px0 // 3, _w.py0 // 3, _w.px1 // 3, _w.py1 // 3, _w.conf)
+                for _w in big_words_raw
+            ]
+            if big_words:
+                all_words = _merge_word_lists(all_words, big_words, tol=8)
 
     all_words = _dedup_words(all_words)
 
@@ -1392,15 +1444,17 @@ def _normalize_measurement(text: str) -> str:
     t = _re.sub(r'(\d\.\d*[1-9])0+$', r'\1', t)  # убрать trailing zeros
     t = _re.sub(r'\b(DN|Dn|dn)\s+(\d+)', r'DN\2', t)  # DN 100 → DN100
 
-    # Диаметры: "O 107" "Ø107" "ø 107" → "Ø107"
-    t = _re.sub(r'[OøoО]\s*(\d+)', r'Ø\1', t)
+    # Диаметры: "O 107", "o107", "ø 107" → "Ø107"
+    t = _re.sub(r'(?<!\w)[OøoО]\s*(\d+)', r'Ø\1', t)
     # Допуски: "520 .6+2" "520.6 +2" → "520.6+2"
     t = _re.sub(r'(\d)\s*\.\s*(\d)', r'\1.\2', t)
     t = _re.sub(r'(\d)\s*([+±])\s*(\d)', r'\1\2\3', t)
-    # Промилле: "20 %o" "20%о" → "20‰"
+    # Промилле: "20 %o", "20%о" → "20‰"
     t = _re.sub(r'(\d+)\s*%[oоО]', r'\1‰', t)
-    # Уклон: "i= 0.02" "i =0,02" → "i=0.02"
-    t = _re.sub(r'[iI]\s*=\s*(\d)', r'i=\1', t)
+    # Уклон: "i= 0.02", "i =0,02" → "i=0.02"
+    t = _re.sub(r'\bi\s*=\s*', 'i=', t)
+    # Пробел внутри числа: "298- 7" → "298-7"
+    t = _re.sub(r'(\d)\s*-\s*(\d)', r'\1-\2', t)
     # Убрать trailing буквы после числа (OCR артефакты): "4000a" → "4000"
     t = _re.sub(r'^(-?\d+\.?\d*)[a-eg-z]$', r'\1', t)
     return t
@@ -1967,8 +2021,14 @@ def emit_pptx_slides(
                 Emu(_emu(bx1 - bx0)), Emu(_emu(by1 - by0)),
             )
 
-        # Collect native text block bboxes for dedup check
-        native_bboxes_pt = [tuple(block["bbox"]) for block in text_blocks]
+        # Collect native text span bboxes for dedup check (span-level is more precise
+        # than block-level; avoids false overlaps when a block bbox covers a nearby drawing)
+        native_bboxes_pt = []
+        for _blk in text_blocks:
+            for _ln in _blk.get("lines", []):
+                for _sp in _ln.get("spans", []):
+                    if _sp.get("text", "").strip():
+                        native_bboxes_pt.append(tuple(_sp["bbox"]))
 
         # OCR text boxes поверх каждого изображения (группировка по строкам)
         _slide_words: list[dict] = []
