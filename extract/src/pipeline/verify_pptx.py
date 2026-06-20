@@ -95,29 +95,32 @@ def _lo_version(soffice: str) -> str:
 
 
 def render_pptx_lo(pptx_path: Path, out_dir: Path, soffice: str) -> list[Path]:
-    """Convert PPTX → PNG using LibreOffice headless. Returns sorted PNG list."""
+    """Convert PPTX → PDF via LibreOffice, then PDF → PNG via PyMuPDF (one per slide)."""
+    import fitz
     out_dir.mkdir(parents=True, exist_ok=True)
-    cmd = [
-        soffice,
-        "--headless",
-        "--convert-to", "png",
-        "--outdir", str(out_dir),
-        str(pptx_path),
-    ]
+
+    # Step 1: PPTX → PDF
+    pdf_out = out_dir / (pptx_path.stem + ".pdf")
+    cmd = [soffice, "--headless", "--convert-to", "pdf", "--outdir", str(out_dir), str(pptx_path)]
     try:
-        subprocess.run(cmd, check=True, timeout=120,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(cmd, timeout=120, capture_output=True)
+        if result.returncode != 0 or not pdf_out.exists():
+            _log.error("LibreOffice PDF conversion failed: %s", result.stderr.decode(errors="replace"))
+            return []
     except subprocess.TimeoutExpired:
-        _log.error("LibreOffice render timed out")
-        return []
-    except subprocess.CalledProcessError as e:
-        _log.error("LibreOffice failed: %s", e)
+        _log.error("LibreOffice timed out")
         return []
 
-    # LO names output as <stem>.png or <stem>1.png, <stem>2.png ...
-    stem = pptx_path.stem
-    pngs = sorted(out_dir.glob(f"{stem}*.png"),
-                  key=lambda p: int("".join(c for c in p.stem[len(stem):] or "0") or "0"))
+    # Step 2: PDF → PNG per page
+    doc = fitz.open(str(pdf_out))
+    pngs: list[Path] = []
+    mat = fitz.Matrix(1.5, 1.5)  # 108 dpi — достаточно для верификации
+    for page_idx in range(len(doc)):
+        pix = doc[page_idx].get_pixmap(matrix=mat, alpha=False)
+        png_path = out_dir / f"slide_{page_idx + 1:03d}.png"
+        pix.save(str(png_path))
+        pngs.append(png_path)
+    doc.close()
     return pngs
 
 
@@ -156,12 +159,12 @@ def _count_textboxes(slide) -> tuple[int, int]:
 
 # ── Overlay render (python-only fallback) ────────────────────────────────────
 
-def _render_overlay(slide, bg_img: Image.Image) -> Image.Image:
+def _render_overlay(slide, bg_img: Image.Image, slide_w_emu: int, slide_h_emu: int) -> Image.Image:
     """Draw green (OCR) and blue (native) boxes over the LO-rendered slide image."""
     img = bg_img.copy()
     draw = ImageDraw.Draw(img, "RGBA")
-    sw = slide.slide_width / 914400 * 72   # pt
-    sh_val = slide.slide_height / 914400 * 72
+    sw = slide_w_emu / 914400 * 72   # pt
+    sh_val = slide_h_emu / 914400 * 72
     scale_x = img.width / sw
     scale_y = img.height / sh_val
 
@@ -254,7 +257,7 @@ def verify_pptx(
 
         if save_overlay and lo_pngs and idx < len(lo_pngs):
             bg = Image.open(lo_pngs[idx]).convert("RGB")
-            overlay = _render_overlay(slide, bg)
+            overlay = _render_overlay(slide, bg, prs.slide_width, prs.slide_height)
             overlay.save(str(render_dir / f"s{idx+1:02d}_overlay.png"))
 
     # Summary
