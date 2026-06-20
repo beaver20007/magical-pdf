@@ -1482,14 +1482,14 @@ def _overlaps_native(
 
 
 def _set_textbox_font(tf, font_size_pt: float) -> None:
-    """Phase 67: Унифицирует шрифт всех runs в OCR text box на Arial."""
+    """Phase 67/fix: OCR text boxes — белый цвет (невидим визуально, выделяем/ищется)."""
     from pptx.util import Pt
     from pptx.dml.color import RGBColor
     for para in tf.paragraphs:
         for run in para.runs:
             run.font.name = "Arial"
             run.font.size = Pt(max(6, min(font_size_pt, 72)))
-            run.font.color.rgb = RGBColor(0x10, 0x10, 0x10)
+            run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)  # белый = невидим
 
 
 def _add_ocr_line_textbox(
@@ -1589,7 +1589,7 @@ def _add_ocr_line_textbox(
     run.text = " ".join(cleaned_parts)
     run.font.size  = Pt(font_size)
     run.font.name  = "Arial"
-    run.font.color.rgb = RGBColor(0x10, 0x10, 0x10)
+    run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)  # белый = невидим, но выделяем
     _set_textbox_font(tf, font_size)
 
 
@@ -1728,8 +1728,31 @@ def emit_pptx_slides(
         rect    = fz_page.rect
         pw, ph  = rect.width, rect.height
 
-        # ── 1. Рендер страницы ────────────────────────────────────────────
-        pix     = fz_page.get_pixmap(matrix=mat, alpha=False)
+        # ── 1. Рендер страницы без текстового слоя ───────────────────────
+        # Используем временную копию страницы с redact-аннотациями для текста,
+        # чтобы фоновое изображение не содержало нативный текст (он будет
+        # вставлен как редактируемые text boxes отдельно).
+        try:
+            _tmp_doc = fitz.open()
+            _tmp_doc.insert_pdf(pdf_doc, from_page=i, to_page=i)
+            _tmp_page = _tmp_doc[0]
+            # Redact all text spans from temporary copy
+            _txt_dict_tmp = _tmp_page.get_text("dict", flags=0)
+            for _blk in _txt_dict_tmp.get("blocks", []):
+                if _blk.get("type") == 0:
+                    for _ln in _blk.get("lines", []):
+                        for _sp in _ln.get("spans", []):
+                            if _sp.get("text", "").strip():
+                                _tmp_page.add_redact_annot(fitz.Rect(_sp["bbox"]))
+            _tmp_page.apply_redactions(
+                images=fitz.PDF_REDACT_IMAGE_NONE,
+                graphics=fitz.PDF_REDACT_LINE_ART_NONE,
+            )
+            pix = _tmp_page.get_pixmap(matrix=mat, alpha=False)
+            _tmp_doc.close()
+        except Exception:
+            # Fallback: render with text (редактируемость теряется, но файл создаётся)
+            pix = fz_page.get_pixmap(matrix=mat, alpha=False)
         raw_png = raw_dir / f"slide_{i:03d}.png"
         pix.save(str(raw_png))
         img_full = Image.open(raw_png).convert("RGB")
