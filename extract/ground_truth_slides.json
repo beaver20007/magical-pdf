@@ -1,0 +1,37 @@
+[
+  {
+    "slide_idx": 0, "min_words": 5,
+    "must_contain": ["DN", "мм"],
+    "must_not_contain": ["LLLL", "IIII"]
+  },
+  {
+    "slide_idx": 3, "min_words": 3,
+    "must_contain": ["300", "150"],
+    "must_not_contain": []
+  },
+  {
+    "slide_idx": 6, "min_words": 4,
+    "must_contain": ["0.00", "-0.15", "НПВХ"],
+    "must_not_contain": []
+  },
+  {
+    "slide_idx": 8, "min_words": 10,
+    "must_contain": ["0.25", "0.26", "i=1%", "1.43", "0.93", "0.95"],
+    "must_not_contain": ["ALLY", "GRE", "RAS", "ALN", "ALY"]
+  },
+  {
+    "slide_idx": 11, "min_words": 75,
+    "must_contain": ["дренажные", "отверстия", "сброс", "воды", "фундаменте", "ограждения"],
+    "must_not_contain": ["NALLY", "WHICH"]
+  },
+  {
+    "slide_idx": 13, "min_words": 280,
+    "must_contain": ["Polymax", "Betomax", "Перфокор", "пластиковый", "усиленный", "Dn100"],
+    "must_not_contain": []
+  },
+  {
+    "slide_idx": 17, "min_words": 8,
+    "must_contain": ["PB", "DN"],
+    "must_not_contain": []
+  }
+]

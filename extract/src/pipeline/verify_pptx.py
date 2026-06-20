@@ -29,7 +29,7 @@ from pptx.util import Emu
 _log = logging.getLogger(__name__)
 
 # Минимум OCR-боксов на слайде с изображениями, чтобы считать слайд OK
-_MIN_OCR_PER_IMAGE_SLIDE = 1
+_MIN_OCR_PER_IMAGE_SLIDE = 2
 
 # Известные пути LibreOffice на Windows
 _LO_CANDIDATES = [
@@ -47,6 +47,7 @@ class SlideResult:
     has_images: bool
     status: str         # OK / WARN / SKIP
     note: str = ""
+    coverage_pct: float = 0.0
 
 
 @dataclass
@@ -64,12 +65,20 @@ class VerifyReport:
     def warn_slides(self) -> list[int]:
         return [s.idx for s in self.slides if s.status == "WARN"]
 
+    @property
+    def avg_coverage_pct(self) -> float:
+        img_slides = [s for s in self.slides if s.has_images]
+        if not img_slides:
+            return 0.0
+        return sum(s.coverage_pct for s in img_slides) / len(img_slides)
+
     def to_dict(self) -> dict:
         return {
             "pptx": str(self.pptx_path),
             "passed": self.passed,
             "warn_slides": self.warn_slides,
             "lo_version": self.lo_version,
+            "avg_coverage_pct": round(self.avg_coverage_pct, 1),
             "slides": [vars(s) for s in self.slides],
         }
 

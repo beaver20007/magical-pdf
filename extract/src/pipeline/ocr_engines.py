@@ -124,10 +124,11 @@ def _iou(a: OcrWord, b: OcrWord) -> float:
     inter = (ix1 - ix0) * (iy1 - iy0)
     area_a = max(1, (a.px1 - a.px0) * (a.py1 - a.py0))
     area_b = max(1, (b.px1 - b.px0) * (b.py1 - b.py0))
-    return inter / (area_a + area_b - inter)
+    # Min-area IoU: пересечение / меньший bbox (а не union)
+    return inter / min(area_a, area_b)
 
 
-def vote_engines(results: list[list[OcrWord]], iou_threshold: float = 0.4) -> list[OcrWord]:
+def vote_engines(results: list[list[OcrWord]], iou_threshold: float = 0.3) -> list[OcrWord]:
     all_words: list[OcrWord] = []
     for engine_words in results:
         all_words.extend(engine_words)
