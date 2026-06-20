@@ -150,7 +150,7 @@ def _count_textboxes(slide) -> tuple[int, int]:
                     pass
             if clr != "?":
                 break
-        if clr == "151515":
+        if clr in ("151515", "CCCCCC"):
             ocr += 1
         else:
             native += 1
@@ -186,7 +186,7 @@ def _render_overlay(slide, bg_img: Image.Image, slide_w_emu: int, slide_h_emu: i
         ly = s.top  / 914400 * 72 * scale_y
         lw = s.width / 914400 * 72 * scale_x
         lh = s.height / 914400 * 72 * scale_y
-        color = (0, 200, 0, 200) if clr == "151515" else (0, 80, 255, 200)
+        color = (0, 200, 0, 200) if clr in ("151515", "CCCCCC") else (0, 80, 255, 200)
         draw.rectangle([lx, ly, lx + lw, ly + lh], outline=color, width=2)
 
     return img

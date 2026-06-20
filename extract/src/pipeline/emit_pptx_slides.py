@@ -969,6 +969,12 @@ def _ocr_crop(crop_img: Image.Image, assets_dir=None) -> list[OcrWord]:
     if batch7_filtered:
         variant_word_lists.append(batch7_filtered)
 
+    # PSM 3 (автоориентация страницы + OSD) — ловит текст, пропущенный PSM 11/6.
+    # Особенно полезен для коротких токенов ("Ø107", "-0.15") с нестандартным layout.
+    batch3 = _run_tesseract(variants[0][0], psm=3, up_scale=variants[0][1])
+    if batch3:
+        variant_word_lists.append(batch3)
+
     # Vote across all preprocessing variants
     all_words: list[OcrWord] = _vote_ocr_results(variant_word_lists)
 
@@ -1378,12 +1384,25 @@ _INIT_CAP_NOISE = _re.compile(r'^[A-Z][a-z]{1,3}$')
 
 
 def _normalize_measurement(text: str) -> str:
-    """Phase 69: нормализует форматы измерений — запятая→точка, DN с пробелом, trailing zeros."""
+    """Phase 69+: нормализует форматы измерений — запятая→точка, DN с пробелом, trailing zeros,
+    диаметры, допуски, промилле, уклон, OCR-артефакты."""
     t = text.strip()
-    t = _re.sub(r'(\d),(\d)', r'\1.\2', t)
-    t = _re.sub(r'(\d\.\d*[1-9])0+$', r'\1', t)
-    t = _re.sub(r'\b(DN|Dn|dn)\s+(\d+)', r'DN\2', t)
-    t = _re.sub(r'^(-?\d+\.\d+)[a-eg-z]$', r'\1', t)
+    # Существующие правила
+    t = _re.sub(r'(\d),(\d)', r'\1.\2', t)       # запятая → точка в числах
+    t = _re.sub(r'(\d\.\d*[1-9])0+$', r'\1', t)  # убрать trailing zeros
+    t = _re.sub(r'\b(DN|Dn|dn)\s+(\d+)', r'DN\2', t)  # DN 100 → DN100
+
+    # Диаметры: "O 107" "Ø107" "ø 107" → "Ø107"
+    t = _re.sub(r'[OøoО]\s*(\d+)', r'Ø\1', t)
+    # Допуски: "520 .6+2" "520.6 +2" → "520.6+2"
+    t = _re.sub(r'(\d)\s*\.\s*(\d)', r'\1.\2', t)
+    t = _re.sub(r'(\d)\s*([+±])\s*(\d)', r'\1\2\3', t)
+    # Промилле: "20 %o" "20%о" → "20‰"
+    t = _re.sub(r'(\d+)\s*%[oоО]', r'\1‰', t)
+    # Уклон: "i= 0.02" "i =0,02" → "i=0.02"
+    t = _re.sub(r'[iI]\s*=\s*(\d)', r'i=\1', t)
+    # Убрать trailing буквы после числа (OCR артефакты): "4000a" → "4000"
+    t = _re.sub(r'^(-?\d+\.?\d*)[a-eg-z]$', r'\1', t)
     return t
 
 
@@ -1493,11 +1512,22 @@ def _set_textbox_font(tf, font_size_pt: float) -> None:
         for run in para.runs:
             run.font.name = "Arial"
             run.font.size = Pt(max(6, min(font_size_pt, 72)))
-            run.font.color.rgb = RGBColor(0x15, 0x15, 0x15)  # почти чёрный
+            run.font.color.rgb = RGBColor(0xCC, 0xCC, 0xCC)  # светло-серый, не мешает чертежу
             # Отключаем проверку орфографии для OCR-текста
             rPr = run._r.get_or_add_rPr()
             rPr.set('noProof', '1')
             rPr.set('lang', 'ru-RU')
+
+
+def _autofit_font_size(line_words, w_pt: float, h_pt: float, initial_size: float) -> float:
+    """Уменьшаем шрифт пока текст помещается в bbox без переноса."""
+    text = " ".join(w.text for w in line_words)
+    # Грубая оценка: 1 символ ≈ 0.6 * font_size pt ширины
+    chars = len(text)
+    size = initial_size
+    while size > 4.0 and chars * size * 0.6 > w_pt * 1.3:
+        size *= 0.85
+    return max(4.0, size)
 
 
 def _add_ocr_line_textbox(
@@ -1544,12 +1574,15 @@ def _add_ocr_line_textbox(
         # Мелкий текст — выноски, сноски
         font_size = min(10.0 + conf_bonus, max(5.0, mean_h_pt * 0.80))
 
+    font_size_pt = _autofit_font_size(line_words, w_pt, h_pt, font_size)
+
     txBox = slide.shapes.add_textbox(
         Emu(_emu(x_pt)), Emu(_emu(y_pt)),
         Emu(_emu(w_pt)), Emu(_emu(h_pt)),
     )
     tf = txBox.text_frame
     tf.word_wrap = False
+    tf.auto_size = None  # не автоменять размер бокса
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
     _set_no_line(txBox)
     _set_no_fill(txBox)
@@ -1595,15 +1628,15 @@ def _add_ocr_line_textbox(
     if not cleaned_parts:
         cleaned_parts = [w.text for w in line_words]
     run.text = " ".join(cleaned_parts)
-    run.font.size  = Pt(font_size)
+    run.font.size  = Pt(font_size_pt)
     run.font.name  = "Arial"
-    run.font.color.rgb = RGBColor(0x15, 0x15, 0x15)
+    run.font.color.rgb = RGBColor(0xCC, 0xCC, 0xCC)  # светло-серый, не мешает чертежу
     # Отключаем орфографию на главном run
     from pptx.oxml.ns import qn as _qn
     _rPr = run._r.get_or_add_rPr()
     _rPr.set('noProof', '1')
     _rPr.set('lang', 'ru-RU')
-    _set_textbox_font(tf, font_size)
+    _set_textbox_font(tf, font_size_pt)
 
 
 # ── Заголовок слайда (outline panel) ─────────────────────────────────────────
