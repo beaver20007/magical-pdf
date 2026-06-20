@@ -1482,14 +1482,19 @@ def _overlaps_native(
 
 
 def _set_textbox_font(tf, font_size_pt: float) -> None:
-    """Phase 67/fix: OCR text boxes — белый цвет (невидим визуально, выделяем/ищется)."""
+    """OCR text boxes: тёмный читаемый текст без проверки орфографии."""
     from pptx.util import Pt
     from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
     for para in tf.paragraphs:
         for run in para.runs:
             run.font.name = "Arial"
             run.font.size = Pt(max(6, min(font_size_pt, 72)))
-            run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)  # белый = невидим
+            run.font.color.rgb = RGBColor(0x15, 0x15, 0x15)  # почти чёрный
+            # Отключаем проверку орфографии для OCR-текста
+            rPr = run._r.get_or_add_rPr()
+            rPr.set('noProof', '1')
+            rPr.set('lang', 'ru-RU')
 
 
 def _add_ocr_line_textbox(
@@ -1589,7 +1594,12 @@ def _add_ocr_line_textbox(
     run.text = " ".join(cleaned_parts)
     run.font.size  = Pt(font_size)
     run.font.name  = "Arial"
-    run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)  # белый = невидим, но выделяем
+    run.font.color.rgb = RGBColor(0x15, 0x15, 0x15)
+    # Отключаем орфографию на главном run
+    from pptx.oxml.ns import qn as _qn
+    _rPr = run._r.get_or_add_rPr()
+    _rPr.set('noProof', '1')
+    _rPr.set('lang', 'ru-RU')
     _set_textbox_font(tf, font_size)
 
 
@@ -1838,12 +1848,10 @@ def emit_pptx_slides(
             else:
                 render_words = ocr_words
 
-            # Замазываем OCR-области в кропе (убираем текст из растра)
+            # Текст в кропе НЕ маскируем: OCR textbox накладывается поверх изображения
+            # с точным позиционированием и перекрывает растровый текст.
+            # Маскировка создавала "дыры" в чертеже — убрана.
             masked_crop = raw_crop
-            if render_words:
-                ocr_rects_px = [(w.px0, w.py0, w.px1, w.py1) for w in render_words]
-                masked_crop = _mask_rects(raw_crop, ocr_rects_px, pad=3)
-
             masked_path = msk_dir / f"slide_{i:03d}_img_{bi}.png"
             masked_crop.save(str(masked_path))
 
