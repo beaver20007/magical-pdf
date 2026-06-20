@@ -1470,13 +1470,16 @@ def _dedup_words(words: list) -> list:
 def _overlaps_native(
     ocr_bbox_pt: tuple[float, float, float, float],
     native_bboxes_pt: list[tuple[float, float, float, float]],
-    tol: float = 5.0,
+    threshold: float = 0.25,
 ) -> bool:
-    """Return True if the OCR line center falls inside any native text bbox (expanded by tol pt)."""
-    cx = (ocr_bbox_pt[0] + ocr_bbox_pt[2]) / 2
-    cy = (ocr_bbox_pt[1] + ocr_bbox_pt[3]) / 2
+    """Return True if >threshold of the OCR bbox area is covered by any native text bbox."""
+    ox0, oy0, ox1, oy1 = ocr_bbox_pt
+    o_area = max(1.0, (ox1 - ox0) * (oy1 - oy0))
     for x0, y0, x1, y1 in native_bboxes_pt:
-        if (x0 - tol) <= cx <= (x1 + tol) and (y0 - tol) <= cy <= (y1 + tol):
+        ix0 = max(ox0, x0); iy0 = max(oy0, y0)
+        ix1 = min(ox1, x1); iy1 = min(oy1, y1)
+        inter = max(0.0, ix1 - ix0) * max(0.0, iy1 - iy0)
+        if inter / o_area > threshold:
             return True
     return False
 
@@ -1824,14 +1827,20 @@ def emit_pptx_slides(
 
             # OCR
             ocr_words: list[OcrWord] = []
-            # Пропускаем маленькие декоративные изображения (логотипы, иконки)
-            # Реальные чертежи всегда >= 900px по обоим измерениям
-            _is_tiny = min(native_w, native_h) < 600
+            # Пропускаем маленькие декоративные изображения (логотипы, иконки).
+            # Условие: ОБА измерения < 600px (панорамные чертежи могут быть узкими).
+            _is_tiny = native_w < 600 and native_h < 600
             if ocr_images and native_w > 30 and native_h > 20 and not _is_tiny:
                 print(f"  Слайд {i}, image {bi}: OCR ({native_w}x{native_h}px, "
                       f"{'native' if native_img else 'rendered'})...")
-                ocr_words = _ocr_crop(ocr_source)
-                print(f"    → {len(ocr_words)} слов")
+                try:
+                    from src.pipeline.ocr_engines import ocr_multi, ENGINES_AVAILABLE
+                    _active = [k for k, v in ENGINES_AVAILABLE.items() if v]
+                    ocr_words = ocr_multi(ocr_source)
+                    print(f"    → {len(ocr_words)} слов [engines: {', '.join(_active)}]")
+                except Exception as _ocr_multi_err:
+                    ocr_words = _ocr_crop(ocr_source)
+                    print(f"    → {len(ocr_words)} слов [tesseract fallback: {_ocr_multi_err}]")
 
             # Если OCR делался на нативном изображении, масштабируем координаты
             # в пиксели рендер-кропа (для маскировки)
@@ -1936,24 +1945,19 @@ def emit_pptx_slides(
             sx = (bx1 - bx0) / cw if cw > 0 else 1.0
             sy = (by1 - by0) / ch if ch > 0 else 1.0
 
-            # PHASE 44 VALIDATION: проверяем соответствие аспектных соотношений.
-            # PDF bbox и нативный размер изображения должны масштабироваться одинаково.
-            # Расхождение > 5% означает, что PDF растянул изображение — используем
-            # минимальный масштаб (conservative), чтобы текст не вышел за границу.
+            # PHASE 44 VALIDATION (UPDATED): логируем aspect mismatch, но НЕ
+            # применяем conservative scale — PDF bbox задаёт реальное положение
+            # изображения на слайде, и текстовые боксы должны использовать
+            # отдельные sx/sy для корректного позиционирования по X и Y.
             if sx > 0 and sy > 0:
                 ratio_diff = abs(sx - sy) / max(sx, sy)
                 if ratio_diff > 0.05:
                     print(
-                        f"  [WARN] aspect mismatch on slide {i} img bbox "
+                        f"  [INFO] aspect mismatch on slide {i} img bbox "
                         f"({bx0:.1f},{by0:.1f},{bx1:.1f},{by1:.1f}): "
                         f"sx={sx:.4f} sy={sy:.4f} diff={ratio_diff:.1%} — "
-                        f"using conservative min scale"
+                        f"using per-axis scale (no conservative squash)"
                     )
-                    s_cons = min(sx, sy)
-                    bx1 = bx0 + s_cons * cw
-                    by1 = by0 + s_cons * ch
-                    sx = s_cons
-                    sy = s_cons
 
             lines = _group_ocr_into_lines(cd["words"], img_native_w=cw)
             lines = _merge_close_lines(lines, cw)
