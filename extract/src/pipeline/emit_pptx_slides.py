@@ -153,7 +153,7 @@ _SHORT_LOWER_LAT = _re.compile(r"^[a-z]{2,5}[).,!|]*$")
 # 2-буквенные (PP, DN, SS, CA) обрабатываются отдельно в inline-фильтре
 _ALL_CAPS_LATIN  = _re.compile(r"^[A-Z]{3,}$")
 _DASH_SEQ        = _re.compile(r'^[\-—<>/\\]{2,6}$')
-_ROT_MIN_CONF    = 55
+_ROT_MIN_CONF    = 0.40  # float 0-1; was incorrectly 55 — filtered all rotated words
 _TECH_WHITELIST = frozenset({
     'мм', 'см', 'дм', 'км', 'кг', 'шт', 'пм', 'пл', 'вп', 'ту',
     'пвх', 'пп', 'дп', 'бв', 'пу', 'ду', 'дн', 'кн', 'мн', 'па',
@@ -1923,8 +1923,26 @@ def emit_pptx_slides(
                 try:
                     from src.pipeline.ocr_engines import ocr_multi, ENGINES_AVAILABLE
                     _active = [k for k, v in ENGINES_AVAILABLE.items() if v]
-                    ocr_words = ocr_multi(ocr_source)
-                    print(f"    → {len(ocr_words)} слов [engines: {', '.join(_active)}]")
+                    # 3x upscale for small images (< 600K px²) — char height likely < 15px
+                    _ocr_src = ocr_source
+                    _ocr_up = 1
+                    if (ocr_source.width * ocr_source.height) < 600_000:
+                        _ocr_up = 3
+                        _ocr_src = ocr_source.resize(
+                            (ocr_source.width * 3, ocr_source.height * 3), Image.LANCZOS
+                        )
+                    ocr_words_raw = ocr_multi(_ocr_src)
+                    if _ocr_up > 1:
+                        ocr_words = [
+                            OcrWord(w.text,
+                                    w.px0 // _ocr_up, w.py0 // _ocr_up,
+                                    w.px1 // _ocr_up, w.py1 // _ocr_up,
+                                    w.conf)
+                            for w in ocr_words_raw
+                        ]
+                    else:
+                        ocr_words = ocr_words_raw
+                    print(f"    → {len(ocr_words)} слов [engines: {', '.join(_active)}{', 3x' if _ocr_up>1 else ''}]")
                 except Exception as _ocr_multi_err:
                     ocr_words = _ocr_crop(ocr_source)
                     print(f"    → {len(ocr_words)} слов [tesseract fallback: {_ocr_multi_err}]")

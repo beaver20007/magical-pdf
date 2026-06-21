@@ -94,7 +94,11 @@ def run_paddleocr(img: Image.Image) -> list[OcrWord]:
         return []
     import numpy as _np
     ocr = _get_paddleocr()
-    raw = ocr.ocr(img, cls=True)
+    # Newer PaddleOCR dropped cls param from ocr(); angle correction set at init
+    try:
+        raw = ocr.ocr(img)
+    except TypeError:
+        raw = ocr.predict(_np.array(img))
     words: list[OcrWord] = []
     if not raw:
         return words
