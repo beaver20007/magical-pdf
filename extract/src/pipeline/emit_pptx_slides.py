@@ -1914,9 +1914,9 @@ def emit_pptx_slides(
 
             # OCR
             ocr_words: list[OcrWord] = []
-            # Пропускаем маленькие декоративные изображения (логотипы, иконки).
-            # Условие: ОБА измерения < 600px (панорамные чертежи могут быть узкими).
-            _is_tiny = native_w < 600 and native_h < 600
+            # Пропускаем только действительно маленькие иконки/логотипы.
+            # Фильтр по площади: < 80K px² (~280x280) — точно не чертёж.
+            _is_tiny = (native_w * native_h) < 80_000
             if ocr_images and native_w > 30 and native_h > 20 and not _is_tiny:
                 print(f"  Слайд {i}, image {bi}: OCR ({native_w}x{native_h}px, "
                       f"{'native' if native_img else 'rendered'})...")

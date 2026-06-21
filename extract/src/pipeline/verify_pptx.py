@@ -136,10 +136,14 @@ def render_pptx_lo(pptx_path: Path, out_dir: Path, soffice: str) -> list[Path]:
 # ── PPTX inspection ───────────────────────────────────────────────────────────
 
 def _slide_has_images(slide) -> bool:
+    """True если на слайде есть значимое изображение (чертёж/фото, > 50pt по обоим измерениям)."""
     from pptx.enum.shapes import MSO_SHAPE_TYPE
     for sh in slide.shapes:
         if sh.shape_type == MSO_SHAPE_TYPE.PICTURE:
-            return True
+            w_pt = sh.width / 914400 * 72
+            h_pt = sh.height / 914400 * 72
+            if w_pt > 50 and h_pt > 50:
+                return True
     return False
 
 
