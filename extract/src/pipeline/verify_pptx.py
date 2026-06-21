@@ -247,8 +247,13 @@ def verify_pptx(
         has_imgs = _slide_has_images(slide)
 
         if has_imgs and ocr_cnt < _MIN_OCR_PER_IMAGE_SLIDE:
-            status = "WARN"
-            note = f"image slide but only {ocr_cnt} OCR boxes"
+            if nat_cnt >= 5:
+                # Text-heavy slide with header bar — OCR not required
+                status = "OK"
+                note = "text-heavy slide"
+            else:
+                status = "WARN"
+                note = f"image slide but only {ocr_cnt} OCR boxes"
         elif not has_imgs and ocr_cnt == 0 and nat_cnt == 0:
             status = "SKIP"
             note = "no content"
