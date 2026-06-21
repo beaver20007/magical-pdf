@@ -31,6 +31,21 @@ _log = logging.getLogger(__name__)
 # Минимум OCR-боксов на слайде с изображениями, чтобы считать слайд OK
 _MIN_OCR_PER_IMAGE_SLIDE = 2
 
+# Ground truth: строки, которые ОБЯЗАНЫ присутствовать на конкретном слайде.
+# Ключ — 1-based номер слайда. Проверка регистронезависимая, частичное совпадение.
+GROUND_TRUTH: dict[int, list[str]] = {
+    1: [
+        "Разбор примеров",
+        "поверхностного",
+        "отведения",
+    ],
+    4: [
+        "дождеприемник",
+        "150 мм",
+        "300х300",
+    ],
+}
+
 # Известные пути LibreOffice на Windows
 _LO_CANDIDATES = [
     r"C:\Program Files\LibreOffice\program\soffice.exe",
@@ -242,9 +257,25 @@ def verify_pptx(
 
     prs = Presentation(str(pptx_path))
 
+    slide_w_emu = prs.slide_width
+    slide_h_emu = prs.slide_height
+    slide_area_emu2 = slide_w_emu * slide_h_emu
+
     for idx, slide in enumerate(prs.slides):
         ocr_cnt, nat_cnt = _count_textboxes(slide)
         has_imgs = _slide_has_images(slide)
+
+        # Compute coverage_pct: sum of textbox areas / slide area * 100
+        box_area_total = 0
+        box_count = 0
+        for sh in slide.shapes:
+            if sh.has_text_frame and sh.text_frame.text.strip():
+                box_area_total += max(0, sh.width) * max(0, sh.height)
+                box_count += 1
+        if slide_area_emu2 > 0 and box_count > 0:
+            coverage_pct = min(100.0, box_area_total / slide_area_emu2 * 100.0)
+        else:
+            coverage_pct = 0.0
 
         if has_imgs and ocr_cnt < _MIN_OCR_PER_IMAGE_SLIDE:
             if nat_cnt >= 5:
@@ -261,6 +292,17 @@ def verify_pptx(
             status = "OK"
             note = ""
 
+        # Ground truth must_contain check
+        must_contain = GROUND_TRUTH.get(idx + 1, [])
+        if must_contain and status != "WARN":
+            slide_text = " ".join(
+                sh.text_frame.text for sh in slide.shapes if sh.has_text_frame
+            ).lower()
+            missing = [s for s in must_contain if s.lower() not in slide_text]
+            if missing:
+                status = "WARN"
+                note = (note + f"; missing ground truth: {missing}").lstrip("; ")
+
         result = SlideResult(
             idx=idx + 1,
             ocr_boxes=ocr_cnt,
@@ -268,10 +310,11 @@ def verify_pptx(
             has_images=has_imgs,
             status=status,
             note=note,
+            coverage_pct=coverage_pct,
         )
         report.slides.append(result)
         flag = "WARN" if status == "WARN" else "OK  "
-        print(f"  S{idx+1:02d} [{flag}] OCR={ocr_cnt:3d} native={nat_cnt} imgs={has_imgs} {note}")
+        print(f"  S{idx+1:02d} [{flag}] OCR={ocr_cnt:3d} native={nat_cnt} imgs={has_imgs} cov={coverage_pct:.1f}% {note}")
 
         if save_overlay and lo_pngs and idx < len(lo_pngs):
             bg = Image.open(lo_pngs[idx]).convert("RGB")
