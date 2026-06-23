@@ -1,0 +1,4377 @@
+{
+  "schema_version": "document-ir-v1",
+  "source": {
+    "filename": "План.pdf",
+    "page_count": 20,
+    "languages": [
+      "ru",
+      "en"
+    ]
+  },
+  "pages": [
+    {
+      "index": 0,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_000.png"
+    },
+    {
+      "index": 1,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_001.png"
+    },
+    {
+      "index": 2,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_002.png"
+    },
+    {
+      "index": 3,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_003.png"
+    },
+    {
+      "index": 4,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_004.png"
+    },
+    {
+      "index": 5,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_005.png"
+    },
+    {
+      "index": 6,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_006.png"
+    },
+    {
+      "index": 7,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_007.png"
+    },
+    {
+      "index": 8,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_008.png"
+    },
+    {
+      "index": 9,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_009.png"
+    },
+    {
+      "index": 10,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_010.png"
+    },
+    {
+      "index": 11,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_011.png"
+    },
+    {
+      "index": 12,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_012.png"
+    },
+    {
+      "index": 13,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_013.png"
+    },
+    {
+      "index": 14,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_014.png"
+    },
+    {
+      "index": 15,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_015.png"
+    },
+    {
+      "index": 16,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_016.png"
+    },
+    {
+      "index": 17,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_017.png"
+    },
+    {
+      "index": 18,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_018.png"
+    },
+    {
+      "index": 19,
+      "width_pt": 720.0,
+      "height_pt": 405.0,
+      "background_image": "output\\assets\\page_backgrounds\\page_019.png"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "id": "b-d834d82b",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.029159874386257594,
+        "y": 0.05161216641649788,
+        "w": 0.33201799392700193,
+        "h": 0.9013018478581935
+      },
+      "image_path": "output\\assets\\b-d834d82b.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-b0935744",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8494350857204861,
+        "y": 0.8824498306086034,
+        "w": 0.10915840996636285,
+        "h": 0.04818183051215278
+      },
+      "image_path": "output\\assets\\b-b0935744.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-894c68b3",
+      "page_index": 0
+    },
+    {
+      "type": "image",
+      "id": "b-c7e7be27",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.9098773532443576,
+        "y": 0.038725648102936924,
+        "w": 0.06727210150824653,
+        "h": 0.03135270954650125
+      },
+      "image_path": "output\\assets\\b-c7e7be27.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-0326c047",
+      "page_index": 1
+    },
+    {
+      "type": "image",
+      "id": "b-5ae28ce5",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.48103112114800345,
+        "y": 0.07489365471733941,
+        "w": 0.4956475151909722,
+        "h": 0.8882683129958164
+      },
+      "image_path": "output\\assets\\b-5ae28ce5.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-68df0cb3",
+      "page_index": 2
+    },
+    {
+      "type": "image",
+      "id": "b-72c57f56",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.4701826731363932,
+        "y": 0.09929561850465374,
+        "w": 0.5055500030517578,
+        "h": 0.8750546961654851
+      },
+      "image_path": "output\\assets\\b-72c57f56.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-78768fc4",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.45627310011121963,
+        "y": 0.16663166564187887,
+        "w": 0.5403957366943359,
+        "h": 0.6351413679711613
+      },
+      "image_path": "output\\assets\\b-78768fc4.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-52620f73",
+      "page_index": 4
+    },
+    {
+      "type": "image",
+      "id": "b-a6e88d0a",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.4536867353651259,
+        "y": 0.21565385983314042,
+        "w": 0.5456058502197265,
+        "h": 0.5672214084201389
+      },
+      "image_path": "output\\assets\\b-a6e88d0a.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-93a2178c",
+      "page_index": 5
+    },
+    {
+      "type": "image",
+      "id": "b-17d12bbc",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.9097377353244358,
+        "y": 0.038792045028121384,
+        "w": 0.06736653645833333,
+        "h": 0.03129200641019845
+      },
+      "image_path": "output\\assets\\b-17d12bbc.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-5717eb7e",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.016412705845303004,
+        "y": 0.3452914767795139,
+        "w": 0.9673584699630737,
+        "h": 0.3078390239197531
+      },
+      "image_path": "output\\assets\\b-5717eb7e.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-8360e5f2",
+      "page_index": 6
+    },
+    {
+      "type": "image",
+      "id": "b-7a2afa87",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.4537317911783854,
+        "y": 0.215501629864728,
+        "w": 0.545764414469401,
+        "h": 0.5674837277259356
+      },
+      "image_path": "output\\assets\\b-7a2afa87.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-11acce4c",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.514012697007921,
+        "y": 0.11308700184763214,
+        "w": 0.4634543948703342,
+        "h": 0.8744557227617429
+      },
+      "image_path": "output\\assets\\b-11acce4c.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-d5ad71ff",
+      "page_index": 8
+    },
+    {
+      "type": "image",
+      "id": "b-1ca21005",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.4548264821370443,
+        "y": 0.19902196813512732,
+        "w": 0.5449033525254992,
+        "h": 0.6001760600525656
+      },
+      "image_path": "output\\assets\\b-1ca21005.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-97c368bf",
+      "page_index": 9
+    },
+    {
+      "type": "image",
+      "id": "b-2bf2fd6f",
+      "page_index": 10,
+      "bbox": {
+        "x": 0.5975651635064019,
+        "y": 0.22535138542269484,
+        "w": 0.3011256323920356,
+        "h": 0.5480730033215181
+      },
+      "image_path": "output\\assets\\b-2bf2fd6f.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-a2c00ae8",
+      "page_index": 10,
+      "bbox": {
+        "x": 0.9101250542534722,
+        "y": 0.03883856549675082,
+        "w": 0.06681340535481771,
+        "h": 0.030964187339500144
+      },
+      "image_path": "output\\assets\\b-a2c00ae8.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-871ef112",
+      "page_index": 10
+    },
+    {
+      "type": "image",
+      "id": "b-b633811a",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.45432840983072914,
+        "y": 0.20417774341724537,
+        "w": 0.5454242282443577,
+        "h": 0.5907965012538581
+      },
+      "image_path": "output\\assets\\b-b633811a.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-7d468eb8",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.4558887481689453,
+        "y": 0.19994337293836806,
+        "w": 0.5437781863742405,
+        "h": 0.5971179726683064
+      },
+      "image_path": "output\\assets\\b-7d468eb8.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-98c4a0f9",
+      "page_index": 12
+    },
+    {
+      "type": "image",
+      "id": "b-3ecfc9e0",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.9101754082573785,
+        "y": 0.03883030973834756,
+        "w": 0.06688800387912326,
+        "h": 0.03095924707106602
+      },
+      "image_path": "output\\assets\\b-3ecfc9e0.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-65926b29",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.44342770046657987,
+        "y": 0.16136721387321568,
+        "w": 0.5346536424424914,
+        "h": 0.6737110467604649
+      },
+      "image_path": "output\\assets\\b-65926b29.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-eb9a9aa5",
+      "page_index": 13
+    },
+    {
+      "type": "image",
+      "id": "b-c517b31b",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.1859864552815755,
+        "y": 0.2189154354142554,
+        "w": 0.5691433800591363,
+        "h": 0.7186343722873264
+      },
+      "image_path": "output\\assets\\b-c517b31b.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-1c18f9cf",
+      "page_index": 14
+    },
+    {
+      "type": "image",
+      "id": "b-b08d250d",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.19689273834228516,
+        "y": 0.18815330222800927,
+        "w": 0.5945525911119249,
+        "h": 0.7559233488859953
+      },
+      "image_path": "output\\assets\\b-b08d250d.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-fdebf686",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.9099163479275174,
+        "y": 0.03878067864312066,
+        "w": 0.06715240478515624,
+        "h": 0.031156445726936245
+      },
+      "image_path": "output\\assets\\b-fdebf686.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "image",
+      "id": "b-6a8f19d9",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.1990770975748698,
+        "y": 0.3009950425889757,
+        "w": 0.6010498894585503,
+        "h": 0.6352823704849054
+      },
+      "image_path": "output\\assets\\b-6a8f19d9.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-755e96cd",
+      "page_index": 16
+    },
+    {
+      "type": "image",
+      "id": "b-f6cd8c4b",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.18334009382459854,
+        "y": 0.21643367814429013,
+        "w": 0.5734758377075195,
+        "h": 0.7223419566213348
+      },
+      "image_path": "output\\assets\\b-f6cd8c4b.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-7341ebc9",
+      "page_index": 17
+    },
+    {
+      "type": "image",
+      "id": "b-397387b3",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.13256186379326715,
+        "y": 0.2150650966314622,
+        "w": 0.6712986098395454,
+        "h": 0.7315523500795718
+      },
+      "image_path": "output\\assets\\b-397387b3.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "page_break",
+      "id": "b-375c6a68",
+      "page_index": 18
+    },
+    {
+      "type": "image",
+      "id": "b-8defee4b",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.4550050523546007,
+        "y": 0.20722030828028548,
+        "w": 0.5449949476453994,
+        "h": 0.5820551365981868
+      },
+      "image_path": "output\\assets\\b-8defee4b.png",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "text",
+      "id": "b-12e1bf99",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.24228609991056232,
+        "w": 0.3508694636465725,
+        "h": 0.34983734378172104
+      },
+      "text": "На этом участке использовали полностью линейную систему. Из водостоков вода уводится в лоток, который соединяется в общую линию лотков. Тут применяется принцип кустарности. Высота лотков постепенно идет на увеличение, чтобы соблюсти необходимый уклон. Как вы видите, цветными стрелками показано направление воды, так же разным цветом показаны лотки определенной высоты. Все они в итоге ведут к дренажному колодцу.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.7,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-9672adc4",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.6008046669387117,
+        "w": 0.35085418586795863,
+        "h": 0.15428174493134952
+      },
+      "text": "Колодец в примере щебеночный и лоток сразу в него входит, без трубы. Такой вариант возможен, если объем воды маленький и почва прекрасно дренирует. В остальных случаях - это ж/б колодец с дном.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.4,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-2bae790f",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.1019341917155977,
+        "w": 0.8384903236660647,
+        "h": 0.12168915129579397
+      },
+      "text": "С водостоков крыш вода собирается лотками (обозначены голубым прямоугольником) и потом через дождеприёмник, слой дренажа уходит в землю. В данном случае это вполне уместно, по той причине, что на участке огромное количество сосен и возможности копать колодец нет. А песчаная почва сама хорошо дренирует, поэтому система вполне работоспособна.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.2,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-cec8355f",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.2866227225684301,
+        "y": 0.32483249139107656,
+        "w": 0.05949233079672884,
+        "h": 0.02412464698043945
+      },
+      "text": "скВажuны",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 8.011795262203941,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-faf15867",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.5931130229602499,
+        "y": 0.33344843674123353,
+        "w": 0.19717918852140748,
+        "h": 0.031017403260565
+      },
+      "text": "Дож еnрuемнuк Polymax Basic 300*3",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.300879622833635,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-abbb0259",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.2579245250567289,
+        "y": 0.36188105639675144,
+        "w": 0.08158026933101568,
+        "h": 0.03475097957896635
+      },
+      "text": "Водорозетка",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 11.540800318174723,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-08007606",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.25873065420031605,
+        "y": 0.40323759407750476,
+        "w": 0.09415588397097462,
+        "h": 0.029581412368872184
+      },
+      "text": "Электрокабель",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.823987047702452,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-419c2a77",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.2580857508854464,
+        "y": 0.442009348153211,
+        "w": 0.13397866366417793,
+        "h": 0.03216619597391927
+      },
+      "text": "Трuба Воdоснабженuя",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.68239368293859,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b89a03b6",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.7181119763782121,
+        "y": 0.22378814955458307,
+        "w": 0.11641230170827246,
+        "h": 0.02628826936091947
+      },
+      "text": "Точечные dожdеnрuемНuк",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 8.730334254761356,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b0493893",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.46354181660323984,
+        "y": 0.2749359779850677,
+        "w": 0.04251011017436916,
+        "h": 0.017716007612793558
+      },
+      "text": "Umмemкa",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-37568b5f",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.4643593187219777,
+        "y": 0.295223664122299,
+        "w": 0.06605417119401978,
+        "h": 0.01857323378760616
+      },
+      "text": "Ha coeduHeHuu",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d198d6c8",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.341063695664038,
+        "w": 0.3496319635788474,
+        "h": 0.3172447316276464
+      },
+      "text": "Конкретно в рассматриваемом примере следующая точка на отметке -1.26. Довольно глубоко, на 91 см ниже отметки - 0,35, но ее нужно рассматривать в общем контексте совокупности труб. На этом чертеже не указаны длины труб, так как на нем много обозначений и чертеж не стоило перегружать. Но дизайнер все четко просчитал и указал нужные, для строителей, отметки.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 10.7,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-595ed1fa",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9100614738578636,
+        "y": 0.33865645697947033,
+        "w": 0.05101213220924302,
+        "h": 0.036860725516941445
+      },
+      "text": "уровень",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 12.241446944176253,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-496ae5a0",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9115329776715918,
+        "y": 0.37465995632159915,
+        "w": 0.02910307542706811,
+        "h": 0.020573428195502213
+      },
+      "text": "пола",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-1458a828",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.8701673704634556,
+        "y": 0.5309608621957617,
+        "w": 0.052647136446718694,
+        "h": 0.03257459464287846
+      },
+      "text": "[[уклон%",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.818022880899933,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8a10b337",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.5220749683048712,
+        "y": 0.5486768698085552,
+        "w": 0.04054810508939828,
+        "h": 0.013715618797001476
+      },
+      "text": "omмemка",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-7d938acc",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.7553900729926589,
+        "y": 0.6412572966883151,
+        "w": 0.047251622463048794,
+        "h": 0.033431820817691076
+      },
+      "text": "PIO. Og",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 11.102707693555205,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-cdd64ee6",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.8008431907944844,
+        "y": 0.7306945609270955,
+        "w": 0.1672609334937679,
+        "h": 0.025145301127835976
+      },
+      "text": "Красным обозначена проекmuрчемая",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 8.350754504554327,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-37f2c119",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.8019876937607174,
+        "y": 0.7535539255887646,
+        "w": 0.08224071314502956,
+        "h": 0.01914471790414792
+      },
+      "text": "оmмеmка рельефа",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-7ab85c5d",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.8595791224433499,
+        "y": 0.30468273443254945,
+        "w": 0.043664224226983274,
+        "h": 0.03092510233095281
+      },
+      "text": "уровень",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.270226484109429,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-64c6eaff",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.8608874138059561,
+        "y": 0.33532149322340077,
+        "w": 0.02469399946919278,
+        "h": 0.01718061240608489
+      },
+      "text": "пола",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b90a8ec5",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.0684301198980971,
+        "y": 0.357509196190294,
+        "w": 0.3496625191360752,
+        "h": 0.2846521194735718
+      },
+      "text": "Помимо точечных дождеприёмников мы тут видим и линейное водоотведение. Причем используются лотки разной высоты, формируя каскадную систему, чтобы соблюсти адекватный уклон. На фрагменте чертежа, судя по стрелкам, видим, что уклон мощения идет от гаража в сторону дома. Лотками перехватываем воду, которая будет идти по этому уклону.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-854e43e2",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.5712407888966123,
+        "y": 0.256901216502485,
+        "w": 0.032510993609857895,
+        "h": 0.03051639593009375
+      },
+      "text": "срубы",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.134495088384135,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-67b4fd0a",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.7293917345731467,
+        "y": 0.24398241800825404,
+        "w": 0.060332134651087777,
+        "h": 0.03145123341802958
+      },
+      "text": "Сброс Воды",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.444954618127626,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-e385aa9a",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.4958565135399818,
+        "y": 0.26285665948170317,
+        "w": 0.05787775083887968,
+        "h": 0.02118165750619452
+      },
+      "text": "~заклаgные",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.034428457807199,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-7620c57e",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.373954715235069,
+        "w": 0.3496014080216197,
+        "h": 0.25205952583801616
+      },
+      "text": "Хотелось бы акцентировать внимание на одном узле. На следующем фрагменте видим, что линия лотков упирается в фундамент забора. Но там предусмотрены закладные для отвода воды. Поэтому учитывайте этот момент в своих проектах. Такой вариант возможен, если нужно увести воду за пределы участка и есть куда.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-3d5d82b5",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.8470469338843704,
+        "y": 0.6498512668921761,
+        "w": 0.041037614295363886,
+        "h": 0.022040373351040223
+      },
+      "text": "Cmh140",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.319607989880458,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-9193b535",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.357509196190294,
+        "w": 0.3501361302731058,
+        "h": 0.2846521194735718
+      },
+      "text": "Часто возникает вопрос, на какой отметке начинается вхождение трубы ПВХ в дождеприёмнике относительно уровня поверхности земли или мощения? Эта глубина обусловлена конструкцией дождеприёмника и составляет 150 мм ниже отметки мощения. Типовой размер дождеприёмника 300х300 мм и присоединение как раз посредине.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 10.8,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-5e7b8e0f",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.9101851851851851,
+        "y": 0.037037037037037035,
+        "w": 0.06805555555555555,
+        "h": 0.025514403292181024
+      },
+      "text": "Garden Group",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-4a47d441",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.22898630275348728,
+        "w": 0.10955556248494458,
+        "h": 0.03478017540787999
+      },
+      "text": "Пример 1.",
+      "role": "heading",
+      "confidence": 1.0,
+      "font_size_pt": 10.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-9645361e",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.0684301198980971,
+        "y": 0.41402227207278636,
+        "w": 0.3582486307170809,
+        "h": 0.21946693220246066
+      },
+      "text": "Этот пример довольно сложный, но грамотно спланированный и заслуживает разбора. Здесь мы видим, что дизайнер предложил использовать точечные дождеприёмники и систему лотков. Точечно собираем воду с водостоков, а лотками с больших площадей мощения.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.5,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-5757b36e",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.6038223498791002,
+        "y": 0.8537208261510899,
+        "w": 0.07300234719867034,
+        "h": 0.02171451221469558
+      },
+      "text": "Наименование",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.211389506500402,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-be5f0db8",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.8738990159408477,
+        "y": 0.8540103529806191,
+        "w": 0.03425987346604268,
+        "h": 0.01881924391940294
+      },
+      "text": "Кол-во",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-12421a11",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.7312562717434459,
+        "y": 0.8838316164221345,
+        "w": 0.03650117359933518,
+        "h": 0.015634448794580858
+      },
+      "text": "H 125 мм",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-6cc5cec1",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.942418762872933,
+        "y": 0.8870164115469565,
+        "w": 0.016809750999693854,
+        "h": 0.012160126840229536
+      },
+      "text": "Лист",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-7687fe45",
+      "page_index": 2,
+      "bbox": {
+        "x": 0.738780636476642,
+        "y": 0.9104680847388278,
+        "w": 0.08741070519840788,
+        "h": 0.017661136601285765
+      },
+      "text": "Dn1OO ПУ-10.14.39-Б",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-a2f3ff70",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.4636573635446955,
+        "y": 0.2725867550308735,
+        "w": 0.12438678857178703,
+        "h": 0.026365536610521878
+      },
+      "text": "Umмеmка залегания mрgбы",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-64290cb7",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.5406436893246509,
+        "y": 0.2923518101139665,
+        "w": 0.08238027217218158,
+        "h": 0.027760079019552703
+      },
+      "text": "дожdепрuемнuком",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.219122242393453,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-97b13e5a",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.909883837810679,
+        "y": 0.3384278175587911,
+        "w": 0.05099731134468387,
+        "h": 0.03663185685054379
+      },
+      "text": "уробенb",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 12.165439660065593,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-aace5aa6",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9113549140994681,
+        "y": 0.37420111526440025,
+        "w": 0.02909461993382603,
+        "h": 0.02060541947843089
+      },
+      "text": "пола",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-16c6343d",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.0684301198980971,
+        "y": 0.40688219777023,
+        "w": 0.3500750191586502,
+        "h": 0.18687432745579363
+      },
+      "text": "На разбираемом примере четко видно, что отметка залегания трубы от места присоединения к дождеприёмнику как раз составляет 150 мм ниже уровня мощения. На чертеже она обозначена синим цветом, а проектируемая отметка рельефа - красным.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.5,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-f3d84fb1",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.8700013250924008,
+        "y": 0.5310312524057909,
+        "w": 0.052631840554449305,
+        "h": 0.03233906112587067
+      },
+      "text": "[[уклон 3%",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.739802199901648,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-003faec7",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.7555842804088151,
+        "y": 0.6412130093390671,
+        "w": 0.04723789416222317,
+        "h": 0.03291143388916039
+      },
+      "text": "PIO. Og",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.929887194590163,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-e9d59290",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.8734338364329083,
+        "y": 0.6489400416434786,
+        "w": 0.06145829828718312,
+        "h": 0.02947719730942196
+      },
+      "text": "Уклон 7,8%",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.789377226459033,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-cccc653e",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.8006972865983433,
+        "y": 0.7302169740306227,
+        "w": 0.16770269692194112,
+        "h": 0.026042960729683474
+      },
+      "text": "Красным обозначена проекmuрчемая",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 8.648867258327883,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8a5b8631",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.8018414570451791,
+        "y": 0.7536842573255023,
+        "w": 0.08221681925120503,
+        "h": 0.019174487570206566
+      },
+      "text": "оmмеmка рельефа",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-c5bf78fa",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.22583815493978368,
+        "w": 0.8388264347955701,
+        "h": 0.0890965576602385
+      },
+      "text": "В этом уроке подробно разберем примеры плана поверхностного водоотведения. Поясним ключевые моменты по конкретным чертежам, почему были выбраны те или иные технические решения. Разберем все нюансы, касающиеся места размещения элементов:",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-e697b024",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.323317170398001,
+        "w": 0.11465878883053943,
+        "h": 0.0250566015612129
+      },
+      "text": "водосбора",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-dda24e6e",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.35590975662614893,
+        "w": 0.09563795445624777,
+        "h": 0.0250566015612129
+      },
+      "text": "уклонов",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-11b36c70",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.3885023465580006,
+        "w": 0.1704532363284617,
+        "h": 0.02505660156121297
+      },
+      "text": "Высотных отметок",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-132dbe93",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.4210949513046677,
+        "w": 0.21342962756933115,
+        "h": 0.0250566015612129
+      },
+      "text": "Вывода в точки сброса.",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-845a2879",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.45398631038867254,
+        "w": 0.5954361436977061,
+        "h": 0.023911370389127266
+      },
+      "text": "Этот анализ с комментариями поможет выполнить домашнее задание к уроку.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-3f1b767a",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.5191715161783027,
+        "w": 0.838765323681115,
+        "h": 0.056503982543201985
+      },
+      "text": "Чтобы спроектировать систему поверхностного водоотведения на участке нам понадобятся следующие данные:",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-5da19c7d",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.5840579565194837,
+        "w": 0.3218865779493285,
+        "h": 0.0250566015612129
+      },
+      "text": "Анализ участка + ТЗ + обмерный план",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-2b547f49",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.6166505686735583,
+        "w": 0.21098518299110897,
+        "h": 0.0250566015612129
+      },
+      "text": "Утвержденный генплан",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-676a1288",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.649243180827633,
+        "w": 0.278375464456973,
+        "h": 0.0250566015612129
+      },
+      "text": "План вертикальной планировки.",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-937ba12f",
+      "page_index": 1,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.7147270965101553,
+        "w": 0.8387653236811143,
+        "h": 0.05650392698764453
+      },
+      "text": "На их основе разрабатывается план водоотведения. На этом чертеже должна быть указаны все постройки и элементы благоустройства.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-22a7a60c",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.07258312107265981,
+        "y": 0.15919786577025752,
+        "w": 0.8323028233274397,
+        "h": 0.0890965576602385
+      },
+      "text": "Далее трубу нужно располагать под уклоном, который мы принимаем 2-4 см/м. п. То есть берем длину трубы, например, 4 м и возьмем уклон 2 см/м. п. Получается, что конечную точку трубы должны отпустить на 8 см относительно начальной точки.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8fc573e7",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.38272259558494826,
+        "y": 0.43736585150145807,
+        "w": 0.17221788488205247,
+        "h": 0.04465052509106332
+      },
+      "text": "Уровень мощёная",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 14.82843938274212,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-675bc3cc",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.297511471501127,
+        "y": 0.5363735375729461,
+        "w": 0.1745032407003925,
+        "h": 0.04770118208486263
+      },
+      "text": "Труба НПВХ 4000",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 15.84156257038288,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-7e16fe0f",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.08519522147624699,
+        "y": 0.7698979501274743,
+        "w": 0.8338306011888281,
+        "h": 0.05650396402468288
+      },
+      "text": "Это простой пример демонстрирует как считать уклоны. На самом чертеже мы можем показать промилле или проценты, посчитав по формуле:",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-1402119a",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.08519522147624699,
+        "y": 0.8350831373985854,
+        "w": 0.39882641071556973,
+        "h": 0.023911370389127405
+      },
+      "text": "8/400х1000=20%о, что соответствует уклону 2 см/м. п.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-c19dbaec",
+      "page_index": 6,
+      "bbox": {
+        "x": 0.08519522147624699,
+        "y": 0.8676757310341409,
+        "w": 0.7457847630369868,
+        "h": 0.023911370389127405
+      },
+      "text": "То есть 8 см (0.08) - это разница отметок - 0.15 и - 0.23, 400 см - это длина 4 м, 1000 - коэффициент.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-728c424b",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.5232535584499881,
+        "y": 0.19620651234216352,
+        "w": 0.15395750982236345,
+        "h": 0.03818887971978501
+      },
+      "text": "ДожбепрuвмHuк PolyMax",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 12.682526954940602,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b85ec8a1",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.8054818974696534,
+        "y": 0.2312369132881317,
+        "w": 0.12062985458098595,
+        "h": 0.03531753537995155
+      },
+      "text": "Basic ДП-30.30-ПП",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 11.72895349968191,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-969732f7",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.40688219777023,
+        "w": 0.3500444636014225,
+        "h": 0.18687432745579363
+      },
+      "text": "Если используются два дождеприёмника или надставки, то глубина присоединения трубы может быть иной. На схеме хорошо видно эти моменты. Чтобы узнать точные размеры, изучайте каталоги продукции производителей этих элементов.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.5,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-34c8f4fe",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.5185389145377932,
+        "y": 0.7472174911562044,
+        "w": 0.09234199110781673,
+        "h": 0.030149115568251277
+      },
+      "text": "BodoomВоdная",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.012521280216248,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-4b4c0d7b",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.7840221389727663,
+        "y": 0.7520987765339213,
+        "w": 0.14729197877408795,
+        "h": 0.031010518870201367
+      },
+      "text": "Бетонная обойма Н1ОО",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 10.298593316793873,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8d6d26fe",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.1123502513081709,
+        "w": 0.8038097662125369,
+        "h": 0.05650396402468288
+      },
+      "text": "Можно дополнить схему водоотведения дополнительными разрезами и схемами узлов. Чем более подробно расписана проектная документация, тем проще будет при реализации и составлении смет.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-f8cf25a3",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.661184178485275,
+        "y": 0.34771638345452605,
+        "w": 0.0587160355346481,
+        "h": 0.022475333215080717
+      },
+      "text": "бemонный POLYMAX DN1OO",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d05f3ffa",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.29238394868805784,
+        "y": 0.7203901567698575,
+        "w": 0.01643885054833253,
+        "h": 0.013050876729498655
+      },
+      "text": "~~лобня",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-ca78dda1",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.212529320660252,
+        "y": 0.8136473297210083,
+        "w": 0.02992104824505352,
+        "h": 0.012102102500428142
+      },
+      "text": "Nod nokpumue",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-5a7c5d10",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.4999965960038576,
+        "y": 0.8266138681143241,
+        "w": 0.011743207106929601,
+        "h": 0.009220649524135703
+      },
+      "text": "Лист",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-14ebd5cb",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.5912075333960369,
+        "y": 0.8315123381740213,
+        "w": 0.07560694986653313,
+        "h": 0.015847991369608204
+      },
+      "text": "Ландшафтный дизайн-проект",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-90fe6a78",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.715395970198087,
+        "y": 0.86234388502035,
+        "w": 0.020108231347482255,
+        "h": 0.011237666607540353
+      },
+      "text": "Листов",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-7c6c740b",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.08539729815863946,
+        "w": 0.11542222952267793,
+        "h": 0.03478017540787985
+      },
+      "text": "Пример 3.",
+      "role": "heading",
+      "confidence": 1.0,
+      "font_size_pt": 10.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-cc544793",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.12965655926938013,
+        "w": 0.8049403218299648,
+        "h": 0.05650396402468288
+      },
+      "text": "И еще один пример, где показаны какие лотки используются в зоне повышенной нагрузки. Это усиленные лотки серии Drive. На плане они показаны оранжевым цветом в районе парковки.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-12ddbeda",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.6138494677802154,
+        "y": 0.2780689168671632,
+        "w": 0.01706581661903339,
+        "h": 0.01209663563719939
+      },
+      "text": "[oid",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-e8ce942c",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.2530523447306502,
+        "y": 0.3474805642139501,
+        "w": 0.06729727685618843,
+        "h": 0.012960681039856493
+      },
+      "text": "Лоток Polymax Basic Dn100",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-f69849d2",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.2530523447306502,
+        "y": 0.3716738354883489,
+        "w": 0.06778027166616107,
+        "h": 0.011520605368761327
+      },
+      "text": "Лоток Polymax Basic Dn10O",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-741ba219",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.4538171874092793,
+        "y": 0.36936971441459665,
+        "w": 0.05071445504712763,
+        "h": 0.024481286408617797
+      },
+      "text": "Лоток Dn1ОО Н120 усиленный",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-5fe35a2f",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.34546535170541615,
+        "y": 0.4261086958557462,
+        "w": 0.01352385467923404,
+        "h": 0.010656559966104245
+      },
+      "text": "йот",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-efd17525",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.3134266959772307,
+        "y": 0.7426373283624635,
+        "w": 0.01787080796898784,
+        "h": 0.014112741576732618
+      },
+      "text": "[oid",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-2b8e027b",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.5934026874913735,
+        "y": 0.8394104134600585,
+        "w": 0.07035624398601519,
+        "h": 0.0146887718451707
+      },
+      "text": "Проект дренажной системы",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-2d4f41cf",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.2743041163694465,
+        "y": 0.8561152912447625,
+        "w": 0.014167847759197551,
+        "h": 0.009216484295009078
+      },
+      "text": "батом",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-348d0f85",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.7154393761444615,
+        "y": 0.8647557452713335,
+        "w": 0.019802787208878375,
+        "h": 0.011232590234542287
+      },
+      "text": "Листов",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d488cd4c",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.08039730028567646,
+        "w": 0.8043444884640226,
+        "h": 0.05650396402468288
+      },
+      "text": "Мы видим, что уклон рельефа идет от дома и с улицы ко въезду, если воду там не собирать - будут образовываться лужи. Направление уклона рельефа показано серыми стрелками.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-aa8ddf9c",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.712572979259612,
+        "y": 0.26154623480194095,
+        "w": 0.04348917545867345,
+        "h": 0.028079444012233216
+      },
+      "text": "[[уклон%",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.32518335646265,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8c8c998e",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.6179104507236273,
+        "y": 0.35438031500565076,
+        "w": 0.038911367515655215,
+        "h": 0.02292199511202709
+      },
+      "text": "PIOOO",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.6123945767041965,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-487fcbf5",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.714698390090299,
+        "y": 0.35867818908915583,
+        "w": 0.052317805063065805,
+        "h": 0.028365968951133545
+      },
+      "text": "Уклон 7,8%",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.42033828867145,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-3b4d8994",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.5155637445690048,
+        "y": 0.384178908651286,
+        "w": 0.04610506571182677,
+        "h": 0.02292199511202712
+      },
+      "text": "Дренаж",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.612394576704207,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-fa738a04",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.7140444175270108,
+        "y": 0.4136909773580209,
+        "w": 0.04365266859949555,
+        "h": 0.027792919073332888
+      },
+      "text": "уклон%",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.23002842425385,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-c3af3060",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.0684301198980971,
+        "y": 0.4398072358608682,
+        "w": 0.34970835247191684,
+        "h": 0.12168915129579397
+      },
+      "text": "В этом проекте воду уводим в несколько точек - в овраг трубой и лотками, этот узел уже рассмотрели, а второй-через дренажный колодец с переливом в овраг.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8d7fbe32",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.5392702499882065,
+        "y": 0.4858952619609063,
+        "w": 0.042508216613741,
+        "h": 0.026360294378831153
+      },
+      "text": "Перелюб",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 8.754253763209825,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-bd97003a",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.5391067568473844,
+        "y": 0.5288740027959571,
+        "w": 0.0593480101184153,
+        "h": 0.028079444012233265
+      },
+      "text": "дренажного",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 9.325183356462666,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-285bbc2d",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.7431461965933411,
+        "y": 0.626865531899873,
+        "w": 0.17461067439798225,
+        "h": 0.04040001638494782
+      },
+      "text": "Наименование",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 13.41684544144117,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d8e6848c",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.7093031164431705,
+        "y": 0.6941988925414528,
+        "w": 0.26256998416026156,
+        "h": 0.037821291934844736
+      },
+      "text": "Лоmок беmонный Веtоmах",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 11.89436652610031,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d1867a26",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.922369998070445,
+        "y": 0.17877245819009263,
+        "w": 0.04615379742161493,
+        "h": 0.033855499524528106
+      },
+      "text": "npegn",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 11.243411392095783,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-449cb268",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.4398048284533837,
+        "w": 0.3495250191285502,
+        "h": 0.12168915129579397
+      },
+      "text": "Смотровые колодцы старались размещать на газон и в цветниках. Их не много, но есть на местах соединения веток труб. Это поможет нам следить за состоянием системы.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-25c5d314",
+      "page_index": 10,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.4398055136385908,
+        "w": 0.3498764080366697,
+        "h": 0.12168915129579397
+      },
+      "text": "У бензоуловителей отметка вхождения трубы тоже зависит от его конструкции и габаритов, в среднем это около 40 см от поверхности мощения.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.2,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-6bb461a8",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.8872062793587859,
+        "y": 0.17660044146634907,
+        "w": 0.059727073570152174,
+        "h": 0.016382905147332122
+      },
+      "text": "ЭКСПЛИКАЦИЯ:",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-74674bbd",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.8926652054377784,
+        "y": 0.23350948039918695,
+        "w": 0.013165645249334645,
+        "h": 0.010921936764888087
+      },
+      "text": "Баня",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b204ede4",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.7855739202998979,
+        "y": 0.2832330346182827,
+        "w": 0.028579083590019042,
+        "h": 0.009484839822139643
+      },
+      "text": "проектная",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-2724d346",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.9408322002524172,
+        "y": 0.35020175215035965,
+        "w": 0.021835704315969613,
+        "h": 0.011496775541987476
+      },
+      "text": "Кол-во",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-ac4d3882",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.06764818653974189,
+        "y": 0.37395714116107265,
+        "w": 0.3506097414101364,
+        "h": 0.05650396402468288
+      },
+      "text": "Сам чертеж оформляется максимально информативно. Показываем:",
+      "role": "heading",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-6e2e17c3",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.4388435629837343,
+        "w": 0.32992268950023407,
+        "h": 0.02505660156121297
+      },
+      "text": "Экспликацию с обозначением построек",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-6b91134e",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.4714361566192899,
+        "w": 0.33488796754974803,
+        "h": 0.05680272206572462
+      },
+      "text": "Условные обозначения, по которым строители смогут прочитать чертеж",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 8.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-20b0b321",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.8701872745242801,
+        "y": 0.4775285412778707,
+        "w": 0.02103292106905901,
+        "h": 0.011209356153437768
+      },
+      "text": "H 80 мм",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-a7f4392c",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.0834269037113275,
+        "y": 0.5366213327792895,
+        "w": 0.335010189778659,
+        "h": 0.12198792785535488
+      },
+      "text": "Ведомость системы водоотведения с указанием названий элементов и их количество. Это поможет составить смету.",
+      "role": "list_item",
+      "confidence": 1.0,
+      "font_size_pt": 12.4,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b5fc1389",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.8978030182180066,
+        "y": 0.5508204853580407,
+        "w": 0.020872364419676784,
+        "h": 0.011209356153437768
+      },
+      "text": "H 95 мм",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-85873e46",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.5214582320662948,
+        "y": 0.7103382460031167,
+        "w": 0.04752476821711034,
+        "h": 0.014658388816034056
+      },
+      "text": "Наименование",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-b54fa38d",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.6963044232434339,
+        "y": 0.7106256653916663,
+        "w": 0.02199626096535175,
+        "h": 0.012646453096186165
+      },
+      "text": "Кол-во",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8d1cd270",
+      "page_index": 13,
+      "bbox": {
+        "x": 0.5103798232589278,
+        "y": 0.764947929827557,
+        "w": 0.016697891535741468,
+        "h": 0.014370969427484346
+      },
+      "text": "Труба",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-4622f5d9",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.55535053860455,
+        "y": 0.40053091009476655,
+        "w": 0.2782000089024,
+        "h": 0.20511842465361796
+      },
+      "text": "Разбор примеров плана поверхностного отведения.",
+      "role": "heading",
+      "confidence": 1.0,
+      "font_size_pt": 31.2,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-3040682b",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.0684301198980971,
+        "y": 0.07212287354867275,
+        "w": 0.623211145217756,
+        "h": 0.06350395923942348
+      },
+      "text": "Пример 2. Пример использования точечных дождеприёмников в составе дренажного мешка.",
+      "role": "caption",
+      "confidence": 1.0,
+      "font_size_pt": 9.6,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-c2a43b40",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.23797970602075152,
+        "y": 0.22015463393142098,
+        "w": 0.055588250388513304,
+        "h": 0.016433116280130333
+      },
+      "text": "Jксnnuкацuя:",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d1fca269",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.5795654765240796,
+        "y": 0.24638995992250623,
+        "w": 0.1313171712076474,
+        "h": 0.01960441942190987
+      },
+      "text": "Дождеприемник Polymax Basic 300*300",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-5ae3f359",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.24732497710055953,
+        "y": 0.2633996767738692,
+        "w": 0.017562664615501312,
+        "h": 0.014703314566432408
+      },
+      "text": "Баня",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-8e91e85a",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.23878533283797634,
+        "y": 0.28415729733824435,
+        "w": 0.03125832050832343,
+        "h": 0.01931611913629355
+      },
+      "text": "3 Гараж",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-3cb80b66",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.24861398000811927,
+        "y": 0.35046636302999834,
+        "w": 0.04398722422047575,
+        "h": 0.014991614852048718
+      },
+      "text": "Люк cenmuкa",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-1bd3ed36",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.24845285464467431,
+        "y": 0.37180058416560613,
+        "w": 0.04882098512382473,
+        "h": 0.01556821542328136
+      },
+      "text": "Люк скважины",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-4b308805",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.4846626374549946,
+        "y": 0.8624876702845856,
+        "w": 0.03979796477090666,
+        "h": 0.014703314566432398
+      },
+      "text": "Кузнецова 0",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-3b32c018",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.7458468515992847,
+        "y": 0.8728664805667732,
+        "w": 0.021429673338180497,
+        "h": 0.012396912281501832
+      },
+      "text": "Nucm N",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "text",
+      "id": "b-d994b39c",
+      "page_index": 15,
+      "bbox": {
+        "x": 0.5368672552111636,
+        "y": 0.9011199085571727,
+        "w": 0.04640410467215017,
+        "h": 0.01239691228150186
+      },
+      "text": "Dama nodnucь",
+      "role": "caption",
+      "confidence": 0.85,
+      "font_size_pt": 7.0,
+      "font_name": "Times New Roman"
+    },
+    {
+      "type": "image",
+      "id": "b-ddc2a064",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-ddc2a064.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-e2cfa993",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-e2cfa993.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-8f4fd372",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-8f4fd372.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-d9f25153",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-d9f25153.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-70b23aab",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-70b23aab.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-dcd50111",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-dcd50111.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-6d97375a",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-6d97375a.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-5c6f31d0",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-5c6f31d0.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-872cc1a8",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-872cc1a8.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-67167a16",
+      "page_index": 3,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p003_b-67167a16.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-fa3faee2",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-fa3faee2.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-0ce814f0",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-0ce814f0.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-d63150f5",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-d63150f5.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-1cc61098",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-1cc61098.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-822bbcbf",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-822bbcbf.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-0378215e",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-0378215e.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-03550eba",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-03550eba.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-7f3003ea",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-7f3003ea.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-4a5bad50",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-4a5bad50.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-13843b3c",
+      "page_index": 4,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p004_b-13843b3c.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-209d142e",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-209d142e.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-0c247992",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-0c247992.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-06f63562",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-06f63562.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c51326a0",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-c51326a0.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-9d2078c4",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-9d2078c4.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-b3ae539e",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-b3ae539e.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-ee529be5",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-ee529be5.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-651d4836",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-651d4836.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-3dd33b5f",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-3dd33b5f.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-02a40121",
+      "page_index": 5,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p005_b-02a40121.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-4a0fc0b7",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-4a0fc0b7.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-974081f5",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-974081f5.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a6b1be66",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-a6b1be66.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-08a0ff42",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-08a0ff42.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-1e318d75",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-1e318d75.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-12c2422b",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-12c2422b.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-af98c910",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-af98c910.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-53ceaf81",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-53ceaf81.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-f69e1515",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-f69e1515.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-b5de2c0a",
+      "page_index": 7,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p007_b-b5de2c0a.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-65c4df82",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-65c4df82.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-4183e1c4",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-4183e1c4.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-ddb62658",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-ddb62658.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c0dcaddc",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-c0dcaddc.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-efa3d8f4",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-efa3d8f4.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-812291ad",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-812291ad.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-f4aa6c84",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-f4aa6c84.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-db6a20c5",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-db6a20c5.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-12cc712b",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-12cc712b.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-0b7c07c3",
+      "page_index": 8,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p008_b-0b7c07c3.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-8c760757",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-8c760757.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c79a18ad",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-c79a18ad.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-fa20602c",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-fa20602c.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-23fbb7a0",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-23fbb7a0.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-dc614990",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-dc614990.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-b0ecf732",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-b0ecf732.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-18fc317d",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-18fc317d.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-74ca8dfe",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-74ca8dfe.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-0e9997fe",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-0e9997fe.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a043d5a6",
+      "page_index": 9,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p009_b-a043d5a6.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-7155c245",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-7155c245.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-76302bf5",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-76302bf5.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-6c4a9c27",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-6c4a9c27.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-13a1e914",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-13a1e914.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-90677533",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-90677533.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-d3a223d8",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-d3a223d8.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c00a76d6",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-c00a76d6.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-ca209ac4",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-ca209ac4.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-644a324a",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-644a324a.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-f44bcab4",
+      "page_index": 11,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p011_b-f44bcab4.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-949e0314",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-949e0314.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-9424d32f",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-9424d32f.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-f1e12522",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-f1e12522.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-6b30668d",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-6b30668d.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-e5ed21ea",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-e5ed21ea.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-1ea17b70",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-1ea17b70.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-00d0063f",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-00d0063f.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a4ec1cf4",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-a4ec1cf4.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a0bd4865",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-a0bd4865.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-92f593c7",
+      "page_index": 12,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p012_b-92f593c7.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-16b82ada",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-16b82ada.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-1494e419",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-1494e419.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-5fb047d9",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-5fb047d9.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-ce4a45f8",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-ce4a45f8.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c6b85fb9",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-c6b85fb9.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-27a0741a",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-27a0741a.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a760064f",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-a760064f.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-0166453d",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-0166453d.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a878aabe",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-a878aabe.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-f1e55265",
+      "page_index": 14,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p014_b-f1e55265.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c84079b7",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-c84079b7.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-1ed7fe73",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-1ed7fe73.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-d6a231c7",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-d6a231c7.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a39eea2e",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-a39eea2e.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-75239819",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-75239819.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-df4cb8c0",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-df4cb8c0.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-c85413f8",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-c85413f8.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-38f142d9",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-38f142d9.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-852eb6de",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-852eb6de.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-be41c4d5",
+      "page_index": 16,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p016_b-be41c4d5.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-5acb6636",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-5acb6636.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-7256bdb1",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-7256bdb1.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-e7d2aed0",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-e7d2aed0.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-2846c97a",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-2846c97a.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-e96684bc",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-e96684bc.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-d70a65dd",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-d70a65dd.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-b26cf38e",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-b26cf38e.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-1ba68861",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-1ba68861.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-57a0aa80",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-57a0aa80.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-4ff4d1aa",
+      "page_index": 17,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p017_b-4ff4d1aa.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-35594d46",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-35594d46.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-90c59151",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-90c59151.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-14e3d51f",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-14e3d51f.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-ae1e97d8",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-ae1e97d8.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-167f224c",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-167f224c.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-cd8c6f4f",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-cd8c6f4f.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-aafb18a1",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-aafb18a1.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-7da1aa03",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-7da1aa03.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-916df325",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-916df325.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-32994184",
+      "page_index": 18,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p018_b-32994184.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-109cd842",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-109cd842.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-44b72637",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.9246666666666666,
+        "y": 0.041469194312796206,
+        "w": 0.008666666666666666,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-44b72637.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-2ffd643d",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.948,
+        "y": 0.041469194312796206,
+        "w": 0.006666666666666667,
+        "h": 0.014218009478672985
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-2ffd643d.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-eb838bae",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.9186666666666666,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-eb838bae.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-3a70f302",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.934,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-3a70f302.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-00f8734b",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.94,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-00f8734b.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-5003f81b",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.956,
+        "y": 0.0462085308056872,
+        "w": 0.008666666666666666,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-5003f81b.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-93122f3e",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.9653333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.004666666666666667,
+        "h": 0.009478672985781991
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-93122f3e.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-6e9cb602",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.9713333333333334,
+        "y": 0.0462085308056872,
+        "w": 0.005333333333333333,
+        "h": 0.013033175355450236
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-6e9cb602.png",
+      "caption": "",
+      "confidence": 0.85
+    },
+    {
+      "type": "image",
+      "id": "b-a7d17bec",
+      "page_index": 19,
+      "bbox": {
+        "x": 0.9113333333333333,
+        "y": 0.06042654028436019,
+        "w": 0.02,
+        "h": 0.008293838862559242
+      },
+      "image_path": "output\\assets\\gap_fills\\gap_p019_b-a7d17bec.png",
+      "caption": "",
+      "confidence": 0.85
+    }
+  ],
+  "meta": {
+    "engine": "docling",
+    "engine_version": "2.99.0",
+    "created_at": "2026-06-09T15:35:02.693515+00:00",
+    "warnings": [
+      "image label OCR: added 95 text blocks",
+      "text merge: removed 1 subsumed fragments",
+      "text dedup: removed 3 overlapping blocks",
+      "text merge: merged 7 line fragments",
+      "text correct: updated 70 snippets (spell=True, grammar=True)",
+      "layout repair: fixed_bboxes=0, gap_image_blocks=130"
+    ]
+  }
+}

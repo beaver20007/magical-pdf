@@ -1,0 +1,1831 @@
+{
+  "schema_version": "document-ir-v1",
+  "source": {
+    "filename": "Паспорт СпортСетка сс 4 100 ПА.pdf",
+    "page_count": 1,
+    "languages": [
+      "ru",
+      "en"
+    ]
+  },
+  "pages": [
+    {
+      "index": 0,
+      "width_pt": 595.3200073242188,
+      "height_pt": 841.9199829101562,
+      "background_image": "C:\\Users\\tsvetkov\\Documents\\magical-pdf\\extract\\output\\assets\\page_backgrounds\\page_000.png"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "id": "b-0eb2604d",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.34578042661248426,
+        "y": 0.05342076024699694,
+        "w": 0.3852381803338069,
+        "h": 0.016034777976567667
+      },
+      "text": "Общество с ограниченной ответственностью",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Общество с ограниченной ответственностью ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8f163f7b",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.25562721024576973,
+        "y": 0.11354342067289028,
+        "w": 0.564687863290766,
+        "h": 0.01330885883350731
+      },
+      "text": "119415, Москва г, Вернадского пр-кт, дом № 41, строение 1, этаж 9, пом.I, ком.28",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.960000038146973,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "119415, Москва г, Вернадского пр-кт, дом № 41, строение 1, этаж 9, пом.I, ком.28 ",
+          "font_name": "Garamond",
+          "font_size_pt": 9.960000038146973,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-aa9dd47a",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.26187595239274275,
+        "y": 0.12893676113346822,
+        "w": 0.5519888149376397,
+        "h": 0.01330885883350731
+      },
+      "text": "ИНН 9701061209 КПП 772901001, р/с 40702810402830002305, БИК 044525593",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.960000038146973,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "ИНН 9701061209 КПП 772901001, р/с 40702810402830002305, БИК 044525593 ",
+          "font_name": "Garamond",
+          "font_size_pt": 9.960000038146973,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-00edf9d7",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.39798761970172825,
+        "y": 0.14433017408924464,
+        "w": 0.279967044378849,
+        "h": 0.01330885883350731
+      },
+      "text": "Тел. 8-916-618-27-49, sportsetka@mail.ru",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 9.960000038146973,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Тел. 8-916-618-27-49, sportsetka@mail.ru ",
+          "font_name": "Garamond",
+          "font_size_pt": 9.960000038146973,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-c3fc378c",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.35243229687781785,
+        "y": 0.16251603865646969,
+        "w": 0.3753107915818401,
+        "h": 0.02677807704601205
+      },
+      "text": "ПАСПОРТ КАЧЕСТВА",
+      "role": "title",
+      "confidence": 1.0,
+      "font_size_pt": 20.040000915527344,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "ПАСПОРТ КАЧЕСТВА ",
+          "font_name": "Garamond",
+          "font_size_pt": 20.040000915527344,
+          "bold": true
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8d16b89b",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.5068366714945668,
+        "y": 0.18998954401752585,
+        "w": 0.0629241265104617,
+        "h": 0.016034777976567667
+      },
+      "text": "Размер",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Размер ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-81378df8",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.22599608887806225,
+        "y": 0.1979712653681665,
+        "w": 0.0886918000439422,
+        "h": 0.016034777976567667
+      },
+      "text": "Структура",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Структура",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-c4158ff9",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.6969528968579485,
+        "y": 0.1979712653681665,
+        "w": 0.21855475083719314,
+        "h": 0.016034777976567667
+      },
+      "text": "Разрывная прочность, кгс",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Разрывная прочность, кгс",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-e1add5ca",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.4405193791129808,
+        "y": 0.2059530592140056,
+        "w": 0.19535709595197648,
+        "h": 0.016034777976567667
+      },
+      "text": "ячеи (мм)/ d нити (мм)",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "ячеи (мм)/ d нити (мм)",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-5f1439a5",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.1568635381587113,
+        "y": 0.22262920221136454,
+        "w": 0.23575889944793388,
+        "h": 0.016034777976567667
+      },
+      "text": "Сетка заградительная белая,",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Сетка заградительная белая, ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-1b3bd810",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.6979607684163268,
+        "y": 0.2427261761385389,
+        "w": 0.21620626298286305,
+        "h": 0.016034777976567667
+      },
+      "text": "140 на одну ячею в сухом",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "140 на одну ячею в сухом ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-0f7bedfc",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.1854800725835663,
+        "y": 0.24671703681385923,
+        "w": 0.17849222804461434,
+        "h": 0.016034777976567667
+      },
+      "text": "безузловая, материал",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "безузловая, материал ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-1233a654",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.4991769296708549,
+        "y": 0.25070789748917954,
+        "w": 0.07824361015788535,
+        "h": 0.016034777976567667
+      },
+      "text": "40-100/4",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "40-100/4 ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-ce32c7fb",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.7848888060487262,
+        "y": 0.25868961883982017,
+        "w": 0.0425317081487756,
+        "h": 0.016034777976567667
+      },
+      "text": "виде",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "виде ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-6d3c265e",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.1810454838629311,
+        "y": 0.27080479892115544,
+        "w": 0.18771416822068865,
+        "h": 0.016034777976567667
+      },
+      "text": "негорючий полиамид",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "негорючий полиамид ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-1f7cf7ae",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.26026338865682364,
+        "y": 0.29532021020417765,
+        "w": 0.15405158625070653,
+        "h": 0.016034777976567667
+      },
+      "text": "Характеристики",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Характеристики",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-722e8666",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.6905025906517952,
+        "y": 0.29532021020417765,
+        "w": 0.09781290692794946,
+        "h": 0.016034777976567667
+      },
+      "text": "Полиамид",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Полиамид",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-379c1138",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8479809196959971,
+        "y": 0.3117403726557681,
+        "w": 0.0858697750592261,
+        "h": 0.01629075852233617
+      },
+      "text": "1,14 г/см3",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "1,14 г/см",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        },
+        {
+          "text": "3",
+          "font_name": "Garamond",
+          "font_size_pt": 6.960000038146973,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-ab973fad",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2896929459653509,
+        "y": 0.31199635320153657,
+        "w": 0.09539406132407081,
+        "h": 0.016034777976567667
+      },
+      "text": "Плотность",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Плотность ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-acdd1e16",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2773970257305851,
+        "y": 0.32870816383653867,
+        "w": 0.12482361863259804,
+        "h": 0.016034777976567667
+      },
+      "text": "Удельный вес",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Удельный вес  ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-9d851238",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8959551137550246,
+        "y": 0.32870816383653867,
+        "w": 0.03789558100019859,
+        "h": 0.016034777976567667
+      },
+      "text": "1,17",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "1,17 ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8d571264",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.22821339605399907,
+        "y": 0.34524185376892025,
+        "w": 0.21815159708759413,
+        "h": 0.016034777976567667
+      },
+      "text": "Температура размягчения",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Температура размягчения ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-e2c4147c",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8745884007573314,
+        "y": 0.34524185376892025,
+        "w": 0.05926229399789188,
+        "h": 0.016034777976567667
+      },
+      "text": "170 °С",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "170 °С ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8b5492e5",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2362762916273099,
+        "y": 0.36191799676627917,
+        "w": 0.20202578030973403,
+        "h": 0.016034777976567667
+      },
+      "text": "Температура плавления",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Температура плавления ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-addd798d",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8745884007573314,
+        "y": 0.36191799676627917,
+        "w": 0.05926229399789188,
+        "h": 0.016034777976567667
+      },
+      "text": "215 °С",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "215 °С ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-9616bde7",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.24393603345102172,
+        "y": 0.3785941397636381,
+        "w": 0.18690786072149065,
+        "h": 0.016034777976567667
+      },
+      "text": "Разрывное удлинение",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Разрывное удлинение ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-92c3bd88",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8685412739320155,
+        "y": 0.3785941397636381,
+        "w": 0.06530942082320772,
+        "h": 0.016034777976567667
+      },
+      "text": "до 50%",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "до 50% ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-f833d505",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8020224174912493,
+        "y": 0.3951277934484204,
+        "w": 0.13182827726397398,
+        "h": 0.016034777976567667
+      },
+      "text": "потеря до 15%",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "потеря до 15%  ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-ccc4584c",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.16734529215152,
+        "y": 0.41123383420507603,
+        "w": 0.3398945074614073,
+        "h": 0.016034777976567667
+      },
+      "text": "Разрывная нагрузка в мокром состоянии",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Разрывная нагрузка в мокром состоянии ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-bdcdca1f",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.6280151691820651,
+        "y": 0.41123383420507603,
+        "w": 0.3056239140685049,
+        "h": 0.016034777976567667
+      },
+      "text": "(при высыхании разрывная нагрузка",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "(при высыхании разрывная нагрузка ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-09bb5b02",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.7719881423739428,
+        "y": 0.42719734940155574,
+        "w": 0.16186255238128047,
+        "h": 0.016034777976567667
+      },
+      "text": "восстанавливается)",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "восстанавливается) ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-a0483900",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.22599608887806225,
+        "y": 0.4438735286465139,
+        "w": 0.22258616017699087,
+        "h": 0.016034777976567667
+      },
+      "text": "Стойкость к воздействиям",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Стойкость к воздействиям ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-f5c9bdef",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.9086541621081509,
+        "y": 0.4438735286465139,
+        "w": 0.025196532647072303,
+        "h": 0.016034777976567667
+      },
+      "text": "—",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "— ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-d8586dc5",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2606665167751842,
+        "y": 0.4605497078914721,
+        "w": 0.1534468940731657,
+        "h": 0.016034777976567667
+      },
+      "text": "Солнечных лучей",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Солнечных лучей ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8a453f47",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8514076112270156,
+        "y": 0.4605497078914721,
+        "w": 0.08244308352820764,
+        "h": 0.016034777976567667
+      },
+      "text": "Хорошая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Хорошая ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-166c7036",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.21994893642150798,
+        "y": 0.47708332532865516,
+        "w": 0.23488205478051816,
+        "h": 0.016034777976567667
+      },
+      "text": "Температуры от –50 до +60",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Температуры от –50 до +60 ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-d950f4b6",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8514076112270156,
+        "y": 0.47708332532865516,
+        "w": 0.08244308352820764,
+        "h": 0.016034777976567667
+      },
+      "text": "Хорошая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Хорошая ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-3f5aca1d",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.30420614774481497,
+        "y": 0.49375950457361334,
+        "w": 0.06616609370596233,
+        "h": 0.016034777976567667
+      },
+      "text": "Кислот",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Кислот ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-cb7f890c",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8042397246671861,
+        "y": 0.49375950457361334,
+        "w": 0.12961097008803715,
+        "h": 0.016034777976567667
+      },
+      "text": "Недостаточная",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Недостаточная ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-52c46ae0",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8463683046976012,
+        "y": 0.5104356838185715,
+        "w": 0.0874823900576221,
+        "h": 0.016034777976567667
+      },
+      "text": "Хорошая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Хорошая  ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-cda6aa4e",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2953369703035446,
+        "y": 0.5184174414168113,
+        "w": 0.08410601264768335,
+        "h": 0.016034777976567667
+      },
+      "text": "Щелочей",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Щелочей ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8513fa81",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.64192365315275,
+        "y": 0.526399162767452,
+        "w": 0.29192704160247324,
+        "h": 0.016034777976567667
+      },
+      "text": "(повреждается в горячих щелочях)",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "(повреждается в горячих щелочях) ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-db6fd4f4",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.25562721024576973,
+        "y": 0.5430753420124101,
+        "w": 0.16352550713199462,
+        "h": 0.016034777976567667
+      },
+      "text": "Микроорганизмов",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Микроорганизмов  ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-5cb207d0",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8514076112270156,
+        "y": 0.5510808780357455,
+        "w": 0.08244308352820764,
+        "h": 0.016034777976567667
+      },
+      "text": "Хорошая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Хорошая ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-e55eb063",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.25744136367210757,
+        "y": 0.5590625993863861,
+        "w": 0.15969563622013871,
+        "h": 0.016034777976567667
+      },
+      "text": "(гниение, плесень)",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "(гниение, плесень) ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-a42bcf33",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2882819206573736,
+        "y": 0.5757387786313443,
+        "w": 0.09801452224960663,
+        "h": 0.016034777976567667
+      },
+      "text": "Насекомых",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Насекомых ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-664bd358",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8193576442554295,
+        "y": 0.5757387786313443,
+        "w": 0.11449305049979377,
+        "h": 0.016034777976567667
+      },
+      "text": "Не поедается",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Не поедается ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-3be16341",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.3136800429948646,
+        "y": 0.5924149578763025,
+        "w": 0.04721830320586303,
+        "h": 0.016034777976567667
+      },
+      "text": "Огня",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Огня ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-9257b00c",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8530202262254115,
+        "y": 0.5924149578763025,
+        "w": 0.08083046852981164,
+        "h": 0.016034777976567667
+      },
+      "text": "Не горит",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Не горит ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-53669b46",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2965463802898647,
+        "y": 0.6089485753134856,
+        "w": 0.08168716704380471,
+        "h": 0.016034777976567667
+      },
+      "text": "Гибкость",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Гибкость ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-1cf2697a",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8514076112270156,
+        "y": 0.6089485753134856,
+        "w": 0.08244308352820764,
+        "h": 0.016034777976567667
+      },
+      "text": "Хорошая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Хорошая ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-64bbf1d6",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.18991466130420148,
+        "y": 0.6256247183108444,
+        "w": 0.29495060501513115,
+        "h": 0.016034777976567667
+      },
+      "text": "Способность поглощения энергии",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Способность поглощения энергии ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-f990b6fd",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8598736605499254,
+        "y": 0.6256247183108444,
+        "w": 0.07397703420529782,
+        "h": 0.016034777976567667
+      },
+      "text": "Высокая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Высокая ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-634b22c2",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.16432170310762362,
+        "y": 0.6423009338034019,
+        "w": 0.3459416599179616,
+        "h": 0.016034777976567667
+      },
+      "text": "Стойкость к ударным нагрузкам (рывкам)",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Стойкость к ударным нагрузкам (рывкам) ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-c518c404",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8514076112270156,
+        "y": 0.6423009338034019,
+        "w": 0.08244308352820764,
+        "h": 0.016034777976567667
+      },
+      "text": "Хорошая",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Хорошая ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-722f9e07",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.21249075865697642,
+        "y": 0.658834551240585,
+        "w": 0.24979841030958128,
+        "h": 0.016034777976567667
+      },
+      "text": "Электростатические свойства",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Электростатические свойства ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-120821a6",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8312503851093578,
+        "y": 0.658834551240585,
+        "w": 0.10260030964586549,
+        "h": 0.016034777976567667
+      },
+      "text": "Диэлектрик",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Диэлектрик ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-7d205685",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.2590539530392651,
+        "y": 0.6755106942379439,
+        "w": 0.1564704574858236,
+        "h": 0.016034777976567667
+      },
+      "text": "Влагопоглощение",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Влагопоглощение ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-bb22eb52",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.9028085993420154,
+        "y": 0.6755106942379439,
+        "w": 0.03104209541320786,
+        "h": 0.016034777976567667
+      },
+      "text": "4%",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "4% ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8d441594",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.7041595642516607,
+        "w": 0.22188403084647781,
+        "h": 0.016034777976567667
+      },
+      "text": "Преимущества: Изделия",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Преимущества:",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        },
+        {
+          "text": " Изделия ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-48e4d069",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.3823556912575844,
+        "y": 0.7041595642516607,
+        "w": 0.06022982198694796,
+        "h": 0.016034777976567667
+      },
+      "text": "имеют",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "имеют ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-06cefaa3",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.4601424502213155,
+        "y": 0.7041595642516607,
+        "w": 0.07778670770125418,
+        "h": 0.016034777976567667
+      },
+      "text": "высокую",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "высокую ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-9cbea742",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.5554458025925075,
+        "y": 0.7041595642516607,
+        "w": 0.09778261080410014,
+        "h": 0.016034777976567667
+      },
+      "text": "прочность,",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "прочность, ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-7392066a",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.6707249119131228,
+        "y": 0.7041595642516607,
+        "w": 0.13174748760037577,
+        "h": 0.016034777976567667
+      },
+      "text": "сопротивление",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "сопротивление ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-ccfeea10",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.8200494826437044,
+        "y": 0.7041595642516607,
+        "w": 0.11376091980467357,
+        "h": 0.016034777976567667
+      },
+      "text": "к истиранию",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "к истиранию ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-c20f13d5",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.7202656050083163,
+        "w": 0.7906838368282553,
+        "h": 0.016034777976567667
+      },
+      "text": "и ударным нагрузкам. Стойки к действию щелочей и гниению. Средние изоляционные",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "и ударным нагрузкам. Стойки к действию щелочей и гниению. Средние изоляционные ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-9e8cb080",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.736229120204796,
+        "w": 0.08122691971055565,
+        "h": 0.016034777976567667
+      },
+      "text": "свойства.",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "свойства. ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-e7fd5ee2",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.7523351609614516,
+        "w": 0.7908554636009245,
+        "h": 0.016034777976567667
+      },
+      "text": "Недостатки: Неустойчивость к действию концентрированных кислот и органических",
+      "role": "paragraph",
+      "confidence": 1.0,
+      "font_size_pt": 12.0,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Недостатки:",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": true
+        },
+        {
+          "text": " Неустойчивость к действию концентрированных кислот и органических ",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "id": "b-4bd252b4",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.5924544914798175,
+        "y": 0.7624833288229237,
+        "w": 0.35241548278539386,
+        "h": 0.17103763175005512
+      },
+      "image_path": "C:\\Users\\tsvetkov\\Documents\\magical-pdf\\extract\\output\\assets\\native_images\\native_p000_x22.jpeg",
+      "caption": "",
+      "confidence": 1.0
+    },
+    {
+      "type": "text",
+      "id": "b-3bb66b78",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.7682054473327096,
+        "w": 0.13227506819703616,
+        "h": 0.018760669933928602
+      },
+      "text": "растворителей.",
+      "role": "heading",
+      "confidence": 1.0,
+      "font_size_pt": 14.039999961853027,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "растворителей",
+          "font_name": "Garamond",
+          "font_size_pt": 12.0,
+          "bold": false
+        },
+        {
+          "text": ". ",
+          "font_name": "Garamond",
+          "font_size_pt": 14.039999961853027,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-d7814c23",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.7818753594402559,
+        "w": 0.39396629625426105,
+        "h": 0.025334897006434022
+      },
+      "text": "Генеральный директор Кальченко Т.А.",
+      "role": "title",
+      "confidence": 1.0,
+      "font_size_pt": 18.959999084472656,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Генеральный директор Кальченко Т.А.",
+          "font_name": "Garamond",
+          "font_size_pt": 14.039999961853027,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 18.959999084472656,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 14.039999961853027,
+          "bold": false
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "b-8fb3ec7d",
+      "page_index": 0,
+      "bbox": {
+        "x": 0.14295504137240722,
+        "y": 0.7818753594402559,
+        "w": 0.39396629625426105,
+        "h": 0.025334897006434022
+      },
+      "text": "Генеральный директор Кальченко Т.А.",
+      "role": "title",
+      "confidence": 1.0,
+      "font_size_pt": 18.959999084472656,
+      "font_name": "Garamond",
+      "runs": [
+        {
+          "text": "Генеральный директор Кальченко Т.А.",
+          "font_name": "Garamond",
+          "font_size_pt": 14.039999961853027,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 18.959999084472656,
+          "bold": false
+        },
+        {
+          "text": " ",
+          "font_name": "Garamond",
+          "font_size_pt": 14.039999961853027,
+          "bold": false
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "engine": "pymupdf-native",
+    "engine_version": "1.27.2.3",
+    "created_at": "2026-06-09T16:01:20.192045+00:00",
+    "warnings": [
+      "native PDF: 71 positioned lines with PDF fonts (no OCR)"
+    ]
+  }
+}
