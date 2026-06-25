@@ -39,10 +39,10 @@ select {
 .app {
   min-height: 100vh;
   padding:
-    max(28px, env(safe-area-inset-top))
-    max(28px, env(safe-area-inset-right))
-    max(28px, env(safe-area-inset-bottom))
-    max(28px, env(safe-area-inset-left));
+    max(36px, env(safe-area-inset-top))
+    max(32px, env(safe-area-inset-right))
+    max(48px, env(safe-area-inset-bottom))
+    max(32px, env(safe-area-inset-left));
 }
 
 .workspace {
@@ -50,17 +50,18 @@ select {
   margin: 0 auto;
 }
 
+/* ─── Nav tabs ───────────────────────────────────────────── */
 .mode-tabs {
   position: absolute;
   z-index: 4;
-  top: 22px;
-  right: 24px;
+  top: 24px;
+  right: 28px;
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .mode-tab {
-  padding: 8px 14px;
+  padding: 9px 16px;
   border-radius: 999px;
   border: 1px solid var(--line);
   text-decoration: none;
@@ -68,6 +69,7 @@ select {
   font-size: 14px;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.92);
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .mode-tab.active {
@@ -75,6 +77,7 @@ select {
   border-color: var(--green-dark);
 }
 
+/* ─── Topbar / Hero ──────────────────────────────────────── */
 .topbar {
   position: relative;
   display: grid;
@@ -82,8 +85,8 @@ select {
   align-items: center;
   gap: 36px;
   min-height: 300px;
-  margin-bottom: 22px;
-  padding: 42px 48px;
+  margin-bottom: 28px;
+  padding: 48px 52px;
   overflow: hidden;
   border: 1px solid rgba(21, 21, 21, 0.08);
   border-radius: 34px;
@@ -108,13 +111,13 @@ select {
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 24px;
 }
 
 .brand-mark {
   display: block;
-  width: 86px;
-  height: 86px;
+  width: 88px;
+  height: 88px;
   flex: 0 0 auto;
   border-radius: 24px;
   box-shadow: 0 18px 42px rgba(40, 180, 107, 0.2);
@@ -170,30 +173,32 @@ p {
   white-space: nowrap;
 }
 
-/* File info chip (shown after file selection) */
+/* ─── File info chip ─────────────────────────────────────── */
 .file-info-chip {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: #f3f8f4;
   border: 1.5px solid #c8e6cc;
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
 }
-.file-info-chip__icon { font-size: 22px; flex-shrink: 0; }
+
+.file-info-chip__icon { font-size: 24px; flex-shrink: 0; }
 .file-info-chip__body { flex: 1; min-width: 0; }
-.file-info-chip__name { display: block; font-size: 14px; font-weight: 700; color: #151515; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.file-info-chip__meta { display: block; font-size: 12px; color: #62666b; margin-top: 2px; }
-.file-info-chip__clear { background: none; border: none; cursor: pointer; color: #62666b; font-size: 16px; padding: 4px 6px; border-radius: 6px; transition: color 0.15s; }
+.file-info-chip__name { display: block; font-size: 15px; font-weight: 700; color: #151515; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-info-chip__meta { display: block; font-size: 13px; color: #62666b; margin-top: 3px; }
+.file-info-chip__clear { background: none; border: none; cursor: pointer; color: #62666b; font-size: 17px; padding: 5px 8px; border-radius: 7px; transition: color 0.15s; }
 .file-info-chip__clear:hover { color: #151515; }
 
+/* ─── Drop zone ──────────────────────────────────────────── */
 .drop-zone {
   display: grid;
   place-items: center;
-  gap: 8px;
-  min-height: 170px;
-  padding: 30px;
+  gap: 10px;
+  min-height: 220px;
+  padding: 40px 32px;
   border: 2px dashed rgba(40, 180, 107, 0.42);
   border-radius: 28px;
   background: linear-gradient(180deg, #ffffff, var(--soft-green));
@@ -213,7 +218,7 @@ p {
   border-color: var(--green-dark);
   background: #f1fff5;
   box-shadow: 0 22px 70px rgba(40, 180, 107, 0.14);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .drop-zone input {
@@ -225,7 +230,7 @@ p {
 .drop-title {
   display: block;
   color: var(--ink);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
 }
 
@@ -240,8 +245,8 @@ p {
 .selected-file {
   display: block;
   max-width: 100%;
-  margin-top: 14px;
-  padding: 12px 16px;
+  margin-top: 16px;
+  padding: 12px 20px;
   border: 1px solid rgba(40, 180, 107, 0.28);
   border-radius: 999px;
   background: #eaffee;
@@ -251,35 +256,33 @@ p {
   overflow-wrap: anywhere;
 }
 
-.selected-file[hidden] {
-  display: none;
-}
+.selected-file[hidden] { display: none; }
 
 .change-files-button {
   display: inline-grid;
   place-items: center;
-  min-height: 46px;
-  margin-top: 6px;
-  padding: 10px 18px;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 10px 20px;
   border: 1px solid rgba(40, 180, 107, 0.32);
   border-radius: 18px;
   background: #ffffff;
   color: var(--ink);
   font-size: 14px;
   font-weight: 900;
+  cursor: pointer;
 }
 
-.change-files-button[hidden] {
-  display: none;
-}
+.change-files-button[hidden] { display: none; }
 
+/* ─── Controls ───────────────────────────────────────────── */
 .controls {
   display: grid;
   grid-template-columns: minmax(150px, 0.5fr) minmax(220px, 0.7fr) minmax(520px, auto);
   gap: 18px;
   align-items: end;
-  margin: 20px 0;
-  padding: 20px;
+  margin: 24px 0;
+  padding: 24px;
   border: 1px solid rgba(21, 21, 21, 0.08);
   border-radius: 28px;
   background: #ffffff;
@@ -324,7 +327,7 @@ button {
 }
 
 button:not(:disabled):hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(21, 21, 21, 0.1);
 }
 
@@ -364,11 +367,12 @@ button:disabled {
   gap: 10px;
 }
 
+/* ─── Status panel ───────────────────────────────────────── */
 .status-panel {
   display: grid;
-  gap: 9px;
-  margin-bottom: 20px;
-  padding: 18px 20px;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 20px 24px;
   border: 1px solid rgba(21, 21, 21, 0.06);
   border-radius: 28px;
   background: var(--sky);
@@ -382,10 +386,11 @@ progress {
   accent-color: var(--green);
 }
 
+/* ─── Preview grid ───────────────────────────────────────── */
 .preview-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 18px;
 }
 
 .page-card {
@@ -394,19 +399,17 @@ progress {
   border-radius: 26px;
   background: #ffffff;
   box-shadow: 0 16px 48px rgba(21, 21, 21, 0.06);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 
-.page-card:nth-child(3n + 1) {
-  border-color: rgba(40, 180, 107, 0.35);
+.page-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 56px rgba(21, 21, 21, 0.1);
 }
 
-.page-card:nth-child(3n + 2) {
-  border-color: rgba(137, 91, 187, 0.25);
-}
-
-.page-card:nth-child(3n + 3) {
-  border-color: rgba(40, 169, 207, 0.28);
-}
+.page-card:nth-child(3n + 1) { border-color: rgba(40, 180, 107, 0.35); }
+.page-card:nth-child(3n + 2) { border-color: rgba(137, 91, 187, 0.25); }
+.page-card:nth-child(3n + 3) { border-color: rgba(40, 169, 207, 0.28); }
 
 .page-card img {
   display: block;
@@ -419,7 +422,7 @@ progress {
 .page-card figcaption {
   display: grid;
   gap: 2px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   color: var(--muted);
   font-size: 14px;
 }
@@ -435,6 +438,7 @@ progress {
   font-variant-numeric: tabular-nums;
 }
 
+/* ─── Responsive ─────────────────────────────────────────── */
 @media (max-width: 860px) {
   .app {
     padding:
@@ -448,7 +452,7 @@ progress {
     grid-template-columns: 1fr;
     gap: 22px;
     min-height: auto;
-    padding: 24px;
+    padding: 28px 24px;
   }
 
   .brand-lockup {
@@ -461,21 +465,11 @@ progress {
     height: 68px;
   }
 
-  h1 {
-    font-size: 42px;
-  }
+  h1 { font-size: 42px; }
+  p { font-size: 16px; }
 
-  p {
-    font-size: 16px;
-  }
-
-  .hero-visual {
-    min-height: 210px;
-  }
-
-  .hero-image {
-    width: min(480px, 128%);
-  }
+  .hero-visual { min-height: 210px; }
+  .hero-image { width: min(480px, 128%); }
 
   .hero-note {
     right: 0;
@@ -484,9 +478,7 @@ progress {
     font-size: 13px;
   }
 
-  .controls {
-    grid-template-columns: 1fr;
-  }
+  .controls { grid-template-columns: 1fr; }
 
   .action-row {
     grid-template-columns: minmax(0, 1fr) minmax(104px, auto);
@@ -497,4 +489,12 @@ progress {
     padding-inline: 10px;
     white-space: normal;
   }
+
+  .drop-zone { min-height: 190px; padding: 28px 20px; }
+  .preview-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .drop-title { font-size: 18px; }
+  button { width: 100%; }
 }
