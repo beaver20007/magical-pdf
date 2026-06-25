@@ -655,10 +655,13 @@ const TOOLS = {
         </div>
         <div class="panel-row">
           <label>Положение</label>
-          <div class="angle-row">
-            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-center" checked /><span>↓ Центр</span></label>
-            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-right" /><span>↓ Справа</span></label>
-            <label class="angle-opt"><input type="radio" name="pnPos" value="top-center" /><span>↑ Центр</span></label>
+          <div class="pos-grid">
+            <label class="angle-opt"><input type="radio" name="pnPos" value="top-left"     /><span>↖ Сверху слева</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="top-center"   /><span>↑ Сверху по центру</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="top-right"    /><span>↗ Сверху справа</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-left"  /><span>↙ Снизу слева</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-center" checked /><span>↓ Снизу по центру</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-right" /><span>↘ Снизу справа</span></label>
           </div>
         </div>
         <div class="panel-row">
@@ -699,9 +702,12 @@ const TOOLS = {
         const label = fmt.replace("{n}", String(start + i)).replace("{total}", String(total));
         const tw = font.widthOfTextAtSize(label, fontSize);
         let x, y;
-        if (pos === "bottom-center") { x = (width - tw) / 2; y = margin; }
-        else if (pos === "bottom-right") { x = width - tw - margin; y = margin; }
-        else { x = (width - tw) / 2; y = height - margin - fontSize; }
+        const isTop = pos.startsWith("top");
+        const align = pos.endsWith("left") ? "left" : pos.endsWith("right") ? "right" : "center";
+        y = isTop ? height - margin - fontSize : margin;
+        if (align === "left")        x = margin;
+        else if (align === "right")  x = width - tw - margin;
+        else                         x = (width - tw) / 2;
         page.drawText(label, { x, y, size: fontSize, font, color: rgb(0.35, 0.35, 0.35) });
         if (i % 5 === 0) setStatus(`Страница ${i + 1} / ${total}…`, 0.3 + 0.6 * (i / total));
       }

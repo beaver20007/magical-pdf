@@ -190,6 +190,8 @@ input:focus, select:focus { border-color: #8b6fcf; }
 
 /* Angle / position radio buttons */
 .angle-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+/* 3-column grid for page-number position picker */
+.pos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
 .angle-opt {
   display: flex; align-items: center; gap: 6px;
   background: #f3f4f3; border: 1.5px solid var(--line);
