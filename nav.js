@@ -36,6 +36,10 @@ export function extractHref() {
   return new URL("extract/", siteRoot()).href;
 }
 
+export function toolsHref() {
+  return new URL("tools/", siteRoot()).href;
+}
+
 function normalizeApiBase(value) {
   const trimmed = (value || "").trim().replace(/\/$/, "");
   if (!trimmed) {
@@ -83,8 +87,11 @@ export function isPublicExtractBeta() {
 export function initModeTabs({ active }) {
   const protect = document.querySelector("#tabProtect");
   const extract = document.querySelector("#tabExtract");
+  const tools   = document.querySelector("#tabTools");
   if (protect) protect.href = protectHref();
   if (extract) extract.href = extractHref();
+  if (tools)   tools.href   = toolsHref();
   if (protect) protect.classList.toggle("active", active === "protect");
   if (extract) extract.classList.toggle("active", active === "extract");
+  if (tools)   tools.classList.toggle("active", active === "tools");
 }

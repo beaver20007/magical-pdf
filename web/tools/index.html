@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Magical PDF — Инструменты</title>
+    <link rel="icon" href="../../public/app-icon.png" type="image/png" />
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Magical PDF · Tools</p>
+          <h1>Инструменты PDF</h1>
+          <p class="subtitle">Объединение, разделение, поворот и другие операции прямо в браузере. Без облака.</p>
+        </div>
+        <nav class="mode-tabs" aria-label="Режим">
+          <a id="tabProtect" class="mode-tab" href="../../">Защитить</a>
+          <a id="tabExtract" class="mode-tab" href="../extract/">Распознать</a>
+          <span id="tabTools" class="mode-tab active">Инструменты</span>
+        </nav>
+      </header>
+
+      <!-- Tool grid -->
+      <div class="tool-grid" id="toolGrid">
+        <button class="tool-card" data-tool="merge">
+          <span class="tool-icon">⊕</span><span class="tool-name">Объединить</span>
+          <span class="tool-desc">Несколько PDF → один</span>
+        </button>
+        <button class="tool-card" data-tool="split">
+          <span class="tool-icon">✂</span><span class="tool-name">Разделить</span>
+          <span class="tool-desc">PDF → страницы (ZIP)</span>
+        </button>
+        <button class="tool-card" data-tool="compress">
+          <span class="tool-icon">⊟</span><span class="tool-name">Сжать</span>
+          <span class="tool-desc">Убрать лишние данные</span>
+        </button>
+        <button class="tool-card" data-tool="rotate">
+          <span class="tool-icon">↻</span><span class="tool-name">Повернуть</span>
+          <span class="tool-desc">На 90 / 180 / 270°</span>
+        </button>
+        <button class="tool-card" data-tool="img2pdf">
+          <span class="tool-icon">🖼</span><span class="tool-name">Фото → PDF</span>
+          <span class="tool-desc">JPEG/PNG → PDF</span>
+        </button>
+        <button class="tool-card" data-tool="password">
+          <span class="tool-icon">🔒</span><span class="tool-name">Пароль</span>
+          <span class="tool-desc">Защитить паролем</span>
+        </button>
+        <button class="tool-card" data-tool="metadata">
+          <span class="tool-icon">ℹ</span><span class="tool-name">Метаданные</span>
+          <span class="tool-desc">Название, автор, тема</span>
+        </button>
+        <button class="tool-card" data-tool="pagenums">
+          <span class="tool-icon">#</span><span class="tool-name">Номера страниц</span>
+          <span class="tool-desc">Добавить внизу страниц</span>
+        </button>
+        <button class="tool-card" data-tool="watermark">
+          <span class="tool-icon">⌇</span><span class="tool-name">Водяной знак</span>
+          <span class="tool-desc">Диагональный текст</span>
+        </button>
+      </div>
+
+      <!-- Dynamic tool panel -->
+      <section id="toolPanel" class="tool-panel" hidden></section>
+
+      <!-- Status + result -->
+      <section class="status" aria-live="polite">
+        <div id="statusText"></div>
+        <progress id="progressBar" value="0" max="100" hidden></progress>
+      </section>
+      <section id="downloads" class="downloads" hidden>
+        <a id="downloadLink" class="download" href="#" download>Скачать</a>
+      </section>
+      <p id="errorBox" class="error" hidden></p>
+    </main>
+
+    <script src="../../vendor/pdf-lib.min.js"></script>
+    <script src="../../vendor/jszip.min.js"></script>
+    <script src="ui.js" type="module"></script>
+  </body>
+</html>
