@@ -148,6 +148,62 @@ input:focus, select:focus { border-color: #8b6fcf; }
 
 .field-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
+/* File preview chip */
+.file-preview-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.file-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: #f3f8f4; border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 14px;
+}
+.file-chip__icon { font-size: 20px; flex-shrink: 0; }
+.file-chip__name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.file-chip__meta { font-size: 12px; color: var(--muted); }
+.preview-loading { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+
+/* Image thumbnails for img2pdf */
+.img-thumb-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+}
+.img-thumb {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 90px;
+}
+.img-thumb img {
+  width: 90px; height: 70px; object-fit: cover;
+  border-radius: 6px; border: 1.5px solid var(--line);
+}
+.img-thumb span { font-size: 10px; color: var(--muted); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Angle / position radio buttons */
+.angle-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.angle-opt {
+  display: flex; align-items: center; gap: 6px;
+  background: #f3f4f3; border: 1.5px solid var(--line);
+  border-radius: 8px; padding: 7px 14px;
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: border-color 0.15s, background 0.15s;
+}
+.angle-opt input[type="radio"] { display: none; }
+.angle-opt:has(input:checked) { border-color: #8b6fcf; background: #faf8ff; }
+
+/* Checkboxes */
+.checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.checkbox-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: #8b6fcf; }
+
+/* Range sliders */
+input[type="range"] {
+  width: 100%; accent-color: #8b6fcf; height: 4px; margin-top: 6px;
+  background: var(--line); border: none; border-radius: 2px; padding: 0; cursor: pointer;
+}
+.range-val { font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }
+
+/* Label hint */
+.label-hint { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+/* Tool fields wrapper */
+.tool-fields { display: flex; flex-direction: column; gap: 14px; }
+
 .run-btn {
   background: var(--amber);
   color: var(--ink);

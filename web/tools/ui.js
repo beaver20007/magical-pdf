@@ -1,5 +1,6 @@
 /**
  * Phase 6 — 9 PDF quick-wins via pdf-lib (client-side, no server).
+ * Includes: file preview, pre-processing options, step-by-step progress.
  */
 import { initModeTabs } from "../../nav.js";
 
@@ -17,10 +18,26 @@ const downloads   = document.querySelector("#downloads");
 const downloadLink = document.querySelector("#downloadLink");
 const errorBox    = document.querySelector("#errorBox");
 
+// ── State ─────────────────────────────────────────────────────────────────────
+let activeTool = null;
+
 // ── helpers ───────────────────────────────────────────────────────────────────
-function setStatus(msg) { statusText.textContent = msg; }
+function setStatus(msg, progress) {
+  statusText.textContent = msg;
+  if (progress != null) {
+    progressBar.hidden = false;
+    progressBar.value = Math.round(progress * 100);
+  }
+}
 function setError(msg)  { errorBox.textContent = msg; errorBox.hidden = !msg; }
-function setProgress(v) { progressBar.hidden = v == null; if (v != null) progressBar.value = Math.round(v * 100); }
+
+function resetOutput() {
+  downloads.hidden = true;
+  setError("");
+  progressBar.hidden = true;
+  progressBar.value = 0;
+  setStatus("");
+}
 
 function showDownload(bytes, filename) {
   const blob = new Blob([bytes], { type: "application/pdf" });
@@ -46,372 +63,68 @@ async function readFile(file) {
   });
 }
 
-function resetOutput() {
-  downloads.hidden = true;
-  setError("");
-  setProgress(null);
-  setStatus("");
+function fmtSize(bytes) {
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} МБ`;
 }
 
-// ── Tool definitions ──────────────────────────────────────────────────────────
-const TOOLS = {
-  merge: {
-    name: "Объединить PDF",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файлы (выберите несколько)</label>
-          <input type="file" id="mergeFiles" accept=".pdf,application/pdf" multiple />
-        </div>
-        <button class="run-btn" id="runBtn">Объединить</button>`;
-    },
-    async run() {
-      const files = Array.from(document.querySelector("#mergeFiles").files);
-      if (files.length < 2) throw new Error("Выберите минимум 2 PDF файла.");
-      const merged = await PDFDocument.create();
-      for (let i = 0; i < files.length; i++) {
-        setStatus(`Добавляю ${files[i].name}…`);
-        setProgress(i / files.length);
-        const buf = await readFile(files[i]);
-        const src = await PDFDocument.load(buf);
-        const pages = await merged.copyPages(src, src.getPageIndices());
-        pages.forEach(p => merged.addPage(p));
-      }
-      setProgress(0.95);
-      const bytes = await merged.save();
-      showDownload(bytes, "merged.pdf");
-      setStatus(`Готово! Объединено ${files.length} файлов, ${merged.getPageCount()} стр.`);
-    },
-  },
+/** Reads a PDF and returns { pageCount, title, author } */
+async function pdfInfo(file) {
+  try {
+    const buf = await readFile(file);
+    const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
+    return {
+      pageCount: doc.getPageCount(),
+      title: doc.getTitle() || "",
+      author: doc.getAuthor() || "",
+      subject: doc.getSubject() || "",
+      keywords: (doc.getKeywords() || []).join(", "),
+    };
+  } catch {
+    return { pageCount: "?", title: "", author: "", subject: "", keywords: "" };
+  }
+}
 
-  split: {
-    name: "Разделить PDF",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="splitFile" accept=".pdf,application/pdf" />
-        </div>
-        <button class="run-btn" id="runBtn">Разделить на страницы</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#splitFile").files[0];
-      if (!file) throw new Error("Выберите PDF файл.");
-      const buf = await readFile(file);
-      const src = await PDFDocument.load(buf);
-      const count = src.getPageCount();
-      const zip = new JSZip();
-      for (let i = 0; i < count; i++) {
-        setStatus(`Страница ${i + 1} / ${count}…`);
-        setProgress(i / count);
-        const single = await PDFDocument.create();
-        const [page] = await single.copyPages(src, [i]);
-        single.addPage(page);
-        const bytes = await single.save();
-        zip.file(`page-${String(i + 1).padStart(3, "0")}.pdf`, bytes);
-      }
-      setProgress(0.97);
-      const blob = await zip.generateAsync({ type: "blob" });
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showZipDownload(blob, `${stem}-pages.zip`);
-      setStatus(`Готово! ${count} страниц в ZIP.`);
-    },
-  },
+/** Renders a single PDF page to a canvas data URL for thumbnail */
+async function pdfThumbnail(file, pageIndex = 0, maxW = 120) {
+  if (!window.pdfjsLib) return null;
+  try {
+    const buf = await readFile(file);
+    const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+    const page = await pdf.getPage(pageIndex + 1);
+    const vp = page.getViewport({ scale: 1 });
+    const scale = maxW / vp.width;
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+    return canvas.toDataURL("image/jpeg", 0.7);
+  } catch {
+    return null;
+  }
+}
 
-  compress: {
-    name: "Сжать PDF",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="compressFile" accept=".pdf,application/pdf" />
-          <p class="field-hint">Удаляет метаданные и неиспользуемые объекты. Для изображений используйте Защитить (Protect) с низким качеством.</p>
-        </div>
-        <button class="run-btn" id="runBtn">Сжать</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#compressFile").files[0];
-      if (!file) throw new Error("Выберите PDF файл.");
-      setStatus("Загрузка…");
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
-      doc.setTitle("");
-      doc.setAuthor("");
-      doc.setSubject("");
-      doc.setKeywords([]);
-      doc.setProducer("");
-      doc.setCreator("");
-      setProgress(0.8);
-      const bytes = await doc.save({ useObjectStreams: true });
-      const origKb = (file.size / 1024).toFixed(0);
-      const newKb  = (bytes.byteLength / 1024).toFixed(0);
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-compressed.pdf`);
-      setStatus(`Готово! ${origKb} КБ → ${newKb} КБ.`);
-    },
-  },
+/** Build a "file info" chip: icon + name + size + page count */
+function fileChip(name, size, pageCount) {
+  return `<div class="file-chip">
+    <span class="file-chip__icon">📄</span>
+    <div>
+      <div class="file-chip__name">${name}</div>
+      <div class="file-chip__meta">${fmtSize(size)}${pageCount != null ? ` · ${pageCount} стр.` : ""}</div>
+    </div>
+  </div>`;
+}
 
-  rotate: {
-    name: "Повернуть страницы",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="rotateFile" accept=".pdf,application/pdf" />
-        </div>
-        <div class="panel-row">
-          <label>Угол поворота</label>
-          <select id="rotateAngle">
-            <option value="90">90° по часовой</option>
-            <option value="180">180°</option>
-            <option value="270">270° (90° против часовой)</option>
-          </select>
-        </div>
-        <div class="panel-row">
-          <label>Страницы</label>
-          <input type="text" id="rotatePages" placeholder="Все или 1, 3-5, 7" />
-        </div>
-        <button class="run-btn" id="runBtn">Повернуть</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#rotateFile").files[0];
-      if (!file) throw new Error("Выберите PDF файл.");
-      const angle = parseInt(document.querySelector("#rotateAngle").value, 10);
-      const pagesRaw = document.querySelector("#rotatePages").value.trim();
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf);
-      const count = doc.getPageCount();
-      const indices = pagesRaw ? parsePageRange(pagesRaw, count) : Array.from({ length: count }, (_, i) => i);
-      for (const i of indices) {
-        const page = doc.getPage(i);
-        page.setRotation(degrees((page.getRotation().angle + angle) % 360));
-      }
-      const bytes = await doc.save();
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-rotated.pdf`);
-      setStatus(`Повёрнуто ${indices.length} стр. на ${angle}°.`);
-    },
-  },
-
-  img2pdf: {
-    name: "Фото → PDF",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>Изображения JPEG / PNG (можно несколько)</label>
-          <input type="file" id="imgFiles" accept="image/jpeg,image/png" multiple />
-          <p class="field-hint">Каждое изображение — отдельная страница. Порядок — как в списке файлов.</p>
-        </div>
-        <button class="run-btn" id="runBtn">Создать PDF</button>`;
-    },
-    async run() {
-      const files = Array.from(document.querySelector("#imgFiles").files);
-      if (!files.length) throw new Error("Выберите хотя бы одно изображение.");
-      const doc = await PDFDocument.create();
-      for (let i = 0; i < files.length; i++) {
-        setStatus(`Добавляю ${files[i].name}…`);
-        setProgress(i / files.length);
-        const buf = await readFile(files[i]);
-        const isJpeg = files[i].type === "image/jpeg";
-        const img = isJpeg ? await doc.embedJpg(buf) : await doc.embedPng(buf);
-        const page = doc.addPage([img.width, img.height]);
-        page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-      }
-      const bytes = await doc.save();
-      showDownload(bytes, "images.pdf");
-      setStatus(`Готово! ${files.length} изображений → PDF.`);
-    },
-  },
-
-  password: {
-    name: "Защита паролем",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="passFile" accept=".pdf,application/pdf" />
-        </div>
-        <div class="panel-row">
-          <label>Пароль пользователя (открыть)</label>
-          <input type="password" id="userPass" placeholder="Введите пароль…" autocomplete="new-password" />
-        </div>
-        <div class="panel-row">
-          <label>Пароль владельца (редактирование)</label>
-          <input type="password" id="ownerPass" placeholder="Оставьте пустым — будет = паролю пользователя" autocomplete="new-password" />
-        </div>
-        <button class="run-btn" id="runBtn">Зашифровать</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#passFile").files[0];
-      const userPass  = document.querySelector("#userPass").value;
-      const ownerPass = document.querySelector("#ownerPass").value || userPass;
-      if (!file) throw new Error("Выберите PDF файл.");
-      if (!userPass) throw new Error("Введите пароль.");
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf);
-      const bytes = await doc.save({
-        userPassword: userPass,
-        ownerPassword: ownerPass,
-        permissions: {
-          printing: "highResolution",
-          modifying: false,
-          copying: false,
-          annotating: false,
-          fillingForms: false,
-          contentAccessibility: true,
-          documentAssembly: false,
-        },
-      });
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-protected.pdf`);
-      setStatus("Готово! PDF зашифрован.");
-    },
-  },
-
-  metadata: {
-    name: "Метаданные",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="metaFile" accept=".pdf,application/pdf" />
-        </div>
-        <div class="panel-row">
-          <label>Название</label>
-          <input type="text" id="metaTitle" placeholder="Название документа" />
-        </div>
-        <div class="panel-row">
-          <label>Автор</label>
-          <input type="text" id="metaAuthor" placeholder="Имя автора" />
-        </div>
-        <div class="panel-row">
-          <label>Тема</label>
-          <input type="text" id="metaSubject" placeholder="Тема / описание" />
-        </div>
-        <div class="panel-row">
-          <label>Ключевые слова</label>
-          <input type="text" id="metaKeywords" placeholder="слово1, слово2" />
-        </div>
-        <button class="run-btn" id="runBtn">Применить</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#metaFile").files[0];
-      if (!file) throw new Error("Выберите PDF файл.");
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf);
-      const title    = document.querySelector("#metaTitle").value.trim();
-      const author   = document.querySelector("#metaAuthor").value.trim();
-      const subject  = document.querySelector("#metaSubject").value.trim();
-      const keywords = document.querySelector("#metaKeywords").value.trim();
-      if (title)    doc.setTitle(title);
-      if (author)   doc.setAuthor(author);
-      if (subject)  doc.setSubject(subject);
-      if (keywords) doc.setKeywords(keywords.split(",").map(s => s.trim()));
-      const bytes = await doc.save();
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-meta.pdf`);
-      setStatus("Метаданные обновлены.");
-    },
-  },
-
-  pagenums: {
-    name: "Номера страниц",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="pnFile" accept=".pdf,application/pdf" />
-        </div>
-        <div class="panel-row">
-          <label>Начать с номера</label>
-          <input type="number" id="pnStart" value="1" min="1" />
-        </div>
-        <div class="panel-row">
-          <label>Положение</label>
-          <select id="pnPos">
-            <option value="bottom-center">Снизу по центру</option>
-            <option value="bottom-right">Снизу справа</option>
-            <option value="top-center">Сверху по центру</option>
-          </select>
-        </div>
-        <button class="run-btn" id="runBtn">Добавить номера</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#pnFile").files[0];
-      if (!file) throw new Error("Выберите PDF файл.");
-      const start = parseInt(document.querySelector("#pnStart").value, 10) || 1;
-      const pos   = document.querySelector("#pnPos").value;
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf);
-      const font = await doc.embedFont(StandardFonts.Helvetica);
-      const fontSize = 11;
-      const margin = 24;
-      for (let i = 0; i < doc.getPageCount(); i++) {
-        const page = doc.getPage(i);
-        const { width, height } = page.getSize();
-        const label = String(start + i);
-        const tw = font.widthOfTextAtSize(label, fontSize);
-        let x, y;
-        if (pos === "bottom-center") { x = (width - tw) / 2; y = margin; }
-        else if (pos === "bottom-right") { x = width - tw - margin; y = margin; }
-        else { x = (width - tw) / 2; y = height - margin - fontSize; }
-        page.drawText(label, { x, y, size: fontSize, font, color: rgb(0.3, 0.3, 0.3) });
-      }
-      const bytes = await doc.save();
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-numbered.pdf`);
-      setStatus(`Добавлены номера страниц (${start}–${start + doc.getPageCount() - 1}).`);
-    },
-  },
-
-  watermark: {
-    name: "Водяной знак",
-    render() {
-      return `
-        <div class="panel-row">
-          <label>PDF файл</label>
-          <input type="file" id="wmFile" accept=".pdf,application/pdf" />
-        </div>
-        <div class="panel-row">
-          <label>Текст водяного знака</label>
-          <input type="text" id="wmText" placeholder="КОНФИДЕНЦИАЛЬНО" value="КОНФИДЕНЦИАЛЬНО" />
-        </div>
-        <div class="panel-row">
-          <label>Прозрачность (0.05 – 0.5)</label>
-          <input type="number" id="wmOpacity" value="0.12" min="0.05" max="0.5" step="0.01" />
-        </div>
-        <button class="run-btn" id="runBtn">Добавить водяной знак</button>`;
-    },
-    async run() {
-      const file = document.querySelector("#wmFile").files[0];
-      if (!file) throw new Error("Выберите PDF файл.");
-      const text    = document.querySelector("#wmText").value.trim() || "WATERMARK";
-      const opacity = parseFloat(document.querySelector("#wmOpacity").value) || 0.12;
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf);
-      const font = await doc.embedFont(StandardFonts.HelveticaBold);
-      const fontSize = 52;
-      for (let i = 0; i < doc.getPageCount(); i++) {
-        const page = doc.getPage(i);
-        const { width, height } = page.getSize();
-        const tw = font.widthOfTextAtSize(text, fontSize);
-        page.drawText(text, {
-          x: (width - tw) / 2,
-          y: (height - fontSize) / 2,
-          size: fontSize,
-          font,
-          color: rgb(0.4, 0.4, 0.4),
-          opacity,
-          rotate: degrees(35),
-        });
-      }
-      const bytes = await doc.save();
-      const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-watermarked.pdf`);
-      setStatus("Водяной знак добавлен на все страницы.");
-    },
-  },
-};
+/** Build a preview grid of multiple files */
+async function buildFilePreview(files, showPages = true) {
+  const items = await Promise.all(Array.from(files).map(async f => {
+    const pages = showPages ? (await pdfInfo(f)).pageCount : null;
+    return fileChip(f.name, f.size, pages);
+  }));
+  return `<div class="file-preview-list">${items.join("")}</div>`;
+}
 
 // ── Page range parser ─────────────────────────────────────────────────────────
 function parsePageRange(raw, total) {
@@ -426,33 +139,620 @@ function parsePageRange(raw, total) {
   return [...indices].sort((a, b) => a - b);
 }
 
-// ── Tool activation ───────────────────────────────────────────────────────────
-let activeTool = null;
+// ── Tool definitions ──────────────────────────────────────────────────────────
+const TOOLS = {
 
+  merge: {
+    name: "Объединить PDF",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файлы <span class="label-hint">(выберите 2 или больше)</span></label>
+          <input type="file" id="mergeFiles" accept=".pdf,application/pdf" multiple />
+          <div id="mergePreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Порядок страниц</label>
+          <select id="mergeOrder">
+            <option value="asc">В порядке выбора файлов</option>
+            <option value="desc">В обратном порядке</option>
+          </select>
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Объединить</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#mergeFiles").addEventListener("change", async e => {
+        const files = Array.from(e.target.files);
+        const runBtn = document.querySelector("#runBtn");
+        if (files.length < 2) { runBtn.disabled = true; return; }
+        document.querySelector("#mergePreview").innerHTML = "<p class='preview-loading'>Подсчёт страниц…</p>";
+        const html = await buildFilePreview(files, true);
+        document.querySelector("#mergePreview").innerHTML = html;
+        runBtn.disabled = false;
+      });
+    },
+    async run() {
+      let files = Array.from(document.querySelector("#mergeFiles").files);
+      if (files.length < 2) throw new Error("Выберите минимум 2 PDF файла.");
+      if (document.querySelector("#mergeOrder").value === "desc") files = files.reverse();
+      const merged = await PDFDocument.create();
+      for (let i = 0; i < files.length; i++) {
+        setStatus(`Добавляю ${files[i].name}… (${i + 1}/${files.length})`, (i + 0.5) / files.length);
+        const buf = await readFile(files[i]);
+        const src = await PDFDocument.load(buf);
+        const pages = await merged.copyPages(src, src.getPageIndices());
+        pages.forEach(p => merged.addPage(p));
+      }
+      setStatus("Сохранение…", 0.95);
+      const bytes = await merged.save();
+      showDownload(bytes, "merged.pdf");
+      setStatus(`Готово! Объединено ${files.length} файлов, ${merged.getPageCount()} стр.`, 1);
+    },
+  },
+
+  split: {
+    name: "Разделить PDF",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="splitFile" accept=".pdf,application/pdf" />
+          <div id="splitPreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Режим разделения</label>
+          <select id="splitMode">
+            <option value="pages">Каждая страница — отдельный файл (ZIP)</option>
+            <option value="range">Диапазон страниц (один файл)</option>
+          </select>
+        </div>
+        <div id="splitRangeRow" class="panel-row" hidden>
+          <label>Диапазон страниц <span class="label-hint">напр. 1-3, 7</span></label>
+          <input type="text" id="splitRange" placeholder="1-3, 7, 10-12" />
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Разделить</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#splitFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.querySelector("#splitPreview").innerHTML = "<p class='preview-loading'>Чтение…</p>";
+        const info = await pdfInfo(file);
+        document.querySelector("#splitPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#runBtn").disabled = false;
+      });
+      document.querySelector("#splitMode").addEventListener("change", e => {
+        document.querySelector("#splitRangeRow").hidden = e.target.value !== "range";
+      });
+    },
+    async run() {
+      const file = document.querySelector("#splitFile").files[0];
+      if (!file) throw new Error("Выберите PDF файл.");
+      const mode = document.querySelector("#splitMode").value;
+      const buf = await readFile(file);
+      const src = await PDFDocument.load(buf);
+      const count = src.getPageCount();
+      const stem = file.name.replace(/\.pdf$/i, "");
+
+      if (mode === "range") {
+        const rangeRaw = document.querySelector("#splitRange").value.trim();
+        if (!rangeRaw) throw new Error("Введите диапазон страниц.");
+        const indices = parsePageRange(rangeRaw, count);
+        if (!indices.length) throw new Error("Диапазон не содержит страниц.");
+        setStatus(`Извлечение ${indices.length} стр.…`, 0.3);
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src, indices);
+        pages.forEach(p => out.addPage(p));
+        const bytes = await out.save();
+        showDownload(bytes, `${stem}-range.pdf`);
+        setStatus(`Готово! Извлечено ${indices.length} стр.`, 1);
+      } else {
+        const zip = new JSZip();
+        for (let i = 0; i < count; i++) {
+          setStatus(`Страница ${i + 1} / ${count}…`, i / count);
+          const single = await PDFDocument.create();
+          const [page] = await single.copyPages(src, [i]);
+          single.addPage(page);
+          const bytes = await single.save();
+          zip.file(`${stem}-page-${String(i + 1).padStart(3, "0")}.pdf`, bytes);
+        }
+        setStatus("Создание ZIP…", 0.97);
+        const blob = await zip.generateAsync({ type: "blob" });
+        showZipDownload(blob, `${stem}-pages.zip`);
+        setStatus(`Готово! ${count} страниц → ZIP.`, 1);
+      }
+    },
+  },
+
+  compress: {
+    name: "Сжать PDF",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="compressFile" accept=".pdf,application/pdf" />
+          <div id="compressPreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Уровень оптимизации</label>
+          <select id="compressLevel">
+            <option value="meta">Только метаданные (безопасно)</option>
+            <option value="streams" selected>Метаданные + объектные потоки</option>
+            <option value="full">Максимум (метаданные + потоки + xref)</option>
+          </select>
+          <p class="field-hint">Pdf-lib оптимизирует структуру файла. Для уменьшения изображений используйте «Защитить» с качеством «Низкое».</p>
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Сжать</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#compressFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.querySelector("#compressPreview").innerHTML = "<p class='preview-loading'>Чтение…</p>";
+        const info = await pdfInfo(file);
+        document.querySelector("#compressPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#runBtn").disabled = false;
+      });
+    },
+    async run() {
+      const file = document.querySelector("#compressFile").files[0];
+      if (!file) throw new Error("Выберите PDF файл.");
+      const level = document.querySelector("#compressLevel").value;
+      setStatus("Загрузка файла…", 0.1);
+      const buf = await readFile(file);
+      setStatus("Разбор структуры PDF…", 0.3);
+      const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
+      doc.setTitle(""); doc.setAuthor(""); doc.setSubject("");
+      doc.setKeywords([]); doc.setProducer(""); doc.setCreator("");
+      setStatus("Оптимизация…", 0.7);
+      const saveOpts = {};
+      if (level === "streams" || level === "full") saveOpts.useObjectStreams = true;
+      if (level === "full") saveOpts.addDefaultPage = false;
+      const bytes = await doc.save(saveOpts);
+      const origKb = (file.size / 1024).toFixed(0);
+      const newKb  = (bytes.byteLength / 1024).toFixed(0);
+      const diff   = file.size - bytes.byteLength;
+      const diffStr = diff > 0 ? `−${fmtSize(diff)}` : `+${fmtSize(-diff)}`;
+      const stem = file.name.replace(/\.pdf$/i, "");
+      showDownload(bytes, `${stem}-compressed.pdf`);
+      setStatus(`Готово! ${origKb} КБ → ${newKb} КБ (${diffStr}).`, 1);
+    },
+  },
+
+  rotate: {
+    name: "Повернуть страницы",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="rotateFile" accept=".pdf,application/pdf" />
+          <div id="rotatePreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Угол поворота</label>
+          <div class="angle-row">
+            <label class="angle-opt"><input type="radio" name="rotAngle" value="90" checked /><span>↻ 90°</span></label>
+            <label class="angle-opt"><input type="radio" name="rotAngle" value="180" /><span>↕ 180°</span></label>
+            <label class="angle-opt"><input type="radio" name="rotAngle" value="270" /><span>↺ 270°</span></label>
+          </div>
+        </div>
+        <div class="panel-row">
+          <label>Страницы <span class="label-hint">пусто = все</span></label>
+          <input type="text" id="rotatePages" placeholder="Все или 1, 3-5, 7" />
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Повернуть</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#rotateFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        document.querySelector("#rotatePreview").innerHTML = "<p class='preview-loading'>Чтение…</p>";
+        const info = await pdfInfo(file);
+        document.querySelector("#rotatePreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#runBtn").disabled = false;
+      });
+    },
+    async run() {
+      const file = document.querySelector("#rotateFile").files[0];
+      if (!file) throw new Error("Выберите PDF файл.");
+      const angle = parseInt(document.querySelector("[name='rotAngle']:checked").value, 10);
+      const pagesRaw = document.querySelector("#rotatePages").value.trim();
+      setStatus("Загрузка…", 0.1);
+      const buf = await readFile(file);
+      const doc = await PDFDocument.load(buf);
+      const count = doc.getPageCount();
+      const indices = pagesRaw ? parsePageRange(pagesRaw, count) : Array.from({ length: count }, (_, i) => i);
+      setStatus(`Поворот ${indices.length} стр. на ${angle}°…`, 0.5);
+      for (const i of indices) {
+        const page = doc.getPage(i);
+        page.setRotation(degrees((page.getRotation().angle + angle) % 360));
+      }
+      setStatus("Сохранение…", 0.9);
+      const bytes = await doc.save();
+      const stem = file.name.replace(/\.pdf$/i, "");
+      showDownload(bytes, `${stem}-rotated.pdf`);
+      setStatus(`Готово! Повёрнуто ${indices.length} из ${count} стр. на ${angle}°.`, 1);
+    },
+  },
+
+  img2pdf: {
+    name: "Фото → PDF",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>Изображения JPEG / PNG <span class="label-hint">(можно несколько)</span></label>
+          <input type="file" id="imgFiles" accept="image/jpeg,image/png" multiple />
+          <div id="imgPreview" class="img-thumb-grid"></div>
+        </div>
+        <div class="panel-row">
+          <label>Размер страницы</label>
+          <select id="imgPageSize">
+            <option value="image">По размеру изображения</option>
+            <option value="a4">A4 портрет (595×842 pt)</option>
+            <option value="a4l">A4 альбом (842×595 pt)</option>
+          </select>
+        </div>
+        <div class="panel-row">
+          <label>Качество JPEG при встраивании</label>
+          <select id="imgQuality">
+            <option value="original" selected>Оригинал (без перекодирования)</option>
+          </select>
+          <p class="field-hint">pdf-lib встраивает изображения без потерь. Для сжатия уменьшите размер изображений до загрузки.</p>
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Создать PDF</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#imgFiles").addEventListener("change", e => {
+        const files = Array.from(e.target.files);
+        const grid = document.querySelector("#imgPreview");
+        grid.innerHTML = "";
+        if (!files.length) { document.querySelector("#runBtn").disabled = true; return; }
+        files.forEach(f => {
+          const url = URL.createObjectURL(f);
+          const wrap = document.createElement("div");
+          wrap.className = "img-thumb";
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = f.name;
+          const lbl = document.createElement("span");
+          lbl.textContent = f.name.replace(/\.[^.]+$/, "");
+          wrap.appendChild(img);
+          wrap.appendChild(lbl);
+          grid.appendChild(wrap);
+        });
+        document.querySelector("#runBtn").disabled = false;
+      });
+    },
+    async run() {
+      const files = Array.from(document.querySelector("#imgFiles").files);
+      if (!files.length) throw new Error("Выберите хотя бы одно изображение.");
+      const pageSize = document.querySelector("#imgPageSize").value;
+      const doc = await PDFDocument.create();
+      const A4_W = 595.28, A4_H = 841.89;
+      for (let i = 0; i < files.length; i++) {
+        setStatus(`Добавляю ${files[i].name}… (${i + 1}/${files.length})`, (i + 0.5) / files.length);
+        const buf = await readFile(files[i]);
+        const isJpeg = files[i].type === "image/jpeg";
+        const img = isJpeg ? await doc.embedJpg(buf) : await doc.embedPng(buf);
+        let pw, ph, ix = 0, iy = 0, iw = img.width, ih = img.height;
+        if (pageSize === "a4") {
+          pw = A4_W; ph = A4_H;
+          const scale = Math.min(A4_W / img.width, A4_H / img.height);
+          iw = img.width * scale; ih = img.height * scale;
+          ix = (A4_W - iw) / 2; iy = (A4_H - ih) / 2;
+        } else if (pageSize === "a4l") {
+          pw = A4_H; ph = A4_W;
+          const scale = Math.min(A4_H / img.width, A4_W / img.height);
+          iw = img.width * scale; ih = img.height * scale;
+          ix = (A4_H - iw) / 2; iy = (A4_W - ih) / 2;
+        } else {
+          pw = img.width; ph = img.height;
+        }
+        const page = doc.addPage([pw, ph]);
+        page.drawImage(img, { x: ix, y: iy, width: iw, height: ih });
+      }
+      setStatus("Сохранение PDF…", 0.97);
+      const bytes = await doc.save();
+      showDownload(bytes, "images.pdf");
+      setStatus(`Готово! ${files.length} изображений → PDF.`, 1);
+    },
+  },
+
+  password: {
+    name: "Защита паролем",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="passFile" accept=".pdf,application/pdf" />
+          <div id="passPreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Пароль пользователя <span class="label-hint">(для открытия)</span></label>
+          <input type="password" id="userPass" placeholder="Пароль…" autocomplete="new-password" />
+        </div>
+        <div class="panel-row">
+          <label>Пароль владельца <span class="label-hint">(для редактирования; пусто = совпадает)</span></label>
+          <input type="password" id="ownerPass" placeholder="Пусто — будет совпадать" autocomplete="new-password" />
+        </div>
+        <div class="panel-row">
+          <label>Разрешения</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="permPrint" checked /> Печать</label>
+            <label><input type="checkbox" id="permCopy" /> Копирование текста</label>
+            <label><input type="checkbox" id="permModify" /> Редактирование</label>
+          </div>
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Зашифровать</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#passFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const info = await pdfInfo(file);
+        document.querySelector("#passPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#runBtn").disabled = false;
+      });
+    },
+    async run() {
+      const file = document.querySelector("#passFile").files[0];
+      const userPass  = document.querySelector("#userPass").value;
+      const ownerPass = document.querySelector("#ownerPass").value || userPass;
+      if (!file) throw new Error("Выберите PDF файл.");
+      if (!userPass) throw new Error("Введите пароль.");
+      setStatus("Загрузка…", 0.2);
+      const buf = await readFile(file);
+      const doc = await PDFDocument.load(buf);
+      setStatus("Шифрование…", 0.7);
+      const bytes = await doc.save({
+        userPassword: userPass,
+        ownerPassword: ownerPass,
+        permissions: {
+          printing: document.querySelector("#permPrint").checked ? "highResolution" : "none",
+          modifying: document.querySelector("#permModify").checked,
+          copying: document.querySelector("#permCopy").checked,
+          annotating: false, fillingForms: true,
+          contentAccessibility: true, documentAssembly: false,
+        },
+      });
+      const stem = file.name.replace(/\.pdf$/i, "");
+      showDownload(bytes, `${stem}-protected.pdf`);
+      setStatus("Готово! PDF зашифрован.", 1);
+    },
+  },
+
+  metadata: {
+    name: "Метаданные",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл <span class="label-hint">(поля заполнятся автоматически)</span></label>
+          <input type="file" id="metaFile" accept=".pdf,application/pdf" />
+          <div id="metaPreview"></div>
+        </div>
+        <div class="panel-row"><label>Название</label><input type="text" id="metaTitle" placeholder="Название документа" /></div>
+        <div class="panel-row"><label>Автор</label><input type="text" id="metaAuthor" placeholder="Имя автора" /></div>
+        <div class="panel-row"><label>Тема</label><input type="text" id="metaSubject" placeholder="Тема / описание" /></div>
+        <div class="panel-row"><label>Ключевые слова</label><input type="text" id="metaKeywords" placeholder="слово1, слово2" /></div>
+        <button class="run-btn" id="runBtn" disabled>Применить</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#metaFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const info = await pdfInfo(file);
+        document.querySelector("#metaPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        if (info.title)    document.querySelector("#metaTitle").value = info.title;
+        if (info.author)   document.querySelector("#metaAuthor").value = info.author;
+        if (info.subject)  document.querySelector("#metaSubject").value = info.subject;
+        if (info.keywords) document.querySelector("#metaKeywords").value = info.keywords;
+        document.querySelector("#runBtn").disabled = false;
+      });
+    },
+    async run() {
+      const file = document.querySelector("#metaFile").files[0];
+      if (!file) throw new Error("Выберите PDF файл.");
+      setStatus("Загрузка…", 0.2);
+      const buf = await readFile(file);
+      const doc = await PDFDocument.load(buf);
+      const title    = document.querySelector("#metaTitle").value.trim();
+      const author   = document.querySelector("#metaAuthor").value.trim();
+      const subject  = document.querySelector("#metaSubject").value.trim();
+      const keywords = document.querySelector("#metaKeywords").value.trim();
+      if (title)    doc.setTitle(title);
+      if (author)   doc.setAuthor(author);
+      if (subject)  doc.setSubject(subject);
+      if (keywords) doc.setKeywords(keywords.split(",").map(s => s.trim()));
+      const bytes = await doc.save();
+      const stem = file.name.replace(/\.pdf$/i, "");
+      showDownload(bytes, `${stem}-meta.pdf`);
+      setStatus("Метаданные обновлены.", 1);
+    },
+  },
+
+  pagenums: {
+    name: "Номера страниц",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="pnFile" accept=".pdf,application/pdf" />
+          <div id="pnPreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Положение</label>
+          <div class="angle-row">
+            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-center" checked /><span>↓ Центр</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="bottom-right" /><span>↓ Справа</span></label>
+            <label class="angle-opt"><input type="radio" name="pnPos" value="top-center" /><span>↑ Центр</span></label>
+          </div>
+        </div>
+        <div class="panel-row">
+          <label>Формат <span class="label-hint">используй {n} = номер, {total} = всего</span></label>
+          <input type="text" id="pnFormat" value="{n}" placeholder="{n} / {total}" />
+        </div>
+        <div class="panel-row">
+          <label>Начать с номера</label>
+          <input type="number" id="pnStart" value="1" min="1" style="width:100px" />
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Добавить номера</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#pnFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const info = await pdfInfo(file);
+        document.querySelector("#pnPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#runBtn").disabled = false;
+      });
+    },
+    async run() {
+      const file = document.querySelector("#pnFile").files[0];
+      if (!file) throw new Error("Выберите PDF файл.");
+      const pos    = document.querySelector("[name='pnPos']:checked").value;
+      const fmt    = document.querySelector("#pnFormat").value || "{n}";
+      const start  = parseInt(document.querySelector("#pnStart").value, 10) || 1;
+      setStatus("Загрузка…", 0.1);
+      const buf = await readFile(file);
+      const doc = await PDFDocument.load(buf);
+      const font = await doc.embedFont(StandardFonts.Helvetica);
+      const fontSize = 11, margin = 24;
+      const total = doc.getPageCount();
+      setStatus(`Добавление номеров страниц…`, 0.3);
+      for (let i = 0; i < total; i++) {
+        const page = doc.getPage(i);
+        const { width, height } = page.getSize();
+        const label = fmt.replace("{n}", String(start + i)).replace("{total}", String(total));
+        const tw = font.widthOfTextAtSize(label, fontSize);
+        let x, y;
+        if (pos === "bottom-center") { x = (width - tw) / 2; y = margin; }
+        else if (pos === "bottom-right") { x = width - tw - margin; y = margin; }
+        else { x = (width - tw) / 2; y = height - margin - fontSize; }
+        page.drawText(label, { x, y, size: fontSize, font, color: rgb(0.35, 0.35, 0.35) });
+        if (i % 5 === 0) setStatus(`Страница ${i + 1} / ${total}…`, 0.3 + 0.6 * (i / total));
+      }
+      const bytes = await doc.save();
+      const stem = file.name.replace(/\.pdf$/i, "");
+      showDownload(bytes, `${stem}-numbered.pdf`);
+      setStatus(`Готово! Номера ${start}–${start + total - 1} добавлены.`, 1);
+    },
+  },
+
+  watermark: {
+    name: "Водяной знак",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="wmFile" accept=".pdf,application/pdf" />
+          <div id="wmPreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Текст водяного знака</label>
+          <input type="text" id="wmText" value="КОНФИДЕНЦИАЛЬНО" placeholder="КОНФИДЕНЦИАЛЬНО" />
+        </div>
+        <div class="panel-row">
+          <label>Размер шрифта</label>
+          <input type="range" id="wmFontSize" min="20" max="100" value="52" step="2" />
+          <span id="wmFontSizeVal" class="range-val">52 pt</span>
+        </div>
+        <div class="panel-row">
+          <label>Прозрачность</label>
+          <input type="range" id="wmOpacity" min="3" max="50" value="12" step="1" />
+          <span id="wmOpacityVal" class="range-val">12%</span>
+        </div>
+        <div class="panel-row">
+          <label>Угол наклона</label>
+          <div class="angle-row">
+            <label class="angle-opt"><input type="radio" name="wmAngle" value="35" checked /><span>↗ 35°</span></label>
+            <label class="angle-opt"><input type="radio" name="wmAngle" value="0" /><span>— горизонт.</span></label>
+            <label class="angle-opt"><input type="radio" name="wmAngle" value="45" /><span>↗ 45°</span></label>
+          </div>
+        </div>
+        <button class="run-btn" id="runBtn" disabled>Добавить водяной знак</button>`;
+    },
+    bindEvents() {
+      document.querySelector("#wmFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const info = await pdfInfo(file);
+        document.querySelector("#wmPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#runBtn").disabled = false;
+      });
+      document.querySelector("#wmOpacity").addEventListener("input", e => {
+        document.querySelector("#wmOpacityVal").textContent = `${e.target.value}%`;
+      });
+      document.querySelector("#wmFontSize").addEventListener("input", e => {
+        document.querySelector("#wmFontSizeVal").textContent = `${e.target.value} pt`;
+      });
+    },
+    async run() {
+      const file = document.querySelector("#wmFile").files[0];
+      if (!file) throw new Error("Выберите PDF файл.");
+      const text     = document.querySelector("#wmText").value.trim() || "WATERMARK";
+      const opacity  = parseInt(document.querySelector("#wmOpacity").value, 10) / 100;
+      const fontSize = parseInt(document.querySelector("#wmFontSize").value, 10);
+      const angle    = parseInt(document.querySelector("[name='wmAngle']:checked").value, 10);
+      setStatus("Загрузка…", 0.1);
+      const buf = await readFile(file);
+      const doc = await PDFDocument.load(buf);
+      const font = await doc.embedFont(StandardFonts.HelveticaBold);
+      const total = doc.getPageCount();
+      setStatus(`Нанесение водяного знака…`, 0.3);
+      for (let i = 0; i < total; i++) {
+        const page = doc.getPage(i);
+        const { width, height } = page.getSize();
+        const tw = font.widthOfTextAtSize(text, fontSize);
+        page.drawText(text, {
+          x: (width - tw) / 2,
+          y: (height - fontSize) / 2,
+          size: fontSize,
+          font,
+          color: rgb(0.4, 0.4, 0.4),
+          opacity,
+          rotate: degrees(angle),
+        });
+        if (i % 5 === 0) setStatus(`Страница ${i + 1} / ${total}…`, 0.3 + 0.6 * (i / total));
+      }
+      const bytes = await doc.save();
+      const stem = file.name.replace(/\.pdf$/i, "");
+      showDownload(bytes, `${stem}-watermarked.pdf`);
+      setStatus(`Готово! Водяной знак добавлен на ${total} стр.`, 1);
+    },
+  },
+};
+
+// ── Tool activation ───────────────────────────────────────────────────────────
 toolGrid.querySelectorAll(".tool-card").forEach(card => {
-  card.addEventListener("click", () => {
+  card.addEventListener("click", async () => {
     const id = card.dataset.tool;
     toolGrid.querySelectorAll(".tool-card").forEach(c => c.classList.toggle("active", c === card));
     activeTool = id;
     resetOutput();
+
     const tool = TOOLS[id];
-    toolPanel.innerHTML = `<h2>${tool.name}</h2>${tool.render()}`;
+    toolPanel.innerHTML = `<h2>${tool.name}</h2><div class="tool-fields">${await tool.render()}</div>`;
     toolPanel.hidden = false;
+
+    tool.bindEvents?.();
+
     document.querySelector("#runBtn").addEventListener("click", async () => {
       resetOutput();
+      progressBar.hidden = false;
+      progressBar.value = 0;
       document.querySelector("#runBtn").disabled = true;
-      setProgress(0.05);
       try {
         await TOOLS[activeTool].run();
-        setProgress(null);
       } catch (err) {
         setError(err.message ?? String(err));
         setStatus("");
-        setProgress(null);
+        progressBar.hidden = true;
       } finally {
         const btn = document.querySelector("#runBtn");
         if (btn) btn.disabled = false;
       }
     });
+
+    toolPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 });
