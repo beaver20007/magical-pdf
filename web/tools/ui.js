@@ -156,45 +156,77 @@ const TOOLS = {
     },
     bindEvents() {
       let mergeOrder = [];
+      const thumbCache = new Map(); // file → dataURL
 
-      function renderMergeList() {
+      async function renderThumb(file) {
+        if (thumbCache.has(file)) return thumbCache.get(file);
+        if (!window.pdfjsLib) return null;
+        try {
+          const buf = await readFile(file);
+          const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+          const page = await pdf.getPage(1);
+          const vp = page.getViewport({ scale: 1 });
+          const scale = 120 / Math.max(vp.width, vp.height);
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement("canvas");
+          canvas.width  = Math.round(viewport.width);
+          canvas.height = Math.round(viewport.height);
+          const ctx = canvas.getContext("2d", { alpha: false });
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          const url = canvas.toDataURL("image/jpeg", 0.82);
+          thumbCache.set(file, url);
+          return url;
+        } catch { return null; }
+      }
+
+      async function renderMergeGrid() {
         const container = document.querySelector("#mergePreview");
         container.innerHTML = "";
-        mergeOrder.forEach((f, idx) => {
-          const row = document.createElement("div");
-          row.className = "merge-row";
-          row.draggable = true;
-          row.dataset.idx = idx;
+        let dragSrc = null;
 
-          const handle = document.createElement("span");
-          handle.className = "merge-row__handle";
-          handle.textContent = "⠿";
-          handle.title = "Перетащите для смены порядка";
+        for (let idx = 0; idx < mergeOrder.length; idx++) {
+          const f = mergeOrder[idx];
+          const card = document.createElement("div");
+          card.className = "merge-card";
+          card.draggable = true;
+          card.dataset.idx = idx;
+
+          // Thumbnail placeholder, fills in async
+          const thumb = document.createElement("div");
+          thumb.className = "merge-card__thumb";
+          thumb.innerHTML = `<span class="merge-card__spinner">…</span>`;
 
           const num = document.createElement("span");
-          num.className = "merge-row__num";
+          num.className = "merge-card__num";
           num.textContent = idx + 1;
 
-          const icon = document.createElement("span");
-          icon.className = "merge-row__icon";
-          icon.textContent = "📄";
+          const lbl = document.createElement("span");
+          lbl.className = "merge-card__name";
+          lbl.textContent = f.name.replace(/\.pdf$/i, "");
 
-          const body = document.createElement("div");
-          body.className = "merge-row__body";
-          const name = document.createElement("span");
-          name.className = "merge-row__name";
-          name.textContent = f.name;
           const meta = document.createElement("span");
-          meta.className = "merge-row__meta";
-          meta.textContent = fmtSize(f.size) + " · считаю…";
-          body.appendChild(name);
-          body.appendChild(meta);
+          meta.className = "merge-card__meta";
+          meta.textContent = fmtSize(f.size);
 
-          row.appendChild(handle);
-          row.appendChild(num);
-          row.appendChild(icon);
-          row.appendChild(body);
-          container.appendChild(row);
+          card.appendChild(thumb);
+          card.appendChild(num);
+          card.appendChild(lbl);
+          card.appendChild(meta);
+          container.appendChild(card);
+
+          // Load thumbnail async
+          renderThumb(f).then(url => {
+            if (url) {
+              const img = document.createElement("img");
+              img.src = url;
+              thumb.innerHTML = "";
+              thumb.appendChild(img);
+            } else {
+              thumb.innerHTML = `<span class="merge-card__fallback">📄</span>`;
+            }
+          });
 
           // Async page count
           (async () => {
@@ -202,30 +234,28 @@ const TOOLS = {
               const buf = await readFile(f);
               const doc = await window.PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
               meta.textContent = `${fmtSize(f.size)} · ${doc.getPageCount()} стр.`;
-            } catch { meta.textContent = fmtSize(f.size); }
+            } catch {}
           })();
-        });
+        }
 
-        // Drag-and-drop
-        let dragSrc = null;
-        container.querySelectorAll(".merge-row").forEach(row => {
-          row.addEventListener("dragstart", e => {
-            dragSrc = parseInt(row.dataset.idx, 10);
-            row.classList.add("dragging");
+        // Drag events on all cards
+        container.querySelectorAll(".merge-card").forEach(card => {
+          card.addEventListener("dragstart", e => {
+            dragSrc = parseInt(card.dataset.idx, 10);
+            card.classList.add("dragging");
             e.dataTransfer.effectAllowed = "move";
           });
-          row.addEventListener("dragend", () => row.classList.remove("dragging"));
-          row.addEventListener("dragover", e => { e.preventDefault(); row.classList.add("drag-target"); });
-          row.addEventListener("dragleave", () => row.classList.remove("drag-target"));
-          row.addEventListener("drop", e => {
+          card.addEventListener("dragend", () => card.classList.remove("dragging"));
+          card.addEventListener("dragover", e => { e.preventDefault(); card.classList.add("drag-target"); });
+          card.addEventListener("dragleave", () => card.classList.remove("drag-target"));
+          card.addEventListener("drop", e => {
             e.preventDefault();
-            row.classList.remove("drag-target");
-            const dropIdx = parseInt(row.dataset.idx, 10);
+            card.classList.remove("drag-target");
+            const dropIdx = parseInt(card.dataset.idx, 10);
             if (dragSrc === dropIdx) return;
             const moved = mergeOrder.splice(dragSrc, 1)[0];
             mergeOrder.splice(dropIdx, 0, moved);
-            renderMergeList();
-            document.querySelector("#runBtn")._mergeOrder = mergeOrder;
+            renderMergeGrid();
           });
         });
 
@@ -237,7 +267,8 @@ const TOOLS = {
         const runBtn = document.querySelector("#runBtn");
         if (files.length < 2) { runBtn.disabled = true; return; }
         mergeOrder = files;
-        renderMergeList();
+        thumbCache.clear();
+        renderMergeGrid();
         runBtn.disabled = false;
       });
     },

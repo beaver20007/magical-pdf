@@ -207,28 +207,76 @@ input:focus, select:focus { border-color: #8b6fcf; }
 .checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
 .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: #8b6fcf; }
 
-/* Merge file list with drag reorder */
-.merge-row {
+/* Merge horizontal card grid */
+#mergePreview {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 12px 4px 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+#mergePreview:empty { display: none; }
+
+.merge-card {
+  flex-shrink: 0;
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: grab;
+  user-select: none;
+  scroll-snap-align: start;
+  position: relative;
+}
+.merge-card:active { cursor: grabbing; }
+.merge-card.dragging { opacity: 0.35; }
+.merge-card.drag-target .merge-card__thumb {
+  border-color: #8b6fcf;
+  box-shadow: 0 0 0 3px rgba(139,111,207,0.25);
+}
+
+.merge-card__thumb {
+  width: 130px;
+  height: 106px;
+  background: #f8f8f8;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: #f3f8f4;
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: grab;
-  transition: border-color 0.15s, background 0.15s, opacity 0.15s;
-  user-select: none;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.merge-row:active { cursor: grabbing; }
-.merge-row.dragging { opacity: 0.4; }
-.merge-row.drag-target { border-color: #8b6fcf; background: #f5f0ff; box-shadow: 0 0 0 3px rgba(139,111,207,0.15); }
-.merge-row__handle { font-size: 16px; color: #b0b5b0; flex-shrink: 0; cursor: grab; }
-.merge-row__num { font-size: 12px; font-weight: 700; color: #8b6fcf; min-width: 18px; text-align: center; flex-shrink: 0; }
-.merge-row__icon { font-size: 18px; flex-shrink: 0; }
-.merge-row__body { flex: 1; min-width: 0; }
-.merge-row__name { display: block; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.merge-row__meta { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+.merge-card__thumb img {
+  max-width: 126px;
+  max-height: 102px;
+  object-fit: contain;
+  display: block;
+}
+.merge-card__spinner { font-size: 12px; color: var(--muted); }
+.merge-card__fallback { font-size: 32px; }
+
+.merge-card__num {
+  position: absolute;
+  top: 6px; left: 6px;
+  background: rgba(139,111,207,0.88);
+  color: #fff;
+  font-size: 11px; font-weight: 700;
+  border-radius: 5px;
+  padding: 1px 6px;
+  pointer-events: none;
+}
+.merge-card__name {
+  font-size: 11px; font-weight: 600;
+  color: var(--ink);
+  max-width: 130px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: center;
+}
+.merge-card__meta { font-size: 10px; color: var(--muted); }
 
 /* Rotate thumbnails grid */
 .rotate-thumbs {
