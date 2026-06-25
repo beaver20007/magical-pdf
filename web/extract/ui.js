@@ -23,6 +23,9 @@ const manifestLink   = document.querySelector("#manifestLink");
 const errorBox       = document.querySelector("#errorBox");
 const noticeMissing  = document.querySelector("#pagesNoticeMissing");
 const noticeBeta     = document.querySelector("#pagesNoticeBeta");
+const fileInfoChip   = document.querySelector("#fileInfoChip");
+const fileInfoName   = document.querySelector("#fileInfoName");
+const fileInfoMeta   = document.querySelector("#fileInfoMeta");
 
 const apiBase = extractApiBase();
 const isTauri = typeof window.__TAURI__ !== "undefined";
@@ -112,17 +115,38 @@ function resetJob() {
   setError("");
 }
 
+function fmtSize(bytes) {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} МБ`;
+}
+
 function selectFile(file) {
   if (!file || !file.name.toLowerCase().endsWith(".pdf")) {
     setError("Выберите файл в формате PDF.");
     return;
   }
   selectedFile = file;
-  fileHint.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`;
+  fileHint.textContent = `${file.name} (${fmtSize(file.size)})`;
   dropZone.classList.add("has-file");
   startBtn.disabled = !apiBase;
   resetJob();
   setStatus("Файл выбран. Нажмите «Распознать».");
+
+  // Show file info chip with page count (async, non-blocking).
+  if (fileInfoChip) {
+    fileInfoName.textContent = file.name;
+    fileInfoMeta.textContent = fmtSize(file.size) + " · считаю страницы…";
+    fileInfoChip.hidden = false;
+    (async () => {
+      try {
+        const { PDFDocument } = window.PDFLib;
+        if (!PDFDocument) return;
+        const buf = await file.arrayBuffer();
+        const doc = await PDFDocument.load(buf, { ignoreEncryption: true });
+        fileInfoMeta.textContent = `${fmtSize(file.size)} · ${doc.getPageCount()} стр.`;
+      } catch { fileInfoMeta.textContent = fmtSize(file.size); }
+    })();
+  }
 }
 
 fileInput.addEventListener("change", () => {
@@ -170,10 +194,12 @@ async function pollJob(jobId) {
   }
 
   const STATUS_LABELS = {
-    queued:     "В очереди…",
-    running:    "Распознаётся…",
-    done:       "Готово!",
-    failed:     "Ошибка распознавания",
+    queued:  "В очереди… ожидание сервера",
+    running: meta.progress != null
+      ? `Распознаётся… стр. ${Math.round((meta.progress ?? 0) * (meta.total_pages ?? 1))} / ${meta.total_pages ?? "?"}`
+      : "Распознаётся…",
+    done:    "Готово!",
+    failed:  "Ошибка распознавания",
   };
 
   setStatus(STATUS_LABELS[meta.status] ?? meta.status, meta.progress ?? null);

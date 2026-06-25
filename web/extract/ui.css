@@ -126,6 +126,22 @@ h1 {
   color: #1a3a5c;
 }
 
+/* File info chip */
+.file-info-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f5ff;
+  border: 1.5px solid #d4bfff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.file-info-chip__icon { font-size: 22px; flex-shrink: 0; }
+.file-info-chip__body { flex: 1; min-width: 0; }
+.file-info-chip__name { display: block; font-size: 14px; font-weight: 700; color: #151515; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-info-chip__meta { display: block; font-size: 12px; color: #62666b; margin-top: 2px; }
+
 .drop-zone {
   display: grid;
   place-items: center;

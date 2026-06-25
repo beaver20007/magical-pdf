@@ -20,9 +20,30 @@ const statusText = document.querySelector("#statusText");
 const progressBar = document.querySelector("#progressBar");
 const previewGrid = document.querySelector("#previewGrid");
 const { PDFLib, JSZip } = globalThis;
+const fileInfoChip  = document.querySelector("#fileInfoChip");
+const fileInfoName  = document.querySelector("#fileInfoName");
+const fileInfoMeta  = document.querySelector("#fileInfoMeta");
+const fileInfoClear = document.querySelector("#fileInfoClear");
 
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "./vendor/pdf.worker.min.mjs";
+
+fileInfoClear?.addEventListener("click", () => {
+  fileInfoChip.hidden = true;
+  selectedFiles = [];
+  selectedFile = null;
+  previewGrid.replaceChildren();
+  resetOutput();
+  dropZone.classList.remove("has-file");
+  dropTitle.textContent = "Выберите один или несколько PDF";
+  dropHint.textContent = "Файлы будут обработаны на вашем устройстве";
+  selectedFileInfo.hidden = true;
+  chooseAnotherButton.hidden = true;
+  convertPdfButton.disabled = true;
+  exportJpegsButton.disabled = true;
+  previewPagesButton.disabled = true;
+  setStatus("Выберите PDF, затем нажмите нужное действие", 0);
+});
 
 let selectedFile = null;
 let selectedFiles = [];
@@ -180,7 +201,7 @@ downloadJpegsButton.addEventListener("click", async () => {
   await downloadBlob(outputJpegsBlob, outputJpegsUrl, `${safeName}-страницы-jpeg.zip`);
 });
 
-function selectFiles(files) {
+async function selectFiles(files) {
   const pdfFiles = files.filter(isPdfFile);
 
   if (!pdfFiles.length) {
@@ -204,17 +225,67 @@ function selectFiles(files) {
   exportJpegsButton.disabled = false;
   previewPagesButton.disabled = false;
 
+  // Show file info chip immediately, then fill in page count async.
+  showFileChip(pdfFiles);
+
   if (pdfFiles.length === 1) {
     setStatus(
       `Файл выбран: ${pdfFiles[0].name}. Можно сначала «Предпросмотр страниц», затем создать JPEG или новый PDF.`,
       0,
     );
+    // Auto-preview first page so user sees content immediately.
+    autoPreviewFirstPage(pdfFiles[0]);
   } else {
     setStatus(
       `Выбрано PDF: ${pdfFiles.length}. Поле «Страницы» применится к каждому файлу. Доступно пакетное создание JPEG-страниц.`,
       0,
     );
   }
+}
+
+function showFileChip(pdfFiles) {
+  const totalSize = pdfFiles.reduce((s, f) => s + f.size, 0);
+  fileInfoName.textContent = pdfFiles.length === 1
+    ? pdfFiles[0].name
+    : `${pdfFiles.length} PDF файлов`;
+  fileInfoMeta.textContent = formatFileSize(totalSize) + " · считаю страницы…";
+  fileInfoChip.hidden = false;
+
+  // Fill page count async without blocking UI.
+  (async () => {
+    try {
+      let total = 0;
+      for (const f of pdfFiles) {
+        const buf = await f.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        total += pdf.numPages;
+      }
+      fileInfoMeta.textContent = `${formatFileSize(totalSize)} · ${total} стр.`;
+    } catch { fileInfoMeta.textContent = formatFileSize(totalSize); }
+  })();
+}
+
+async function autoPreviewFirstPage(file) {
+  try {
+    setBusy(true);
+    setStatus("Загрузка предпросмотра…", 5);
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const page = await pdf.getPage(1);
+    const scale = 150 / 72; // 150 dpi preview
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    const ctx = canvas.getContext("2d", { alpha: false });
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+    addPreview(dataUrl, 1, canvas.width, canvas.height, file.name);
+    setStatus(`Предпросмотр стр. 1. Выберите качество и нажмите «Создать».`, 10);
+  } catch { /* silent — preview is optional */ }
+  finally { setBusy(false); }
 }
 
 function isPdfFile(file) {

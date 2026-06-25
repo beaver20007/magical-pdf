@@ -39,6 +39,14 @@
         <span class="drop-hint" id="fileHint">или перетащите сюда</span>
       </label>
 
+      <div id="fileInfoChip" class="file-info-chip" hidden>
+        <span class="file-info-chip__icon">📄</span>
+        <div class="file-info-chip__body">
+          <span id="fileInfoName" class="file-info-chip__name"></span>
+          <span id="fileInfoMeta" class="file-info-chip__meta"></span>
+        </div>
+      </div>
+
       <section class="controls">
         <label>
           Формат
@@ -69,6 +77,7 @@
 
       <p id="errorBox" class="error" hidden></p>
     </main>
-    <script src="ui.js?v=3" type="module"></script>
+    <script src="../../vendor/pdf-lib.min.js"></script>
+    <script src="ui.js?v=4" type="module"></script>
   </body>
 </html>

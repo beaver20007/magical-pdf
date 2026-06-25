@@ -29,6 +29,15 @@
           </div>
         </header>
 
+        <div id="fileInfoChip" class="file-info-chip" hidden>
+          <span class="file-info-chip__icon">📄</span>
+          <div class="file-info-chip__body">
+            <span id="fileInfoName" class="file-info-chip__name"></span>
+            <span id="fileInfoMeta" class="file-info-chip__meta"></span>
+          </div>
+          <button id="fileInfoClear" class="file-info-chip__clear" type="button" aria-label="Убрать файл">✕</button>
+        </div>
+
         <label id="dropZone" class="drop-zone" tabindex="0" aria-label="Выбрать PDF">
           <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple />
           <span id="dropTitle" class="drop-title">Выберите один или несколько PDF</span>
