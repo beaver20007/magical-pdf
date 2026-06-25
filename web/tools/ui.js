@@ -151,30 +151,101 @@ const TOOLS = {
           <input type="file" id="mergeFiles" accept=".pdf,application/pdf" multiple />
           <div id="mergePreview"></div>
         </div>
-        <div class="panel-row">
-          <label>Порядок страниц</label>
-          <select id="mergeOrder">
-            <option value="asc">В порядке выбора файлов</option>
-            <option value="desc">В обратном порядке</option>
-          </select>
-        </div>
+        <p class="field-hint" style="margin:0">Перетащите файлы для смены порядка.</p>
         <button class="run-btn" id="runBtn" disabled>Объединить</button>`;
     },
     bindEvents() {
+      let mergeOrder = [];
+
+      function renderMergeList() {
+        const container = document.querySelector("#mergePreview");
+        container.innerHTML = "";
+        mergeOrder.forEach((f, idx) => {
+          const row = document.createElement("div");
+          row.className = "merge-row";
+          row.draggable = true;
+          row.dataset.idx = idx;
+
+          const handle = document.createElement("span");
+          handle.className = "merge-row__handle";
+          handle.textContent = "⠿";
+          handle.title = "Перетащите для смены порядка";
+
+          const num = document.createElement("span");
+          num.className = "merge-row__num";
+          num.textContent = idx + 1;
+
+          const icon = document.createElement("span");
+          icon.className = "merge-row__icon";
+          icon.textContent = "📄";
+
+          const body = document.createElement("div");
+          body.className = "merge-row__body";
+          const name = document.createElement("span");
+          name.className = "merge-row__name";
+          name.textContent = f.name;
+          const meta = document.createElement("span");
+          meta.className = "merge-row__meta";
+          meta.textContent = fmtSize(f.size) + " · считаю…";
+          body.appendChild(name);
+          body.appendChild(meta);
+
+          row.appendChild(handle);
+          row.appendChild(num);
+          row.appendChild(icon);
+          row.appendChild(body);
+          container.appendChild(row);
+
+          // Async page count
+          (async () => {
+            try {
+              const buf = await readFile(f);
+              const doc = await window.PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+              meta.textContent = `${fmtSize(f.size)} · ${doc.getPageCount()} стр.`;
+            } catch { meta.textContent = fmtSize(f.size); }
+          })();
+        });
+
+        // Drag-and-drop
+        let dragSrc = null;
+        container.querySelectorAll(".merge-row").forEach(row => {
+          row.addEventListener("dragstart", e => {
+            dragSrc = parseInt(row.dataset.idx, 10);
+            row.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+          });
+          row.addEventListener("dragend", () => row.classList.remove("dragging"));
+          row.addEventListener("dragover", e => { e.preventDefault(); row.classList.add("drag-target"); });
+          row.addEventListener("dragleave", () => row.classList.remove("drag-target"));
+          row.addEventListener("drop", e => {
+            e.preventDefault();
+            row.classList.remove("drag-target");
+            const dropIdx = parseInt(row.dataset.idx, 10);
+            if (dragSrc === dropIdx) return;
+            const moved = mergeOrder.splice(dragSrc, 1)[0];
+            mergeOrder.splice(dropIdx, 0, moved);
+            renderMergeList();
+            document.querySelector("#runBtn")._mergeOrder = mergeOrder;
+          });
+        });
+
+        document.querySelector("#runBtn")._mergeOrder = mergeOrder;
+      }
+
       document.querySelector("#mergeFiles").addEventListener("change", async e => {
         const files = Array.from(e.target.files);
         const runBtn = document.querySelector("#runBtn");
         if (files.length < 2) { runBtn.disabled = true; return; }
-        document.querySelector("#mergePreview").innerHTML = "<p class='preview-loading'>Подсчёт страниц…</p>";
-        const html = await buildFilePreview(files, true);
-        document.querySelector("#mergePreview").innerHTML = html;
+        mergeOrder = files;
+        renderMergeList();
         runBtn.disabled = false;
       });
     },
     async run() {
-      let files = Array.from(document.querySelector("#mergeFiles").files);
+      const runBtn = document.querySelector("#runBtn");
+      let files = runBtn._mergeOrder || Array.from(document.querySelector("#mergeFiles").files);
       if (files.length < 2) throw new Error("Выберите минимум 2 PDF файла.");
-      if (document.querySelector("#mergeOrder").value === "desc") files = files.reverse();
+      if (document.querySelector("#mergeOrder").value === "desc") files = [...files].reverse();
       const merged = await PDFDocument.create();
       for (let i = 0; i < files.length; i++) {
         setStatus(`Добавляю ${files[i].name}… (${i + 1}/${files.length})`, (i + 0.5) / files.length);
