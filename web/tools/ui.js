@@ -166,7 +166,7 @@ const TOOLS = {
           const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
           const page = await pdf.getPage(1);
           const vp = page.getViewport({ scale: 1 });
-          const scale = 120 / Math.max(vp.width, vp.height);
+          const scale = 240 / Math.max(vp.width, vp.height);
           const viewport = page.getViewport({ scale });
           const canvas = document.createElement("canvas");
           canvas.width  = Math.round(viewport.width);
@@ -461,7 +461,7 @@ const TOOLS = {
         for (let i = 1; i <= count; i++) {
           const page   = await pdf.getPage(i);
           const vp     = page.getViewport({ scale: 1 });
-          const scale  = 80 / Math.max(vp.width, vp.height);
+          const scale  = 160 / Math.max(vp.width, vp.height);
           const viewport = page.getViewport({ scale });
           const canvas = document.createElement("canvas");
           canvas.width  = Math.round(viewport.width);

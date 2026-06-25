@@ -288,7 +288,7 @@ input:focus, select:focus {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  width: 90px;
+  width: 180px;
   position: relative;
   cursor: grab;
   user-select: none;
@@ -297,18 +297,18 @@ input:focus, select:focus {
 .img-thumb:active { cursor: grabbing; }
 
 .img-thumb img {
-  width: 90px;
-  height: 70px;
+  width: 180px;
+  height: 140px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   transition: border-color 0.12s, opacity 0.12s;
 }
 
 .img-thumb span {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
-  max-width: 90px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -371,11 +371,11 @@ input:focus, select:focus {
 
 .merge-card {
   flex-shrink: 0;
-  width: 180px;
+  width: 360px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   cursor: grab;
   user-select: none;
   scroll-snap-align: start;
@@ -390,11 +390,11 @@ input:focus, select:focus {
 }
 
 .merge-card__thumb {
-  width: 180px;
-  height: 148px;
+  width: 360px;
+  height: 296px;
   background: #f9fafb;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -403,8 +403,8 @@ input:focus, select:focus {
 }
 
 .merge-card__thumb img {
-  max-width: 174px;
-  max-height: 142px;
+  max-width: 350px;
+  max-height: 286px;
   object-fit: contain;
   display: block;
 }
@@ -426,10 +426,10 @@ input:focus, select:focus {
 }
 
 .merge-card__name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
-  max-width: 180px;
+  max-width: 360px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -458,20 +458,20 @@ input:focus, select:focus {
 }
 
 .rot-card__preview {
-  width: 130px;
-  height: 130px;
+  width: 260px;
+  height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
 }
 
 .rot-card__preview img {
-  max-width: 124px;
-  max-height: 124px;
+  max-width: 250px;
+  max-height: 250px;
   object-fit: contain;
   display: block;
 }
