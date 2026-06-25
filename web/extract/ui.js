@@ -1,6 +1,7 @@
 /**
- * Extract tab UI — Phase 5.2/5.3
+ * Extract tab UI — Phase 5.2/5.3/5.4
  * Handles PDF upload → jobs API → progress polling → download.
+ * In Tauri context: invokes ensure_extract_server + polls /health until ready.
  */
 import { extractApiBase, isPublicExtractBeta, initModeTabs } from "../../nav.js";
 
@@ -24,10 +25,44 @@ const noticeMissing  = document.querySelector("#pagesNoticeMissing");
 const noticeBeta     = document.querySelector("#pagesNoticeBeta");
 
 const apiBase = extractApiBase();
+const isTauri = typeof window.__TAURI__ !== "undefined";
 
+// ── Tauri: auto-start + health check ─────────────────────────────────────────
+async function waitForHealth(maxMs = 30_000, intervalMs = 600) {
+  const deadline = Date.now() + maxMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`${apiBase}/health`);
+      if (res.ok) return true;
+    } catch { /* server not up yet */ }
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  return false;
+}
+
+async function initTauri() {
+  setStatus("Запуск сервера распознавания…", 0);
+  startBtn.disabled = true;
+  try {
+    await window.__TAURI__.core.invoke("ensure_extract_server");
+  } catch (e) {
+    setError(`Не удалось запустить сервер: ${e}`);
+    return;
+  }
+  const ready = await waitForHealth();
+  if (ready) {
+    setStatus("Сервер готов. Выберите PDF для распознавания.");
+  } else {
+    setError("Сервер не ответил за 30 секунд. Проверьте Python и зависимости в extract/.venv");
+  }
+}
+
+// ── init ──────────────────────────────────────────────────────────────────────
 if (!apiBase) {
   noticeMissing.hidden = false;
   startBtn.disabled = true;
+} else if (isTauri) {
+  initTauri();
 } else if (isPublicExtractBeta()) {
   noticeBeta.hidden = false;
 }
