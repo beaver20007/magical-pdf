@@ -27,6 +27,21 @@ const noticeBeta     = document.querySelector("#pagesNoticeBeta");
 const apiBase = extractApiBase();
 const isTauri = typeof window.__TAURI__ !== "undefined";
 
+// ── Deep link: ?source=docraft&back=<url> ─────────────────────────────────────
+(function initSourceBack() {
+  const params = new URLSearchParams(location.search);
+  const source = params.get("source");
+  if (!source) return;
+  const backEl = document.querySelector("#sourceBack");
+  if (!backEl) return;
+  const LABELS = { docraft: "Docraft", "magical-pdf": "Magical PDF" };
+  const label = LABELS[source] ?? source;
+  const backUrl = params.get("back") ?? (source === "docraft" ? "https://docraft.pro" : "../");
+  backEl.textContent = label;
+  backEl.href = backUrl;
+  backEl.hidden = false;
+})();
+
 // ── Tauri: auto-start + health check ─────────────────────────────────────────
 async function waitForHealth(maxMs = 30_000, intervalMs = 600) {
   const deadline = Date.now() + maxMs;

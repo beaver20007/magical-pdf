@@ -37,6 +37,20 @@ button, input, select { font: inherit; }
     max(28px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
 }
 
+.source-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.source-back::before { content: "←"; }
+.source-back:hover { color: var(--ink); }
+
 .header {
   position: relative;
   margin-bottom: 24px;
