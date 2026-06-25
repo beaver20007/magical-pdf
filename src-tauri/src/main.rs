@@ -63,7 +63,7 @@ fn spawn_extract_server(app: &tauri::AppHandle) -> Result<(), String> {
         "-m", "uvicorn",
         "src.api.main:app",
         "--host", "127.0.0.1",
-        "--port", "8765",
+        "--port", "8766",
         "--log-level", "warning",
     ]);
 
@@ -86,7 +86,7 @@ fn spawn_extract_server(app: &tauri::AppHandle) -> Result<(), String> {
 fn wait_for_extract_ready(timeout_secs: u64) -> Result<(), String> {
     let deadline = std::time::Instant::now() + Duration::from_secs(timeout_secs);
     while std::time::Instant::now() < deadline {
-        if TcpStream::connect("127.0.0.1:8765").is_ok() {
+        if TcpStream::connect("127.0.0.1:8766").is_ok() {
             return Ok(());
         }
         thread::sleep(Duration::from_millis(300));

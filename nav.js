@@ -49,20 +49,21 @@ function normalizeApiBase(value) {
 
 /**
  * Extract jobs API base URL, or null when no API is configured.
- * Override: ?api=http://127.0.0.1:8765
+ * Override: ?api=http://127.0.0.1:8766
+ * Port 8765 is reserved by SSH tunnel on this machine; Extract uses 8766.
  */
 export function extractApiBase() {
   const custom = new URLSearchParams(location.search).get("api");
   if (custom) {
     return normalizeApiBase(custom);
   }
-  if (location.port === "8765") {
+  if (location.port === "8766") {
     return "";
   }
   if (isGitHubPages()) {
     return normalizeApiBase(PUBLIC_EXTRACT_API);
   }
-  return "http://127.0.0.1:8765";
+  return "http://127.0.0.1:8766";
 }
 
 /** Remote beta API (GitHub Pages → cloud), not localhost. */
