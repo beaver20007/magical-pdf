@@ -380,7 +380,7 @@ const TOOLS = {
     async render() {
       return `
         <div class="panel-row">
-          <label>Изображения JPEG / PNG <span class="label-hint">(можно несколько)</span></label>
+          <label>Изображения JPEG / PNG <span class="label-hint">(можно несколько; перетащите для смены порядка)</span></label>
           <input type="file" id="imgFiles" accept="image/jpeg,image/png" multiple />
           <div id="imgPreview" class="img-thumb-grid"></div>
         </div>
@@ -393,57 +393,131 @@ const TOOLS = {
           </select>
         </div>
         <div class="panel-row">
-          <label>Качество JPEG при встраивании</label>
-          <select id="imgQuality">
-            <option value="original" selected>Оригинал (без перекодирования)</option>
-          </select>
-          <p class="field-hint">pdf-lib встраивает изображения без потерь. Для сжатия уменьшите размер изображений до загрузки.</p>
+          <label>Качество</label>
+          <div class="angle-row" id="imgQualityRow">
+            <label class="angle-opt"><input type="radio" name="imgQ" value="original" checked /><span>Оригинал</span></label>
+            <label class="angle-opt"><input type="radio" name="imgQ" value="0.92" /><span>Высокое</span></label>
+            <label class="angle-opt"><input type="radio" name="imgQ" value="0.75" /><span>Среднее</span></label>
+            <label class="angle-opt"><input type="radio" name="imgQ" value="0.50" /><span>Низкое</span></label>
+          </div>
+          <p class="field-hint">Высокое/Среднее/Низкое — перекодирует в JPEG через Canvas. Оригинал — встраивает как есть.</p>
         </div>
         <button class="run-btn" id="runBtn" disabled>Создать PDF</button>`;
     },
     bindEvents() {
-      document.querySelector("#imgFiles").addEventListener("change", e => {
-        const files = Array.from(e.target.files);
+      // Mutable ordered array of files (FileList is read-only).
+      let imgOrder = [];
+
+      function renderThumbs() {
         const grid = document.querySelector("#imgPreview");
         grid.innerHTML = "";
-        if (!files.length) { document.querySelector("#runBtn").disabled = true; return; }
-        files.forEach(f => {
+        imgOrder.forEach((f, idx) => {
           const url = URL.createObjectURL(f);
           const wrap = document.createElement("div");
           wrap.className = "img-thumb";
+          wrap.draggable = true;
+          wrap.dataset.idx = idx;
+
           const img = document.createElement("img");
           img.src = url;
           img.alt = f.name;
+
           const lbl = document.createElement("span");
           lbl.textContent = f.name.replace(/\.[^.]+$/, "");
+
+          const num = document.createElement("span");
+          num.className = "img-thumb__num";
+          num.textContent = idx + 1;
+
+          wrap.appendChild(num);
           wrap.appendChild(img);
           wrap.appendChild(lbl);
           grid.appendChild(wrap);
         });
+
+        // Drag-and-drop reorder
+        let dragSrc = null;
+        grid.querySelectorAll(".img-thumb").forEach(el => {
+          el.addEventListener("dragstart", e => {
+            dragSrc = parseInt(el.dataset.idx, 10);
+            el.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+          });
+          el.addEventListener("dragend", () => el.classList.remove("dragging"));
+          el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("drag-target"); });
+          el.addEventListener("dragleave", () => el.classList.remove("drag-target"));
+          el.addEventListener("drop", e => {
+            e.preventDefault();
+            el.classList.remove("drag-target");
+            const dropIdx = parseInt(el.dataset.idx, 10);
+            if (dragSrc === dropIdx) return;
+            const moved = imgOrder.splice(dragSrc, 1)[0];
+            imgOrder.splice(dropIdx, 0, moved);
+            renderThumbs();
+          });
+        });
+      }
+
+      document.querySelector("#imgFiles").addEventListener("change", e => {
+        imgOrder = Array.from(e.target.files);
+        if (!imgOrder.length) { document.querySelector("#runBtn").disabled = true; return; }
+        renderThumbs();
         document.querySelector("#runBtn").disabled = false;
+        // Store ordered list on the button so run() can access it.
+        document.querySelector("#runBtn")._imgOrder = imgOrder;
+      });
+
+      // Keep reference updated after reorder.
+      document.querySelector("#imgPreview").addEventListener("drop", () => {
+        document.querySelector("#runBtn")._imgOrder = imgOrder;
       });
     },
     async run() {
-      const files = Array.from(document.querySelector("#imgFiles").files);
+      const runBtn = document.querySelector("#runBtn");
+      const files = runBtn._imgOrder || Array.from(document.querySelector("#imgFiles").files);
       if (!files.length) throw new Error("Выберите хотя бы одно изображение.");
       const pageSize = document.querySelector("#imgPageSize").value;
+      const qualityVal = document.querySelector("[name='imgQ']:checked").value;
       const doc = await PDFDocument.create();
       const A4_W = 595.28, A4_H = 841.89;
+
       for (let i = 0; i < files.length; i++) {
-        setStatus(`Добавляю ${files[i].name}… (${i + 1}/${files.length})`, (i + 0.5) / files.length);
-        const buf = await readFile(files[i]);
-        const isJpeg = files[i].type === "image/jpeg";
+        setStatus(`Обрабатываю ${files[i].name}… (${i + 1}/${files.length})`, (i + 0.5) / files.length);
+
+        let buf;
+        if (qualityVal === "original") {
+          buf = await readFile(files[i]);
+        } else {
+          // Re-encode via Canvas at chosen quality.
+          const quality = parseFloat(qualityVal);
+          buf = await new Promise((res, rej) => {
+            const imgEl = new Image();
+            const objUrl = URL.createObjectURL(files[i]);
+            imgEl.onload = () => {
+              const c = document.createElement("canvas");
+              c.width = imgEl.naturalWidth;
+              c.height = imgEl.naturalHeight;
+              c.getContext("2d").drawImage(imgEl, 0, 0);
+              URL.revokeObjectURL(objUrl);
+              c.toBlob(blob => blob.arrayBuffer().then(res).catch(rej), "image/jpeg", quality);
+            };
+            imgEl.onerror = rej;
+            imgEl.src = objUrl;
+          });
+        }
+
+        const isJpeg = qualityVal !== "original" || files[i].type === "image/jpeg";
         const img = isJpeg ? await doc.embedJpg(buf) : await doc.embedPng(buf);
         let pw, ph, ix = 0, iy = 0, iw = img.width, ih = img.height;
         if (pageSize === "a4") {
           pw = A4_W; ph = A4_H;
-          const scale = Math.min(A4_W / img.width, A4_H / img.height);
-          iw = img.width * scale; ih = img.height * scale;
+          const s = Math.min(A4_W / img.width, A4_H / img.height);
+          iw = img.width * s; ih = img.height * s;
           ix = (A4_W - iw) / 2; iy = (A4_H - ih) / 2;
         } else if (pageSize === "a4l") {
           pw = A4_H; ph = A4_W;
-          const scale = Math.min(A4_H / img.width, A4_W / img.height);
-          iw = img.width * scale; ih = img.height * scale;
+          const s = Math.min(A4_H / img.width, A4_W / img.height);
+          iw = img.width * s; ih = img.height * s;
           ix = (A4_H - iw) / 2; iy = (A4_W - ih) / 2;
         } else {
           pw = img.width; ph = img.height;
