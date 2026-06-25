@@ -207,6 +207,45 @@ input:focus, select:focus { border-color: #8b6fcf; }
 .checkbox-group label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
 .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: #8b6fcf; }
 
+/* Rotate thumbnails grid */
+.rotate-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px;
+  background: #f6f7f6;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+.rot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rot-card__preview {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.rot-card__preview img {
+  max-width: 72px;
+  max-height: 72px;
+  object-fit: contain;
+  display: block;
+}
+.rot-card__lbl {
+  font-size: 10px;
+  color: var(--muted);
+}
+
 /* Watermark side-by-side layout */
 .wm-layout {
   display: grid;

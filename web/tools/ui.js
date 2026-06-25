@@ -326,31 +326,97 @@ const TOOLS = {
         <div class="panel-row">
           <label>PDF файл</label>
           <input type="file" id="rotateFile" accept=".pdf,application/pdf" />
-          <div id="rotatePreview"></div>
+          <div id="rotateFileChip"></div>
         </div>
         <div class="panel-row">
           <label>Угол поворота</label>
           <div class="angle-row">
-            <label class="angle-opt"><input type="radio" name="rotAngle" value="90" checked /><span>↻ 90°</span></label>
-            <label class="angle-opt"><input type="radio" name="rotAngle" value="180" /><span>↕ 180°</span></label>
-            <label class="angle-opt"><input type="radio" name="rotAngle" value="270" /><span>↺ 270°</span></label>
+            <label class="angle-opt"><input type="radio" name="rotAngle" value="90"  checked /><span>↻ 90°</span></label>
+            <label class="angle-opt"><input type="radio" name="rotAngle" value="180"         /><span>↕ 180°</span></label>
+            <label class="angle-opt"><input type="radio" name="rotAngle" value="270"         /><span>↺ 270°</span></label>
           </div>
         </div>
         <div class="panel-row">
           <label>Страницы <span class="label-hint">пусто = все</span></label>
           <input type="text" id="rotatePages" placeholder="Все или 1, 3-5, 7" />
         </div>
+        <div id="rotateThumbs" class="rotate-thumbs" hidden></div>
         <button class="run-btn" id="runBtn" disabled>Повернуть</button>`;
     },
     bindEvents() {
+      let cachedPages = []; // { canvas, origAngle }
+
+      async function loadThumbs(file) {
+        if (!window.pdfjsLib) return;
+        const container = document.querySelector("#rotateThumbs");
+        container.innerHTML = "<p class='preview-loading'>Рендер страниц…</p>";
+        container.hidden = false;
+        const buf = await readFile(file);
+        const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+        const count = Math.min(pdf.numPages, 12); // show up to 12 pages
+        cachedPages = [];
+        container.innerHTML = "";
+        for (let i = 1; i <= count; i++) {
+          const page   = await pdf.getPage(i);
+          const vp     = page.getViewport({ scale: 1 });
+          const scale  = 80 / Math.max(vp.width, vp.height);
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement("canvas");
+          canvas.width  = Math.round(viewport.width);
+          canvas.height = Math.round(viewport.height);
+          const ctx = canvas.getContext("2d", { alpha: false });
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          cachedPages.push({ canvas, origAngle: 0 });
+        }
+        if (pdf.numPages > 12) {
+          const more = document.createElement("p");
+          more.className = "preview-loading";
+          more.textContent = `+ ещё ${pdf.numPages - 12} стр.`;
+          container.appendChild(more);
+        }
+        renderThumbs();
+      }
+
+      function renderThumbs() {
+        const container = document.querySelector("#rotateThumbs");
+        if (!container || !cachedPages.length) return;
+        const angle = parseInt(document.querySelector("[name='rotAngle']:checked")?.value ?? 90, 10);
+        // Clear previous cards (keep the "+ ещё" node if present)
+        const oldCards = container.querySelectorAll(".rot-card");
+        oldCards.forEach(c => c.remove());
+        cachedPages.forEach(({ canvas }, idx) => {
+          const card = document.createElement("div");
+          card.className = "rot-card";
+          const preview = document.createElement("div");
+          preview.className = "rot-card__preview";
+          const img = document.createElement("img");
+          img.src = canvas.toDataURL("image/jpeg", 0.8);
+          img.style.transform = `rotate(${angle}deg)`;
+          img.style.transition = "transform 0.25s ease";
+          preview.appendChild(img);
+          const lbl = document.createElement("span");
+          lbl.className = "rot-card__lbl";
+          lbl.textContent = `стр. ${idx + 1}`;
+          card.appendChild(preview);
+          card.appendChild(lbl);
+          container.insertBefore(card, container.querySelector(".preview-loading") ?? null);
+        });
+      }
+
       document.querySelector("#rotateFile").addEventListener("change", async e => {
         const file = e.target.files[0];
         if (!file) return;
-        document.querySelector("#rotatePreview").innerHTML = "<p class='preview-loading'>Чтение…</p>";
+        document.querySelector("#rotateFileChip").innerHTML = "<p class='preview-loading'>Чтение…</p>";
         const info = await pdfInfo(file);
-        document.querySelector("#rotatePreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#rotateFileChip").innerHTML = fileChip(file.name, file.size, info.pageCount);
         document.querySelector("#runBtn").disabled = false;
+        loadThumbs(file);
       });
+
+      document.querySelectorAll("[name='rotAngle']").forEach(el =>
+        el.addEventListener("change", renderThumbs));
     },
     async run() {
       const file = document.querySelector("#rotateFile").files[0];
