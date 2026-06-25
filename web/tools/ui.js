@@ -725,46 +725,126 @@ const TOOLS = {
         <div class="panel-row">
           <label>PDF файл</label>
           <input type="file" id="wmFile" accept=".pdf,application/pdf" />
-          <div id="wmPreview"></div>
+          <div id="wmFileChip"></div>
         </div>
-        <div class="panel-row">
-          <label>Текст водяного знака</label>
-          <input type="text" id="wmText" value="КОНФИДЕНЦИАЛЬНО" placeholder="КОНФИДЕНЦИАЛЬНО" />
-        </div>
-        <div class="panel-row">
-          <label>Размер шрифта</label>
-          <input type="range" id="wmFontSize" min="20" max="100" value="52" step="2" />
-          <span id="wmFontSizeVal" class="range-val">52 pt</span>
-        </div>
-        <div class="panel-row">
-          <label>Прозрачность</label>
-          <input type="range" id="wmOpacity" min="3" max="50" value="12" step="1" />
-          <span id="wmOpacityVal" class="range-val">12%</span>
-        </div>
-        <div class="panel-row">
-          <label>Угол наклона</label>
-          <div class="angle-row">
-            <label class="angle-opt"><input type="radio" name="wmAngle" value="35" checked /><span>↗ 35°</span></label>
-            <label class="angle-opt"><input type="radio" name="wmAngle" value="0" /><span>— горизонт.</span></label>
-            <label class="angle-opt"><input type="radio" name="wmAngle" value="45" /><span>↗ 45°</span></label>
+        <div class="wm-layout">
+          <div class="wm-controls">
+            <div class="panel-row">
+              <label>Текст</label>
+              <input type="text" id="wmText" value="КОНФИДЕНЦИАЛЬНО" placeholder="КОНФИДЕНЦИАЛЬНО" />
+            </div>
+            <div class="panel-row">
+              <label>Размер шрифта</label>
+              <input type="range" id="wmFontSize" min="12" max="120" value="52" step="2" />
+              <span id="wmFontSizeVal" class="range-val">52 pt</span>
+            </div>
+            <div class="panel-row">
+              <label>Прозрачность</label>
+              <input type="range" id="wmOpacity" min="3" max="60" value="12" step="1" />
+              <span id="wmOpacityVal" class="range-val">12%</span>
+            </div>
+            <div class="panel-row">
+              <label>Угол наклона</label>
+              <div class="angle-row">
+                <label class="angle-opt"><input type="radio" name="wmAngle" value="-45" /><span>↙ −45°</span></label>
+                <label class="angle-opt"><input type="radio" name="wmAngle" value="-35" /><span>↙ −35°</span></label>
+                <label class="angle-opt"><input type="radio" name="wmAngle" value="0"   /><span>— 0°</span></label>
+                <label class="angle-opt"><input type="radio" name="wmAngle" value="35"  checked /><span>↗ 35°</span></label>
+                <label class="angle-opt"><input type="radio" name="wmAngle" value="45"  /><span>↗ 45°</span></label>
+              </div>
+            </div>
+            <div class="panel-row">
+              <label>Цвет</label>
+              <div class="angle-row">
+                <label class="angle-opt"><input type="radio" name="wmColor" value="gray"  checked /><span>Серый</span></label>
+                <label class="angle-opt"><input type="radio" name="wmColor" value="red"         /><span>Красный</span></label>
+                <label class="angle-opt"><input type="radio" name="wmColor" value="blue"        /><span>Синий</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="wm-preview-wrap">
+            <canvas id="wmCanvas" class="wm-canvas"></canvas>
+            <p class="wm-canvas-hint">Предпросмотр</p>
           </div>
         </div>
         <button class="run-btn" id="runBtn" disabled>Добавить водяной знак</button>`;
     },
     bindEvents() {
+      const canvas = document.querySelector("#wmCanvas");
+      const ctx    = canvas.getContext("2d");
+      const W = 240, H = 170;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width  = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width  = W + "px";
+      canvas.style.height = H + "px";
+      ctx.scale(dpr, dpr);
+
+      const COLOR_CSS = { gray: [110,110,110], red: [190,35,35], blue: [30,60,190] };
+      const COLOR_PDF = { gray: rgb(0.43,0.43,0.43), red: rgb(0.75,0.14,0.14), blue: rgb(0.12,0.24,0.75) };
+
+      function drawPreview() {
+        const text    = document.querySelector("#wmText").value || "WATERMARK";
+        const size    = parseInt(document.querySelector("#wmFontSize").value, 10);
+        const opacity = parseInt(document.querySelector("#wmOpacity").value, 10) / 100;
+        const angle   = parseInt(document.querySelector("[name='wmAngle']:checked")?.value ?? 35, 10);
+        const colorKey = document.querySelector("[name='wmColor']:checked")?.value ?? "gray";
+        const [r, g, b] = COLOR_CSS[colorKey];
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Page shadow
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.beginPath(); ctx.roundRect(7, 7, W - 10, H - 10, 6); ctx.fill();
+
+        // Page background
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.roundRect(4, 4, W - 10, H - 10, 5); ctx.fill();
+        ctx.strokeStyle = "#e0e4e0"; ctx.lineWidth = 1; ctx.stroke();
+
+        // Content lines
+        ctx.strokeStyle = "rgba(0,0,0,0.06)"; ctx.lineWidth = 1;
+        for (let y = 24; y < H - 18; y += 12) {
+          const len = y % 36 === 0 ? 0.6 : 0.85;
+          ctx.beginPath(); ctx.moveTo(18, y); ctx.lineTo((W - 22) * len + 18, y); ctx.stroke();
+        }
+
+        // Watermark
+        ctx.save();
+        ctx.translate(W / 2 - 3, H / 2 - 3);
+        ctx.rotate(-angle * Math.PI / 180);
+        ctx.globalAlpha = Math.min(opacity * 2.5, 0.9); // boost for canvas preview
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        const scaledSize = Math.max(10, Math.min(size * (W / 595), 44));
+        ctx.font = `bold ${scaledSize}px Arial, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, 0, 0);
+        ctx.restore();
+      }
+
+      // Live update
+      ["#wmText","#wmFontSize","#wmOpacity"].forEach(sel =>
+        document.querySelector(sel).addEventListener("input", drawPreview));
+      document.querySelectorAll("[name='wmAngle'],[name='wmColor']").forEach(el =>
+        el.addEventListener("change", drawPreview));
+
+      // Value readouts
+      document.querySelector("#wmOpacity").addEventListener("input", e =>
+        (document.querySelector("#wmOpacityVal").textContent = `${e.target.value}%`));
+      document.querySelector("#wmFontSize").addEventListener("input", e =>
+        (document.querySelector("#wmFontSizeVal").textContent = `${e.target.value} pt`));
+
+      // File chip
       document.querySelector("#wmFile").addEventListener("change", async e => {
         const file = e.target.files[0];
         if (!file) return;
         const info = await pdfInfo(file);
-        document.querySelector("#wmPreview").innerHTML = fileChip(file.name, file.size, info.pageCount);
+        document.querySelector("#wmFileChip").innerHTML = fileChip(file.name, file.size, info.pageCount);
         document.querySelector("#runBtn").disabled = false;
       });
-      document.querySelector("#wmOpacity").addEventListener("input", e => {
-        document.querySelector("#wmOpacityVal").textContent = `${e.target.value}%`;
-      });
-      document.querySelector("#wmFontSize").addEventListener("input", e => {
-        document.querySelector("#wmFontSizeVal").textContent = `${e.target.value} pt`;
-      });
+
+      drawPreview();
     },
     async run() {
       const file = document.querySelector("#wmFile").files[0];
@@ -773,12 +853,14 @@ const TOOLS = {
       const opacity  = parseInt(document.querySelector("#wmOpacity").value, 10) / 100;
       const fontSize = parseInt(document.querySelector("#wmFontSize").value, 10);
       const angle    = parseInt(document.querySelector("[name='wmAngle']:checked").value, 10);
+      const colorKey = document.querySelector("[name='wmColor']:checked")?.value ?? "gray";
+      const COLOR_PDF = { gray: rgb(0.43,0.43,0.43), red: rgb(0.75,0.14,0.14), blue: rgb(0.12,0.24,0.75) };
       setStatus("Загрузка…", 0.1);
       const buf = await readFile(file);
       const doc = await PDFDocument.load(buf);
       const font = await doc.embedFont(StandardFonts.HelveticaBold);
       const total = doc.getPageCount();
-      setStatus(`Нанесение водяного знака…`, 0.3);
+      setStatus("Нанесение водяного знака…", 0.3);
       for (let i = 0; i < total; i++) {
         const page = doc.getPage(i);
         const { width, height } = page.getSize();
@@ -788,7 +870,7 @@ const TOOLS = {
           y: (height - fontSize) / 2,
           size: fontSize,
           font,
-          color: rgb(0.4, 0.4, 0.4),
+          color: COLOR_PDF[colorKey],
           opacity,
           rotate: degrees(angle),
         });
