@@ -31,7 +31,12 @@ def _require_client() -> Anthropic:
 
 
 def _extract_text(data: bytes, max_chars: int = AI_MAX_INPUT_CHARS) -> str:
-    """Extract plain text from PDF bytes via pymupdf, truncated to max_chars."""
+    """Extract plain text from PDF bytes.
+
+    1. Try native pymupdf text layer (fast).
+    2. If empty (scanned PDF) — fall back to Docling + EasyOCR.
+    """
+    # --- native extraction ---
     doc = fitz.open(stream=data, filetype="pdf")
     parts: list[str] = []
     total = 0
@@ -43,7 +48,34 @@ def _extract_text(data: bytes, max_chars: int = AI_MAX_INPUT_CHARS) -> str:
         parts.append(text)
         total += len(text)
     doc.close()
-    return "\n".join(parts).strip()
+    native = "\n".join(parts).strip()
+    if native:
+        return native
+
+    # --- OCR fallback via Docling + EasyOCR ---
+    logger.info("No native text found — running OCR fallback")
+    try:
+        from docling.datamodel.base_models import InputFormat
+        from docling.datamodel.pipeline_options import EasyOcrOptions, PdfPipelineOptions
+        from docling.document_converter import DocumentConverter, PdfFormatOption
+
+        ocr_opts = EasyOcrOptions(lang=["ru", "en"])
+        pipe_opts = PdfPipelineOptions(do_ocr=True, ocr_options=ocr_opts)
+        converter = DocumentConverter(
+            format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipe_opts)}
+        )
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            tmp.write(data)
+            tmp_path = Path(tmp.name)
+        try:
+            result = converter.convert(tmp_path)
+            text = result.document.export_to_text()
+            return text[:max_chars].strip()
+        finally:
+            tmp_path.unlink(missing_ok=True)
+    except Exception as e:
+        logger.warning("OCR fallback failed: %s", e)
+        return ""
 
 
 def _validate_upload(file: UploadFile) -> None:
