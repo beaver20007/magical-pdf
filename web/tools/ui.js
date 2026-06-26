@@ -1095,27 +1095,37 @@ const AI_TOOLS = {
       const res = await aiPost("/api/v1/ai/summary", file);
       const data = await res.json();
       setStatus("Готово!", 1);
+      downloads.hidden = true;
       const el = document.querySelector("#aiResult");
       el.style.display = "block";
+      const summaryMd = data.summary;
       el.innerHTML = `
-        <div id="summaryPrintArea" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <span style="font-size:12px;color:#6b7280;">📄 ${data.pages} стр. · ${data.word_count} слов</span>
-            <button onclick="printSummary()" style="font-size:12px;font-weight:700;color:#7c3aed;background:none;border:1px solid #c4b5fd;border-radius:6px;padding:5px 12px;cursor:pointer;min-height:unset;">⬇ Сохранить как PDF</button>
+            <button id="btnPrintSummary" style="font-size:12px;font-weight:700;color:#7c3aed;background:none;border:1px solid #c4b5fd;border-radius:6px;padding:5px 12px;cursor:pointer;min-height:unset;">⬇ Сохранить как PDF</button>
           </div>
-          <div id="summaryText" style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${escHtml(data.summary)}</div>
+          <div style="font-size:14px;line-height:1.7;">${mdToHtml(summaryMd)}</div>
         </div>`;
-      window.printSummary = () => {
-        const text = document.querySelector("#summaryText")?.innerText ?? "";
+      document.querySelector("#btnPrintSummary").addEventListener("click", () => {
+        const html = mdToHtml(summaryMd);
         const w = window.open("", "_blank");
         w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Резюме</title>
-          <style>body{font-family:sans-serif;font-size:14px;line-height:1.7;padding:40px;max-width:700px;margin:0 auto;white-space:pre-wrap;}
-          h2{font-size:17px;margin:18px 0 6px;}@media print{body{padding:20px;}}</style></head>
-          <body>${escHtml(text)}</body></html>`);
+          <style>
+            body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.7;padding:48px;max-width:680px;margin:0 auto;color:#111;}
+            h2{font-size:16px;font-weight:700;margin:24px 0 6px;color:#111;}
+            h3{font-size:14px;font-weight:700;margin:16px 0 4px;}
+            ul{margin:6px 0 12px;padding-left:20px;}
+            li{margin-bottom:4px;}
+            p{margin:0 0 12px;}
+            strong{font-weight:700;}
+            @media print{body{padding:24px;}button{display:none;}}
+          </style></head>
+          <body><p style="font-size:11px;color:#999;margin-bottom:24px;">Резюме документа</p>${html}</body></html>`);
         w.document.close();
         w.focus();
-        w.print();
-      };
+        setTimeout(() => w.print(), 300);
+      });
     },
   },
 
@@ -1200,6 +1210,19 @@ const AI_TOOLS = {
 
 function escHtml(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function mdToHtml(md) {
+  return md
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^- (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+    .replace(/\n{2,}/g, "</p><p>")
+    .replace(/^(?!<[hup])(.+)$/gm, "$1")
+    .replace(/^<\/p><p>(<[hu])/gm, "$1");
 }
 
 // Merge AI tools into TOOLS registry
