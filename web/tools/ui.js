@@ -1107,24 +1107,39 @@ const AI_TOOLS = {
           </div>
           <div style="font-size:14px;line-height:1.7;">${mdToHtml(summaryMd)}</div>
         </div>`;
-      document.querySelector("#btnPrintSummary").addEventListener("click", () => {
-        const html = mdToHtml(summaryMd);
-        const w = window.open("", "_blank");
-        w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Резюме</title>
-          <style>
-            body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.7;padding:48px;max-width:680px;margin:0 auto;color:#111;}
-            h2{font-size:16px;font-weight:700;margin:24px 0 6px;color:#111;}
-            h3{font-size:14px;font-weight:700;margin:16px 0 4px;}
-            ul{margin:6px 0 12px;padding-left:20px;}
-            li{margin-bottom:4px;}
-            p{margin:0 0 12px;}
-            strong{font-weight:700;}
-            @media print{body{padding:24px;}button{display:none;}}
-          </style></head>
-          <body><p style="font-size:11px;color:#999;margin-bottom:24px;">Резюме документа</p>${html}</body></html>`);
-        w.document.close();
-        w.focus();
-        setTimeout(() => w.print(), 300);
+      document.querySelector("#btnPrintSummary").addEventListener("click", async () => {
+        const btn = document.querySelector("#btnPrintSummary");
+        btn.textContent = "Генерируем PDF…";
+        btn.disabled = true;
+        try {
+          const res = await fetch(`${aiBase()}/api/v1/ai/render-pdf`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ markdown: summaryMd, title: "Резюме документа" }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const pdfBytes = await res.arrayBuffer();
+
+          if (window.showSaveFilePicker) {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: "summary.pdf",
+              types: [{ description: "PDF файл", accept: { "application/pdf": [".pdf"] } }],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(pdfBytes);
+            await writable.close();
+          } else {
+            // fallback для браузеров без showSaveFilePicker
+            const url = URL.createObjectURL(new Blob([pdfBytes], { type: "application/pdf" }));
+            const a = document.createElement("a");
+            a.href = url; a.download = "summary.pdf"; a.click();
+          }
+        } catch (e) {
+          if (e.name !== "AbortError") setError("Не удалось сохранить PDF: " + e.message);
+        } finally {
+          btn.textContent = "⬇ Сохранить как PDF";
+          btn.disabled = false;
+        }
       });
     },
   },

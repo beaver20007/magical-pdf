@@ -11,8 +11,9 @@ from pathlib import Path
 
 import fitz  # pymupdf
 from anthropic import Anthropic, APIStatusError
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Body, File, HTTPException, UploadFile
 from fastapi.responses import Response
+from fpdf import FPDF
 from pydantic import BaseModel
 
 from src.config import AI_MAX_INPUT_CHARS, AI_MODEL, ANTHROPIC_API_KEY, MAX_BYTES
@@ -262,4 +263,71 @@ async def ai_redact(file: UploadFile = File(...)) -> Response:
         content=out.getvalue(),
         media_type="application/pdf",
         headers=headers,
+    )
+
+
+# ─────────────────────────────────────────────────────────────
+# POST /api/v1/ai/render-pdf  — markdown text → PDF bytes
+# ─────────────────────────────────────────────────────────────
+
+class RenderPdfRequest(BaseModel):
+    markdown: str
+    title: str = "Документ"
+
+
+def _md_to_pdf(markdown: str, title: str) -> bytes:
+    """Convert simple markdown to PDF using fpdf2 (DejaVu = full Unicode/Cyrillic)."""
+    pdf = FPDF()
+    pdf.add_page()
+    # fpdf2 ships DejaVu fonts under fpdf/fonts/
+    pdf.add_font("DejaVu", style="", fname="DejaVuSansCondensed.ttf")
+    pdf.add_font("DejaVu", style="B", fname="DejaVuSansCondensed-Bold.ttf")
+
+    pdf.set_margins(20, 20, 20)
+    pdf.set_auto_page_break(auto=True, margin=20)
+
+    # Title
+    pdf.set_font("DejaVu", style="B", size=16)
+    pdf.cell(0, 10, title, ln=True)
+    pdf.ln(4)
+
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            pdf.set_font("DejaVu", style="B", size=13)
+            pdf.ln(4)
+            pdf.multi_cell(0, 7, stripped[3:])
+            pdf.ln(2)
+        elif stripped.startswith("### "):
+            pdf.set_font("DejaVu", style="B", size=11)
+            pdf.multi_cell(0, 6, stripped[4:])
+        elif stripped.startswith("- "):
+            pdf.set_font("DejaVu", size=10)
+            pdf.multi_cell(0, 6, "  • " + stripped[2:])
+        elif stripped == "" or stripped == "---":
+            pdf.ln(3)
+        else:
+            # strip inline **bold** markers for plain output
+            plain = re.sub(r"\*\*(.+?)\*\*", r"\1", stripped)
+            pdf.set_font("DejaVu", size=10)
+            pdf.multi_cell(0, 6, plain)
+
+    buf = BytesIO()
+    pdf.output(buf)
+    return buf.getvalue()
+
+
+@router.post("/render-pdf")
+async def render_pdf(body: RenderPdfRequest) -> Response:
+    """Convert markdown text to a downloadable PDF with Cyrillic support."""
+    try:
+        pdf_bytes = _md_to_pdf(body.markdown, body.title)
+    except Exception as e:
+        logger.error("PDF render error: %s", e)
+        raise HTTPException(500, f"PDF render failed: {e}") from e
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="summary.pdf"'},
     )
