@@ -1098,12 +1098,24 @@ const AI_TOOLS = {
       const el = document.querySelector("#aiResult");
       el.style.display = "block";
       el.innerHTML = `
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
-          <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">
-            📄 ${data.pages} стр. · ${data.word_count} слов
+        <div id="summaryPrintArea" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:12px;color:#6b7280;">📄 ${data.pages} стр. · ${data.word_count} слов</span>
+            <button onclick="printSummary()" style="font-size:12px;font-weight:700;color:#7c3aed;background:none;border:1px solid #c4b5fd;border-radius:6px;padding:5px 12px;cursor:pointer;min-height:unset;">⬇ Сохранить как PDF</button>
           </div>
-          <div style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${escHtml(data.summary)}</div>
+          <div id="summaryText" style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${escHtml(data.summary)}</div>
         </div>`;
+      window.printSummary = () => {
+        const text = document.querySelector("#summaryText")?.innerText ?? "";
+        const w = window.open("", "_blank");
+        w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Резюме</title>
+          <style>body{font-family:sans-serif;font-size:14px;line-height:1.7;padding:40px;max-width:700px;margin:0 auto;white-space:pre-wrap;}
+          h2{font-size:17px;margin:18px 0 6px;}@media print{body{padding:20px;}}</style></head>
+          <body>${escHtml(text)}</body></html>`);
+        w.document.close();
+        w.focus();
+        w.print();
+      };
     },
   },
 
