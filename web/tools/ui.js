@@ -2,7 +2,7 @@
  * Phase 6 — 9 PDF quick-wins via pdf-lib (client-side, no server).
  * Includes: file preview, pre-processing options, step-by-step progress.
  */
-import { initModeTabs } from "../../nav.js";
+import { initModeTabs, extractApiBase } from "../../nav.js";
 
 initModeTabs({ active: "tools" });
 
@@ -1051,6 +1051,147 @@ const TOOLS = {
     },
   },
 };
+
+// ── AI helpers ────────────────────────────────────────────────────────────────
+function aiBase() {
+  return extractApiBase() || "http://127.0.0.1:8766";
+}
+
+async function aiPost(path, file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`${aiBase()}${path}`, { method: "POST", body: fd });
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { msg = (await res.json()).detail ?? msg; } catch {}
+    throw new Error(msg);
+  }
+  return res;
+}
+
+// ── AI tool definitions ───────────────────────────────────────────────────────
+const AI_TOOLS = {
+  summary: {
+    name: "Резюме документа",
+    render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="aiSummaryFile" accept=".pdf,application/pdf" />
+        </div>
+        <p class="field-hint">Claude прочитает документ и составит структурированное резюме.</p>
+        <button class="run-btn" id="runBtn" disabled>Создать резюме</button>
+        <div id="aiResult" style="display:none;margin-top:20px;"></div>`;
+    },
+    bindEvents() {
+      document.querySelector("#aiSummaryFile").addEventListener("change", e => {
+        document.querySelector("#runBtn").disabled = !e.target.files[0];
+      });
+    },
+    async run() {
+      const file = document.querySelector("#aiSummaryFile").files[0];
+      if (!file) throw new Error("Выберите файл");
+      setStatus("Извлекаем текст…", 0.2);
+      const res = await aiPost("/api/v1/ai/summary", file);
+      const data = await res.json();
+      setStatus("Готово!", 1);
+      const el = document.querySelector("#aiResult");
+      el.style.display = "block";
+      el.innerHTML = `
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">
+            📄 ${data.pages} стр. · ${data.word_count} слов
+          </div>
+          <div style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${escHtml(data.summary)}</div>
+        </div>`;
+    },
+  },
+
+  extractjson: {
+    name: "Извлечь данные → JSON",
+    render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="aiExtractFile" accept=".pdf,application/pdf" />
+        </div>
+        <p class="field-hint">Claude определит тип документа и извлечёт структурированные поля.</p>
+        <button class="run-btn" id="runBtn" disabled>Извлечь данные</button>
+        <div id="aiResult" style="display:none;margin-top:20px;"></div>`;
+    },
+    bindEvents() {
+      document.querySelector("#aiExtractFile").addEventListener("change", e => {
+        document.querySelector("#runBtn").disabled = !e.target.files[0];
+      });
+    },
+    async run() {
+      const file = document.querySelector("#aiExtractFile").files[0];
+      if (!file) throw new Error("Выберите файл");
+      setStatus("Анализируем документ…", 0.2);
+      const res = await aiPost("/api/v1/ai/extract", file);
+      const data = await res.json();
+      setStatus("Готово!", 1);
+
+      const json = JSON.stringify(data.fields, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const el = document.querySelector("#aiResult");
+      el.style.display = "block";
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:13px;color:#6b7280;">📄 ${data.pages} стр.</span>
+          <a href="${url}" download="extracted.json" style="font-size:13px;font-weight:700;color:#7c3aed;text-decoration:none;">↓ Скачать JSON</a>
+        </div>
+        <pre style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;font-size:12px;overflow:auto;max-height:400px;">${escHtml(json)}</pre>`;
+    },
+  },
+
+  redact: {
+    name: "Smart Redact",
+    render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="aiRedactFile" accept=".pdf,application/pdf" />
+        </div>
+        <p class="field-hint">Claude найдёт ФИО, телефоны, email, паспортные данные и другие персональные данные и скроет их чёрными полосами.</p>
+        <button class="run-btn" id="runBtn" disabled>Скрыть данные</button>
+        <div id="aiResult" style="display:none;margin-top:12px;"></div>`;
+    },
+    bindEvents() {
+      document.querySelector("#aiRedactFile").addEventListener("change", e => {
+        document.querySelector("#runBtn").disabled = !e.target.files[0];
+      });
+    },
+    async run() {
+      const file = document.querySelector("#aiRedactFile").files[0];
+      if (!file) throw new Error("Выберите файл");
+      setStatus("Ищем персональные данные…", 0.3);
+      const res = await aiPost("/api/v1/ai/redact", file);
+      const count = parseInt(res.headers.get("X-Redacted-Count") ?? "0", 10);
+      const cats = res.headers.get("X-Categories") ?? "";
+      const bytes = await res.arrayBuffer();
+      setStatus(`Готово! Скрыто фрагментов: ${count}`, 1);
+
+      const el = document.querySelector("#aiResult");
+      el.style.display = "block";
+      if (count > 0) {
+        el.innerHTML = `<p style="font-size:13px;color:#6b7280;margin:0 0 10px;">Категории: ${escHtml(cats)}</p>`;
+      } else {
+        el.innerHTML = `<p style="font-size:13px;color:#6b7280;margin:0 0 10px;">Персональных данных не обнаружено.</p>`;
+      }
+      showDownload(bytes, "redacted.pdf");
+    },
+  },
+};
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Merge AI tools into TOOLS registry
+Object.assign(TOOLS, AI_TOOLS);
 
 // ── Tool activation ───────────────────────────────────────────────────────────
 toolGrid.querySelectorAll(".tool-card").forEach(card => {

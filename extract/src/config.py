@@ -34,3 +34,8 @@ DEFAULT_LANGUAGES = os.environ.get("OCR_DOCS_LANGUAGES", "ru,en").split(",")
 SPELL_CORRECT = _env_bool("OCR_DOCS_SPELL_CORRECT", not PUBLIC_BETA)
 GRAMMAR_CORRECT = _env_bool("OCR_DOCS_GRAMMAR_CORRECT", not PUBLIC_BETA)
 SSL_VERIFY = _env_bool("OCR_DOCS_SSL_VERIFY", False)
+
+# ─── AI (Phase 8) ────────────────────────────────────────────
+ANTHROPIC_API_KEY: str | None = os.environ.get("ANTHROPIC_API_KEY")
+AI_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+AI_MAX_INPUT_CHARS = int(os.environ.get("AI_MAX_INPUT_CHARS", 80_000))

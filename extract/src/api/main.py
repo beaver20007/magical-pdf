@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from src import __version__
-from src.api.routes import jobs
+from src.api.routes import ai, jobs
 from src.config import JOBS_DIR
 from src.job_cleanup import cleanup_old_jobs
 
@@ -44,6 +44,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(jobs.router)
+app.include_router(ai.router)
 
 if STATIC_DIR.is_dir():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

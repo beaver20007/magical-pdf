@@ -189,6 +189,32 @@ h1 {
   line-height: 1.4;
 }
 
+/* ─── AI tool cards ──────────────────────────────────────── */
+.tool-card--ai {
+  border-color: #ede9fe;
+  background: linear-gradient(160deg, #faf8ff 0%, #ffffff 100%);
+}
+
+.tool-card--ai .tool-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.tool-card--ai .tool-name {
+  color: #5b21b6;
+}
+
+.tool-card--ai:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 4px 18px rgba(124,58,237,0.12);
+}
+
+.tool-card--ai.active {
+  border-color: #7c3aed;
+  background: #faf8ff;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+
 /* ─── Tool panel ─────────────────────────────────────────── */
 .tool-panel {
   background: #ffffff;
