@@ -5,6 +5,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 EXTRACT_ROOT = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = EXTRACT_ROOT
 DATA_DIR = Path(os.environ.get("OCR_DOCS_DATA_DIR", EXTRACT_ROOT / "data"))
