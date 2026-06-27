@@ -742,24 +742,43 @@ const TOOLS = {
       const ownerPass = document.querySelector("#ownerPass").value || userPass;
       if (!file) throw new Error("Выберите PDF файл.");
       if (!userPass) throw new Error("Введите пароль.");
-      setStatus("Загрузка…", 0.2);
-      const buf = await readFile(file);
-      const doc = await PDFDocument.load(buf);
-      setStatus("Шифрование…", 0.7);
-      const bytes = await doc.save({
-        userPassword: userPass,
-        ownerPassword: ownerPass,
-        permissions: {
-          printing: document.querySelector("#permPrint").checked ? "highResolution" : "none",
-          modifying: document.querySelector("#permModify").checked,
-          copying: document.querySelector("#permCopy").checked,
-          annotating: false, fillingForms: true,
-          contentAccessibility: true, documentAssembly: false,
-        },
+
+      setStatus("Отправка на сервер…", 0.2);
+
+      // Send to backend for AES-256 encryption
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("user_password", userPass);
+      formData.append("owner_password", ownerPass);
+      formData.append("allow_print", document.querySelector("#permPrint").checked);
+      formData.append("allow_copy", document.querySelector("#permCopy").checked);
+      formData.append("allow_modify", document.querySelector("#permModify").checked);
+
+      const API_BASE = window.API_BASE || "http://localhost:8000";
+      const response = await fetch(`${API_BASE}/api/v1/protect-pdf`, {
+        method: "POST",
+        body: formData,
       });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Ошибка защиты PDF");
+      }
+
+      setStatus("Скачивание…", 0.9);
+      const blob = await response.blob();
+
       const stem = file.name.replace(/\.pdf$/i, "");
-      showDownload(bytes, `${stem}-protected.pdf`);
-      setStatus("Готово! PDF зашифрован.", 1);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${stem}-protected.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setStatus("Готово! PDF защищён AES-256.", 1);
     },
   },
 
