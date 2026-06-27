@@ -328,18 +328,22 @@ input:focus, select:focus {
 
 /* ─── Image thumbnails (img2pdf) ─────────────────────────── */
 .img-thumb-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  border: 1px dashed var(--line);
 }
 
 .img-thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: 180px;
+  gap: 8px;
+  width: 100%;
   position: relative;
   cursor: grab;
   user-select: none;
@@ -348,21 +352,29 @@ input:focus, select:focus {
 .img-thumb:active { cursor: grabbing; }
 
 .img-thumb img {
-  width: 180px;
+  width: 100%;
   height: 140px;
   object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  transition: border-color 0.12s, opacity 0.12s;
+  border-radius: 8px;
+  border: 2px solid var(--line);
+  transition: all 0.12s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.img-thumb:hover img {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(245,176,65,0.3);
+  transform: translateY(-2px);
 }
 
 .img-thumb span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  max-width: 180px;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .img-thumb__num {
