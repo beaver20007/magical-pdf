@@ -215,6 +215,31 @@ h1 {
   box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
 }
 
+.tool-card--pro {
+  border-color: #d1fae5;
+  background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.tool-card--pro .tool-icon {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tool-card--pro .tool-name {
+  color: #064e3b;
+}
+
+.tool-card--pro:hover {
+  border-color: #6ee7b7;
+  box-shadow: 0 4px 18px rgba(16,185,129,0.12);
+}
+
+.tool-card--pro.active {
+  border-color: #10b981;
+  background: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+}
+
 /* ─── Tool panel ─────────────────────────────────────────── */
 .tool-panel {
   background: #ffffff;

@@ -1184,6 +1184,108 @@ const AI_TOOLS = {
     },
   },
 
+  pdf2word: {
+    name: "PDF → Word / PPTX",
+    async render() {
+      return `
+        <div class="panel-row">
+          <label>PDF файл</label>
+          <input type="file" id="p2wFile" accept=".pdf,application/pdf" />
+          <div id="p2wPreview"></div>
+        </div>
+        <div class="panel-row">
+          <label>Формат</label>
+          <select id="p2wFormat">
+            <option value="docx">DOCX — Word (текст, договоры)</option>
+            <option value="pptx">PPTX — PowerPoint (слайды, чертежи)</option>
+          </select>
+        </div>
+        <div class="panel-row">
+          <label>Движок конвертации</label>
+          <select id="p2wEngine">
+            <option value="auto">Авто (LibreOffice для текстовых, OCR для сканов)</option>
+            <option value="libreoffice">LibreOffice — быстро, для PDF с текстом</option>
+            <option value="ocr">OCR — Docling + EasyOCR, для сканов и чертежей</option>
+          </select>
+        </div>
+        <div class="panel-row" id="p2wLangRow" style="display:none">
+          <label>Языки OCR</label>
+          <input type="text" id="p2wLangs" value="ru,en" placeholder="ru,en" />
+          <span class="field-hint">Только для движка OCR</span>
+        </div>
+        <p class="field-hint">
+          <strong>Авто:</strong> если PDF содержит текстовый слой — LibreOffice даёт лучшую точность.
+          Для сканов и технических чертежей автоматически включается OCR (Docling + EasyOCR).
+        </p>
+        <button class="run-btn" id="runBtn" disabled>Конвертировать</button>`;
+    },
+    bindEvents() {
+      const fileInput = document.querySelector("#p2wFile");
+      const engineSel = document.querySelector("#p2wEngine");
+      const langRow   = document.querySelector("#p2wLangRow");
+
+      fileInput.addEventListener("change", async e => {
+        const f = e.target.files[0];
+        document.querySelector("#runBtn").disabled = !f;
+        if (f) {
+          const info = await pdfInfo(f);
+          document.querySelector("#p2wPreview").innerHTML =
+            fileChip(f.name, f.size, info.pageCount);
+        }
+      });
+
+      engineSel.addEventListener("change", () => {
+        langRow.style.display = engineSel.value === "ocr" ? "" : "none";
+      });
+    },
+    async run() {
+      const file    = document.querySelector("#p2wFile").files[0];
+      const format  = document.querySelector("#p2wFormat").value;
+      const engine  = document.querySelector("#p2wEngine").value;
+      const langs   = document.querySelector("#p2wLangs").value.trim() || "ru,en";
+      if (!file) throw new Error("Выберите файл");
+
+      const apiBase = extractApiBase();
+      if (!apiBase && engine !== "auto") {
+        throw new Error("Сервер Extract недоступен. Убедитесь что приложение запущено.");
+      }
+      if (!apiBase) {
+        throw new Error("Сервер Extract недоступен. LibreOffice/OCR требует локальный сервер.");
+      }
+
+      setStatus(`Отправка файла на конвертацию (${engine})…`, 0.05);
+
+      const form = new FormData();
+      form.append("file", file);
+      form.append("format", format);
+      form.append("engine", engine);
+      form.append("languages", langs);
+
+      const res = await fetch(`${apiBase}/api/v1/convert`, { method: "POST", body: form });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.detail ?? `HTTP ${res.status}`);
+      }
+
+      setStatus("Получаем результат…", 0.9);
+      const usedEngine = res.headers.get("X-Engine") ?? engine;
+      const bytes = await res.arrayBuffer();
+      const ext = format;
+      const stem = file.name.replace(/\.pdf$/i, "");
+      const mime = format === "docx"
+        ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        : "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+      const blob = new Blob([bytes], { type: mime });
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = `${stem}.${ext}`;
+      downloadLink.textContent = `↓ ${stem}.${ext}`;
+      downloads.hidden = false;
+
+      setStatus(`Готово! Движок: ${usedEngine === "libreoffice" ? "LibreOffice" : "OCR"}.`, 1);
+    },
+  },
+
   redact: {
     name: "Smart Redact",
     render() {
